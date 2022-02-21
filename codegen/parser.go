@@ -8,212 +8,6 @@ import (
 	"strings"
 )
 
-type TypeKind byte
-
-const (
-	TypeUnknown     TypeKind = 0
-	TypeInt8        TypeKind = 1
-	TypeUInt8       TypeKind = 2
-	TypeInt16       TypeKind = 3
-	TypeUInt16      TypeKind = 4
-	TypeInt32       TypeKind = 5
-	TypeUInt32      TypeKind = 6
-	TypeInt64       TypeKind = 7
-	TypeUInt64      TypeKind = 8
-	TypeFloat32     TypeKind = 9
-	TypeFloat64     TypeKind = 10
-	TypeStringFixed TypeKind = 11
-	TypeStringVLS   TypeKind = 12
-	TypeAlias       TypeKind = 19
-	TypeEnum        TypeKind = 20
-	TypeUnion       TypeKind = 21
-	TypeStruct      TypeKind = 30
-)
-
-type Type struct {
-	Namespace   *Namespace
-	File        *File
-	Kind        TypeKind
-	Offset      int
-	Align       int
-	Length      int
-	LengthConst *Const
-	Enum        *Enum
-	Message     *Struct
-	Alias       *Alias
-	Union       *Union
-}
-
-type Namespaces struct {
-	Files      map[string]*File
-	Namespaces map[string]*Namespace
-}
-
-type Namespace struct {
-	Namespaces      *Namespaces
-	Name            string
-	Alias           []*Alias
-	AliasByName     map[string]*Alias
-	Constants       []*Const
-	ConstantsByName map[string]*Const
-	Enums           []*Enum
-	EnumsByName     map[string]*Enum
-	EnumOptions     map[string]*EnumOption
-	Structs         []*Struct
-	StructsByName   map[string]*Struct
-}
-
-type File struct {
-	Path             string
-	Namespaces       *Namespaces
-	currentNamespace *Namespace
-	Alias            []*Alias
-	AliasByName      map[string]*Alias
-	Constants        []*Const
-	ConstantsByName  map[string]*Const
-	Enums            []*Enum
-	EnumsByName      map[string]*Enum
-	EnumOptions      map[string]*EnumOption
-	Structs          []*Struct
-	StructsByName    map[string]*Struct
-}
-
-type Alias struct {
-	Namespace *Namespace
-	File      *File
-	Name      string
-	Type      Type
-}
-
-type Const struct {
-	Namespace *Namespace
-	File      *File
-	Name      string
-	Type      Type
-	Length    int
-	Value     *Value
-	Comment   string
-}
-
-type Struct struct {
-	Namespace    *Namespace
-	File         *File
-	Name         string
-	Align        int
-	Size         int
-	VLS          bool
-	Fields       []*Field
-	FieldsByName map[string]*Field
-}
-
-type Field struct {
-	Name string
-	Type Type
-	Init *Value
-}
-
-type ValueType int
-
-const (
-	ValueTypeInt        ValueType = 0
-	ValueTypeFloat      ValueType = 1
-	ValueTypeString     ValueType = 2
-	ValueTypeConst      ValueType = 3
-	ValueTypeEnumOption ValueType = 4
-	ValueTypeSizeof     ValueType = 5
-)
-
-type Value struct {
-	File       *File
-	Namespace  *Namespace
-	Type       ValueType
-	Int        int64
-	Float      float64
-	String     string
-	Const      *Const
-	EnumOption *EnumOption
-	Sizeof     string
-}
-
-type Enum struct {
-	File          *File
-	Namespace     *Namespace
-	Name          string
-	Type          TypeKind
-	Options       []*EnumOption
-	OptionsByName map[string]*EnumOption
-}
-
-type EnumOption struct {
-	File      *File
-	Namespace *Namespace
-	Enum      *Enum
-	Name      string
-	Value     int64
-	Comment   string
-}
-
-type Union struct {
-	Fields []*Field
-}
-
-func (s *Struct) Layout() {
-	maxAlign := 0
-	// Ensure length and alignment is set
-	for _, field := range s.Fields {
-		setLengthAndAlign(&field.Type)
-		if maxAlign < field.Type.Align {
-			maxAlign = field.Type.Align
-		}
-		if field.Type.Kind == TypeStringVLS {
-			s.VLS = true
-		}
-		if s.Align < field.Type.Align {
-			field.Type.Align = s.Align
-			if field.Type.Union != nil {
-				for _, f := range field.Type.Union.Fields {
-					f.Type.Align = s.Align
-				}
-				if field.Type.Kind == TypeStringVLS {
-					s.VLS = true
-				}
-			}
-		}
-	}
-
-	offset := 0
-
-	for i := 0; i < len(s.Fields); i++ {
-		field := s.Fields[i]
-		offset = align(offset, field.Type.Align)
-		field.Type.Offset = offset
-
-		if field.Type.Union != nil {
-			for _, f := range field.Type.Union.Fields {
-				f.Type.Offset = offset
-			}
-		}
-
-		offset += field.Type.Length
-	}
-	if maxAlign < s.Align {
-		s.Size = align(offset, maxAlign)
-	} else {
-		s.Size = align(offset, s.Align)
-	}
-}
-
-func align(offset, align int) int {
-	if offset == 0 || align == 0 {
-		return 0
-	}
-	extras := offset % align
-	if extras == 0 {
-		return offset
-	}
-	return ((offset / align) + 1) * align
-}
-
 func parseError(lineIndex int, line, message string) error {
 	return fmt.Errorf("line: %d, '%s' -> %s", lineIndex+1, line, message)
 }
@@ -257,7 +51,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 		packStack    []int
 		blockName    string
 		blockExtends Type
-		blockType    TypeKind
+		blockType    Kind
 		block        []string
 		state        = 0 // 0 = root, 1 == expect '{', 2 == expect '};'
 		curlyCount   = 0
@@ -293,7 +87,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 			if curlyCount == -1 {
 				//if line == "};" && curlyCount == 0 {
 				switch blockType {
-				case TypeStruct:
+				case KindStruct:
 					pack := 8
 					if len(packStack) > 0 {
 						pack = packStack[len(packStack)-1]
@@ -302,7 +96,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 					if err != nil {
 						return nil, parseError(lineIndex, line, err.Error())
 					}
-				case TypeEnum:
+				case KindEnum:
 					_, err = file.parseEnum(blockName, blockExtends.Kind, block)
 					if err != nil {
 						return nil, parseError(lineIndex, line, err.Error())
@@ -343,7 +137,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 		case strings.HasPrefix(line, "enum"):
 			line = strings.TrimSpace(line[len("enum"):])
 
-			blockType = TypeEnum
+			blockType = KindEnum
 			block = nil
 
 			index := strings.Index(line, ":")
@@ -356,10 +150,10 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 			curlyCount = 0
 			index = strings.Index(line, "{")
 			if index > -1 {
-				blockExtends = file.dataTypeOf(strings.TrimSpace(line[0:index]))
+				blockExtends = file.typeOf(strings.TrimSpace(line[0:index]))
 				state = 2
 			} else {
-				blockExtends = file.dataTypeOf(strings.TrimSpace(line))
+				blockExtends = file.typeOf(strings.TrimSpace(line))
 				state = 1
 			}
 
@@ -387,7 +181,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 
 		case strings.HasPrefix(line, "struct"):
 			line = strings.TrimSpace(line[len("struct"):])
-			blockType = TypeStruct
+			blockType = KindStruct
 			block = nil
 			blockName = ""
 			blockExtends = Type{}
@@ -425,7 +219,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 				File:      file,
 				Namespace: file.currentNamespace,
 				Name:      name,
-				Type:      file.dataTypeOf(base),
+				Type:      file.typeOf(base),
 			}
 			file.Alias = append(file.Alias, alias)
 			file.AliasByName[alias.Name] = alias
@@ -463,204 +257,6 @@ func (namespaces *Namespaces) GetNamespace(name string) *Namespace {
 	return namespace
 }
 
-//func Parse(imports []*File, contents string) (*File, error) {
-//	var (
-//		file = &File{
-//			AliasByName:     make(map[string]*Alias),
-//			ConstantsByName: make(map[string]*Const),
-//			EnumsByName:     make(map[string]*Enum),
-//			StructsByName:   make(map[string]*Struct),
-//			EnumOptions:     make(map[string]*EnumOption),
-//		}
-//		err          error
-//		packStack    []int
-//		blockName    string
-//		blockExtends Type
-//		blockType    TypeKind
-//		block        []string
-//		state        = 0 // 0 = root, 1 == expect '{', 2 == expect '};'
-//		curlyCount   = 0
-//	)
-//
-//	if len(imports) > 0 {
-//		for _, imp := range imports {
-//			if imp == nil {
-//				continue
-//			}
-//			file.Imports[imp.Namespace] = imp
-//		}
-//	}
-//	lines := strings.Split(contents, "\n")
-//	for lineIndex, line := range lines {
-//		line = strings.TrimSpace(line)
-//
-//		switch state {
-//		case 1:
-//			index := strings.Index(line, "{")
-//			if index == -1 {
-//				continue
-//			}
-//			line = strings.TrimSpace(line[index+1:])
-//			if len(line) > 0 {
-//				block = append(block, line)
-//			}
-//			state = 2
-//			curlyCount = 0
-//			continue
-//		case 2:
-//			for _, c := range line {
-//				switch c {
-//				case '{':
-//					curlyCount++
-//				case '}':
-//					curlyCount--
-//				}
-//			}
-//
-//			if curlyCount == -1 {
-//				//if line == "};" && curlyCount == 0 {
-//				switch blockType {
-//				case TypeStruct:
-//					pack := 8
-//					if len(packStack) > 0 {
-//						pack = packStack[len(packStack)-1]
-//					}
-//					_, err = file.parseStruct(pack, blockName, block)
-//					if err != nil {
-//						return nil, parseError(lineIndex, line, err.Error())
-//					}
-//				case TypeEnum:
-//					_, err = file.parseEnum(blockName, blockExtends.Kind, block)
-//					if err != nil {
-//						return nil, parseError(lineIndex, line, err.Error())
-//					}
-//				}
-//				state = 0
-//				continue
-//			} else {
-//				block = append(block, line)
-//				continue
-//			}
-//		}
-//
-//		switch {
-//		case strings.HasPrefix(line, "namespace"):
-//			line = strings.TrimSpace(line[len("namespace"):])
-//			index := strings.LastIndex(line, "{")
-//			if index > -1 {
-//				file.Namespace = strings.TrimSpace(line[0:index])
-//			} else {
-//				index = strings.Index(line, "/")
-//				if index > -1 {
-//					file.Namespace = strings.TrimSpace(line[0:index])
-//				} else {
-//					file.Namespace = strings.TrimSpace(line)
-//				}
-//			}
-//
-//		case strings.HasPrefix(line, "const"):
-//			line = strings.TrimSpace(line[len("const"):])
-//			_, err = file.parseConst(line)
-//			if err != nil {
-//				return nil, parseError(lineIndex, line, err.Error())
-//			}
-//
-//		case strings.HasPrefix(line, "enum"):
-//			line = strings.TrimSpace(line[len("enum"):])
-//
-//			blockType = TypeEnum
-//			block = nil
-//
-//			index := strings.Index(line, ":")
-//			if index == -1 {
-//				return nil, parseError(lineIndex, line, "expected ':' and data type")
-//			}
-//			blockName = strings.TrimSpace(line[0:index])
-//			line = strings.TrimSpace(line[index+1:])
-//
-//			curlyCount = 0
-//			index = strings.Index(line, "{")
-//			if index > -1 {
-//				blockExtends = file.dataTypeOf(strings.TrimSpace(line[0:index]))
-//				state = 2
-//			} else {
-//				blockExtends = file.dataTypeOf(strings.TrimSpace(line))
-//				state = 1
-//			}
-//
-//		case strings.HasPrefix(line, "#pragma"):
-//			line = strings.TrimSpace(line[len("#pragma"):])
-//			if !strings.HasPrefix(line, "pack(") {
-//				continue
-//			}
-//			line = line[len("pack("):]
-//			line = strings.ReplaceAll(line, ")", "")
-//			line = strings.TrimSpace(line)
-//			parts := strings.Split(line, ",")
-//			switch strings.TrimSpace(parts[0]) {
-//			case "push":
-//				align, err := strconv.ParseInt(strings.TrimSpace(parts[1]), 10, 64)
-//				if err != nil {
-//					return nil, parseError(lineIndex, line, "invalid #pragma pack(push, #ERROR_VALUE#) "+strings.TrimSpace(parts[1]))
-//				}
-//				packStack = append(packStack, int(align))
-//			case "pop":
-//				if len(packStack) > 0 {
-//					packStack = packStack[0 : len(packStack)-1]
-//				}
-//			}
-//
-//		case strings.HasPrefix(line, "struct"):
-//			line = strings.TrimSpace(line[len("struct"):])
-//			blockType = TypeStruct
-//			block = nil
-//			blockName = ""
-//			blockExtends = Type{}
-//			curlyCount = 0
-//
-//			index := strings.Index(line, "{")
-//			if index > -1 {
-//				blockName = strings.TrimSpace(line[0:index])
-//				state = 2
-//			} else {
-//				blockName = line
-//				state = 1
-//			}
-//			index = strings.Index(blockName, "//")
-//			if index > -1 {
-//				blockName = strings.TrimSpace(blockName[0:index])
-//			}
-//			index = strings.Index(blockName, "/*")
-//			if index > -1 {
-//				blockName = strings.TrimSpace(blockName[0:index])
-//			}
-//
-//		case strings.HasPrefix(line, "typedef"):
-//			line = strings.TrimSpace(line[len("typedef"):])
-//			index := strings.LastIndex(line, " ")
-//			if index == -1 {
-//				return nil, parseError(lineIndex, line, "invalid typedef")
-//			}
-//			base := strings.TrimSpace(line[0:index])
-//			name := strings.TrimSpace(line[index+1:])
-//			if strings.HasSuffix(name, ";") {
-//				name = strings.TrimSpace(name[0 : len(name)-1])
-//			}
-//			alias := &Alias{Name: name}
-//			alias.Type = file.dataTypeOf(base)
-//
-//			file.Alias = append(file.Alias, alias)
-//			file.AliasByName[alias.Name] = alias
-//		}
-//	}
-//
-//	for _, s := range file.Structs {
-//		s.Layout()
-//	}
-//
-//	return file, nil
-//}
-
 func (f *File) parseConst(line string) (*Const, error) {
 	line = strings.TrimSpace(line)
 	var (
@@ -688,7 +284,7 @@ func (f *File) parseConst(line string) (*Const, error) {
 	line = strings.ReplaceAll(line, "\t", " ")
 	index = strings.LastIndex(line, " ")
 	constant.Name = strings.TrimSpace(line[index+1:])
-	constant.Type = f.dataTypeOf(strings.TrimSpace(line[0:index]))
+	constant.Type = f.typeOf(strings.TrimSpace(line[0:index]))
 
 	if f.ConstantsByName[constant.Name] != nil {
 		return nil, errors.New("duplicate constant declared: " + line)
@@ -702,11 +298,11 @@ func (f *File) parseConst(line string) (*Const, error) {
 
 func setLengthAndAlign(t *Type) {
 	kind := t.Kind
-	if kind == TypeUnion {
+	if kind == KindUnion {
 		for _, field := range t.Union.Fields {
 			setLengthAndAlign(&field.Type)
-			if field.Type.Length > t.Length {
-				t.Length = field.Type.Length
+			if field.Type.Size > t.Size {
+				t.Size = field.Type.Size
 			}
 			if field.Type.Align > t.Align {
 				t.Align = field.Type.Align
@@ -714,74 +310,74 @@ func setLengthAndAlign(t *Type) {
 		}
 		return
 	}
-	if kind == TypeEnum {
+	if kind == KindEnum {
 		kind = t.Enum.Type
-	} else if kind == TypeAlias {
+	} else if kind == KindAlias {
 		kind = t.Alias.Type.Kind
 	}
 	switch kind {
-	case TypeUnknown:
-	case TypeInt8, TypeUInt8:
+	case KindUnknown:
+	case KindInt8, KindUint8:
 		t.Align = 1
-		t.Length = 1
-	case TypeInt16, TypeUInt16:
+		t.Size = 1
+	case KindInt16, KindUint16:
 		t.Align = 2
-		t.Length = 2
-	case TypeInt32, TypeUInt32:
+		t.Size = 2
+	case KindInt32, KindUint32:
 		t.Align = 4
-		t.Length = 4
-	case TypeInt64, TypeUInt64:
+		t.Size = 4
+	case KindInt64, KindUint64:
 		t.Align = 8
-		t.Length = 8
-	case TypeFloat32:
+		t.Size = 8
+	case KindFloat32:
 		t.Align = 4
-		t.Length = 4
-	case TypeFloat64:
+		t.Size = 4
+	case KindFloat64:
 		t.Align = 8
-		t.Length = 8
-	case TypeStringFixed:
+		t.Size = 8
+	case KindStringFixed:
 		t.Align = 1
-	case TypeStringVLS:
+	case KindStringVLS:
 		t.Align = 2
-		t.Length = 4
-	case TypeAlias:
+		t.Size = 4
+	case KindAlias:
 		// impossible
-	case TypeEnum:
+	case KindEnum:
 		// impossible
-	case TypeStruct:
+	case KindStruct:
 		if t.Message != nil {
 			t.Align = t.Message.Size
 		}
 	}
 }
 
-func (f *File) dataTypeOf(value string) Type {
+func (f *File) typeOf(value string) Type {
 	value = strings.TrimSpace(value)
 	switch value {
 	case "char":
-		return Type{Kind: TypeStringFixed}
+		return Type{Kind: KindStringFixed}
 	case "int8_t":
-		return Type{Kind: TypeInt8, Align: 1, Length: 1}
+		return Type{Kind: KindInt8, Align: 1, Size: 1}
 	case "uint8_t", "unsigned char":
-		return Type{Kind: TypeUInt8, Align: 1, Length: 1}
+		return Type{Kind: KindUint8, Align: 1, Size: 1}
 	case "int16_t", "short":
-		return Type{Kind: TypeInt16, Align: 2, Length: 2}
+		return Type{Kind: KindInt16, Align: 2, Size: 2}
 	case "uint16_t", "unsigned short":
-		return Type{Kind: TypeUInt16, Align: 2, Length: 2}
+		return Type{Kind: KindUint16, Align: 2, Size: 2}
 	case "int32_t", "int":
-		return Type{Kind: TypeInt32, Align: 4, Length: 4}
+		return Type{Kind: KindInt32, Align: 4, Size: 4}
 	case "uint32_t", "unsigned int", "unsigned long":
-		return Type{Kind: TypeUInt32, Align: 4, Length: 4}
+		return Type{Kind: KindUint32, Align: 4, Size: 4}
 	case "int64_t", "long long":
-		return Type{Kind: TypeInt64, Align: 8, Length: 8}
+		return Type{Kind: KindInt64, Align: 8, Size: 8}
 	case "uint64_t", "unsigned long long":
-		return Type{Kind: TypeUInt64, Align: 8, Length: 8}
+		return Type{Kind: KindUint64, Align: 8, Size: 8}
 	case "float":
-		return Type{Kind: TypeFloat32, Align: 4, Length: 4}
+		return Type{Kind: KindFloat32, Align: 4, Size: 4}
 	case "double":
-		return Type{Kind: TypeFloat64, Align: 8, Length: 8}
+		return Type{Kind: KindFloat64, Align: 8, Size: 8}
 	case "DTC_VLS::vls_t", "vls_t":
-		return Type{Kind: TypeStringVLS, Align: 2, Length: 4}
+		return Type{Kind: KindStringVLS, Align: 2, Size: 4}
 	}
 
 	namespace := f.currentNamespace
@@ -797,7 +393,7 @@ func (f *File) dataTypeOf(value string) Type {
 		t := Type{
 			File:      enum.File,
 			Namespace: enum.Namespace,
-			Kind:      TypeEnum,
+			Kind:      KindEnum,
 			Enum:      enum,
 		}
 		setLengthAndAlign(&t)
@@ -809,7 +405,7 @@ func (f *File) dataTypeOf(value string) Type {
 		t := Type{
 			File:      message.File,
 			Namespace: message.Namespace,
-			Kind:      TypeStruct,
+			Kind:      KindStruct,
 			Message:   message,
 		}
 		setLengthAndAlign(&t)
@@ -821,14 +417,14 @@ func (f *File) dataTypeOf(value string) Type {
 		t := Type{
 			File:      alias.File,
 			Namespace: alias.Namespace,
-			Kind:      TypeAlias,
+			Kind:      KindAlias,
 			Alias:     alias,
 		}
 		setLengthAndAlign(&t)
 		return t
 	}
 
-	return Type{Kind: TypeUnknown}
+	return Type{Kind: KindUnknown}
 }
 
 func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, error) {
@@ -837,7 +433,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 			File:         f,
 			Namespace:    f.currentNamespace,
 			Name:         name,
-			Align:        pack,
+			MaxAlign:     pack,
 			Fields:       nil,
 			FieldsByName: make(map[string]*Field),
 		}
@@ -894,7 +490,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 					}
 				} else if funcDecl == "union" {
 					union := Type{
-						Kind:  TypeUnion,
+						Kind:  KindUnion,
 						Union: &Union{},
 					}
 
@@ -907,8 +503,8 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 
 						union.Union.Fields = append(union.Union.Fields, field)
 
-						if field.Type.Length > union.Length {
-							union.Length = field.Type.Length
+						if field.Type.Size > union.Size {
+							union.Size = field.Type.Size
 						}
 						if field.Type.Align > union.Align {
 							union.Align = field.Type.Align
@@ -956,7 +552,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 		}
 
 		line = strings.TrimSpace(line[0 : len(line)-1])
-		if strings.HasSuffix(line, "const") {
+		if strings.HasSuffix(line, "const") || strings.HasSuffix(line, "noexcept") {
 			continue
 		}
 
@@ -1017,7 +613,7 @@ func (f *File) parseField(line string) (*Field, error) {
 		return nil, errors.New("expected a space between data type and name")
 	}
 
-	field.Type = f.dataTypeOf(strings.TrimSpace(line[0:index]))
+	field.Type = f.typeOf(strings.TrimSpace(line[0:index]))
 	field.Name = strings.TrimSpace(line[index+1:])
 
 	index = strings.Index(field.Name, "[")
@@ -1035,10 +631,10 @@ func (f *File) parseField(line string) (*Field, error) {
 			if value == nil || value.Const == nil {
 				return nil, errors.New("could not determine fixed string length")
 			}
-			field.Type.LengthConst = value.Const
-			field.Type.Length = int(value.Const.Value.Int)
+			field.Type.SizeConst = value.Const
+			field.Type.Size = int(value.Const.Value.Int)
 		} else {
-			field.Type.Length = int(length)
+			field.Type.Size = int(length)
 		}
 	}
 
@@ -1151,7 +747,7 @@ func (f *File) parseValue(str string) (*Value, error) {
 	return f.findConstValue(str), nil
 }
 
-func (f *File) parseEnum(name string, kind TypeKind, lines []string) (*Enum, error) {
+func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) {
 	var (
 		enum = &Enum{
 			File:          f,

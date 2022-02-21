@@ -11,16 +11,15 @@ type CPPLayout struct {
 }
 
 type CPPFieldLayout struct {
-	Name             string
-	Offset           int
-	CalculatedOffset int
+	Name   string
+	Offset int
+	Size   int
 }
 type CPPStructLayout struct {
-	Namespace      string
-	Name           string
-	Size           int
-	CalculatedSize int
-	Fields         []CPPFieldLayout
+	Namespace string
+	Name      string
+	Size      int
+	Fields    []CPPFieldLayout
 }
 
 func (namespaces *Namespaces) PrintCPPLayoutErrors(data []byte) {
@@ -51,10 +50,12 @@ func (namespaces *Namespaces) PrintCPPLayoutErrors(data []byte) {
 			if f == nil {
 				panic(cppStruct.Namespace + "::" + cppStruct.Name + "." + cppField.Name + " not found!!!")
 			}
-			cppField.CalculatedOffset = f.Type.Offset
 
 			if f.Type.Offset != cppField.Offset {
 				fmt.Println("\t"+cppStruct.Namespace+"::"+cppStruct.Name+"."+cppField.Name, " ", f.Type.Offset, " != ", cppField.Offset)
+			}
+			if f.Type.Size != cppField.Size {
+				fmt.Println("\t"+cppStruct.Namespace+"::"+cppStruct.Name+"."+cppField.Name, " ", f.Type.Size, " != ", cppField.Size)
 			}
 		}
 	}
@@ -93,14 +94,21 @@ func parseCPPLayout(contents string) CPPLayout {
 			}
 		} else {
 			parts := strings.Split(line, "=")
-			sz, err := strconv.ParseInt(strings.TrimSpace(parts[1]), 10, 64)
+
+			nums := strings.Split(strings.TrimSpace(parts[1]), ",")
+			offset, err := strconv.ParseInt(strings.TrimSpace(nums[0]), 10, 64)
+			if err != nil {
+				panic(err)
+			}
+			sz, err := strconv.ParseInt(strings.TrimSpace(nums[1]), 10, 64)
 			if err != nil {
 				panic(err)
 			}
 
 			structLayout.Fields = append(structLayout.Fields, CPPFieldLayout{
 				Name:   strings.TrimSpace(parts[0]),
-				Offset: int(sz),
+				Offset: int(offset),
+				Size:   int(sz),
 			})
 		}
 	}
@@ -118,10 +126,10 @@ func (namespaces *Namespaces) PrintCPPLayoutCode() {
 			for _, field := range s.Fields {
 				if field.Type.Union != nil {
 					for _, f := range field.Type.Union.Fields {
-						fmt.Println("std::cout << \"\t" + f.Name + "\" << \" = \" << offsetof(" + s.Namespace.Name + "::" + s.Name + ", " + f.Name + ") << std::endl;")
+						fmt.Println("std::cout << \"\t" + f.Name + "\" << \" = \" << offsetof(" + s.Namespace.Name + "::" + s.Name + ", " + f.Name + ") << \",\" << sizeof(" + s.Namespace.Name + "::" + s.Name + "::" + f.Name + ") << std::endl;")
 					}
 				} else {
-					fmt.Println("std::cout << \"\t" + field.Name + "\" << \" = \" << offsetof(" + s.Namespace.Name + "::" + s.Name + ", " + field.Name + ") << std::endl;")
+					fmt.Println("std::cout << \"\t" + field.Name + "\" << \" = \" << offsetof(" + s.Namespace.Name + "::" + s.Name + ", " + field.Name + ") << \",\" << sizeof(" + s.Namespace.Name + "::" + s.Name + "::" + field.Name + ") << std::endl;")
 				}
 			}
 		}
