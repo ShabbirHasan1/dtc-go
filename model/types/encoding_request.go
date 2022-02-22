@@ -23,6 +23,7 @@ type EncodingRequest interface {
 }
 
 type EncodingRequestBuilder interface {
+	dtc.MessageBuilder
 	EncodingRequest
 
 	Finish() EncodingRequest

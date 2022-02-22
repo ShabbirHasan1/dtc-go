@@ -1,7 +1,9 @@
 package vls
 
 import (
-	dtc "github.com/moontrade/dtc-go"
+	"github.com/moontrade/dtc-go"
+	"github.com/moontrade/dtc-go/json"
+	"github.com/moontrade/dtc-go/model/serialize"
 	"github.com/moontrade/dtc-go/model/types"
 	"github.com/moontrade/nogc"
 )
@@ -33,23 +35,22 @@ type EncodingRequestPointerBuilder struct {
 	*dtc.MessageVLSPointerBuilder
 }
 
-func NewEncodingRequest() EncodingRequestBuilder {
-	return NewEncodingRequestBuilderFrom(nil, 32, 32)
-}
-
-func NewEncodingRequestFromBytes(b []byte) EncodingRequest {
-	return EncodingRequest{dtc.NewVLSFromBytesOfType(b, 6)}
-}
-
-func WrapEncodingRequest(b []byte) EncodingRequest {
-	return EncodingRequest{dtc.WrapVLSFromBytesOfType(b, 6)}
-}
-
-func NewEncodingRequestBuilderFrom(b dtc.MessageBuffer, flex uintptr, growBy int) EncodingRequestBuilder {
-	a := EncodingRequestBuilder{dtc.MessageVLSBuilderReset(b, nil, 16, flex, growBy)}
-	clearEncodingRequest(a.AsPointer())
-	return a
-}
+//func NewEncodingRequest() EncodingRequestBuilder {
+//	return NewEncodingRequestBuilderFrom(nil, 32, 32)
+//}
+//
+//func NewEncodingRequestFromBytes(b []byte) EncodingRequest {
+//	return EncodingRequest{dtc.NewVLSFromBytesOfType(b, 6)}
+//}
+//
+//func WrapEncodingRequest(b []byte) EncodingRequest {
+//	return EncodingRequest{dtc.WrapVLSFromBytesOfType(b, 6)}
+//}
+//func NewEncodingRequestBuilderFrom(b dtc.MessageBuffer, flex uintptr, growBy int) EncodingRequestBuilder {
+//	a := EncodingRequestBuilder{dtc.MessageVLSBuilderReset(b, nil, 16, flex, growBy)}
+//	clearEncodingRequest(a.AsPointer())
+//	return a
+//}
 
 func AllocEncodingRequest() EncodingRequestPointerBuilder {
 	return AllocEncodingRequestFrom(nil, 32, 32)
@@ -75,18 +76,15 @@ func (e EncodingRequest) ToBuilder() types.EncodingRequestBuilder {
 func (e EncodingRequestBuilder) ToBuilder() types.EncodingRequestBuilder {
 	return e
 }
-
 func (e EncodingRequest) ToBuilderWithBuffer(b dtc.MessageBuffer, flex uintptr) types.EncodingRequestBuilder {
 	return EncodingRequestBuilder{dtc.MessageVLSBuilderReset(b, &e.MessageVLS, 16, 16, 0)}
 }
-
 func (e EncodingRequestPointer) ToBuilder() types.EncodingRequestBuilder {
 	return e.ToBuilderWithBuffer(nil, 16)
 }
 func (e EncodingRequestPointerBuilder) ToBuilder() types.EncodingRequestBuilder {
 	return e
 }
-
 func (e EncodingRequestPointer) ToBuilderWithBuffer(b dtc.MessageBuffer, flex uintptr) types.EncodingRequestBuilder {
 	return EncodingRequestPointerBuilder{dtc.MessageVLSPointerBuilderReset(b, &e.MessageVLSPointer, 16, flex, 0)}
 }
@@ -184,4 +182,83 @@ func (e EncodingRequestBuilder) SetProtocolType(value string) {
 }
 func (e EncodingRequestPointerBuilder) SetProtocolType(value string) {
 	dtc.SetStringVLSPointer(e.MessageVLSPointerBuilder, 16, 16, 12, value)
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// JSON Unmarshal
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (e EncodingRequestBuilder) UnmarshalJSON(r *json.Reader) error {
+	if r.IsCompact {
+		return serialize.EncodingRequestUnmarshalJSONCompact(r, e)
+	}
+	return serialize.EncodingRequestFromJSON(r, e)
+}
+func (e EncodingRequestPointerBuilder) UnmarshalJSON(r *json.Reader) error {
+	if r.IsCompact {
+		return serialize.EncodingRequestUnmarshalJSONCompact(r, e)
+	}
+	return serialize.EncodingRequestFromJSON(r, e)
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// JSON Compact Marshal
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (e EncodingRequest) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
+}
+func (e EncodingRequestBuilder) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
+}
+func (e EncodingRequestPointer) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
+}
+func (e EncodingRequestPointerBuilder) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// JSON Marshal
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (e EncodingRequest) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
+}
+func (e EncodingRequestBuilder) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
+}
+func (e EncodingRequestPointer) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
+}
+func (e EncodingRequestPointerBuilder) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Protocol Buffers Unmarshal
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (e EncodingRequestBuilder) UnmarshalProtobuf(b []byte) error {
+	return serialize.EncodingRequestUnmarshalProtobuf(b, e)
+}
+func (e EncodingRequestPointerBuilder) UnmarshalProtobuf(b []byte) error {
+	return serialize.EncodingRequestUnmarshalProtobuf(b, e)
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Protocol Buffers Marshal
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (e EncodingRequest) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
+}
+func (e EncodingRequestBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
+}
+func (e EncodingRequestPointer) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
+}
+func (e EncodingRequestPointerBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
 }

@@ -11,6 +11,18 @@ type vlsBuilder struct {
 	cap int
 }
 
+func (v *vlsBuilder) Clear() {
+	if v.p == 0 {
+		return
+	}
+	size := v.Size()
+	if size == 0 {
+		return
+	}
+	// Zero out
+	nogc.Zero(v.p.Unsafe(), uintptr(size))
+}
+
 func (v *vlsBuilder) AsPointer() nogc.Pointer {
 	return v.p
 }
@@ -42,6 +54,28 @@ func (v *vlsBuilder) BaseSize() uint16 {
 type MessageVLSPointerBuilder struct {
 	vlsBuilder
 	growBy int
+}
+
+func (m *MessageVLSPointerBuilder) IsGC() bool {
+	return false
+}
+
+//func (m *MessageVLSPointerBuilder) Take() nogc.Pointer {
+//	if m.p == 0 {
+//		return 0
+//	}
+//	p := m.p
+//	m.p = 0
+//	return p
+//}
+
+func (m *MessageVLSPointerBuilder) Close() error {
+	if m.p == 0 {
+		return nil
+	}
+	nogc.Free(m.p)
+	m.p = 0
+	return nil
 }
 
 func MessageVLSPointerBuilderOf(b MessageBuffer) *MessageVLSPointerBuilder {
@@ -134,6 +168,16 @@ type MessageVLSBuilder struct {
 	growBy int
 }
 
+func (m *MessageVLSBuilder) Close() error {
+	m.ref = nil
+	m.p = 0
+	return nil
+}
+
+func (m *MessageVLSBuilder) IsGC() bool {
+	return true
+}
+
 func MessageVLSBuilderOf(b MessageBuffer) *MessageVLSBuilder {
 	if b == nil {
 		return &MessageVLSBuilder{growBy: 32}
@@ -203,6 +247,7 @@ func (v *MessageVLSBuilder) Extend(by int) {
 //	Length uint16
 //}
 
+// StringVLS returns an unsafe Go string
 func StringVLS(p nogc.Pointer, bounds uint16, offset int) string {
 	if p == 0 {
 		return ""
@@ -233,6 +278,8 @@ func StringVLS(p nogc.Pointer, bounds uint16, offset int) string {
 	}
 }
 
+// SetStringVLSPointer replaces existing VLS if new one fits, otherwise appends to end possibly growing
+// the existing allocation in order to do so.
 func SetStringVLSPointer(b *MessageVLSPointerBuilder, baseSize, bounds uint16, offset int, value string) {
 	if baseSize < bounds {
 		return
@@ -281,6 +328,8 @@ func SetStringVLSPointer(b *MessageVLSPointerBuilder, baseSize, bounds uint16, o
 	b.p.SetUInt16LE(0, uint16(newSize))
 }
 
+// SetStringVLS replaces existing VLS if new one fits, otherwise appends to end possibly growing
+// the existing allocation in order to do so.
 func SetStringVLS(b *MessageVLSBuilder, baseSize, bounds uint16, offset int, value string) {
 	if baseSize < bounds {
 		return

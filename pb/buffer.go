@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"encoding/binary"
 	"errors"
 	"math"
 )
@@ -40,6 +41,7 @@ func DecodeVarint(b []byte) (uint64, int) {
 // It may be reused between invocations to reduce memory usage.
 type Buffer struct {
 	buf           []byte
+	err           error
 	idx           int
 	field         Number
 	typ           Type
@@ -52,8 +54,22 @@ func NewBuffer(buf []byte) Buffer {
 	return Buffer{buf: buf}
 }
 
+func NewWriter(buf []byte, typ uint16) Buffer {
+	b := Buffer{buf: buf}
+	b.WriteHeader(typ)
+	return b
+}
+
 func (b *Buffer) EOF() bool {
 	return b.idx >= len(b.buf)
+}
+
+func (b *Buffer) Continue() bool {
+	return b.idx >= len(b.buf) && b.err != nil
+}
+
+func (b *Buffer) Error() error {
+	return b.err
 }
 
 // SetDeterministic specifies whether to use deterministic serialization.
@@ -138,6 +154,16 @@ func (b *Buffer) Unread() []byte {
 func (b *Buffer) EncodeTag(field Number, typ Type) *Buffer {
 	b.buf = AppendVarint(b.buf, EncodeTag(field, typ))
 	return b
+}
+
+func (b *Buffer) WriteHeader(typ uint16) {
+	b.buf = append(b.buf, 0, 0, 0, 0)
+	binary.LittleEndian.PutUint16(b.buf[2:], typ)
+}
+
+func (b *Buffer) Finish() []byte {
+	binary.LittleEndian.PutUint16(b.buf, uint16(len(b.buf)-4))
+	return b.buf
 }
 
 func (b *Buffer) WriteVarint8(field Number, v int8) {
@@ -384,6 +410,11 @@ func (b *Buffer) WriteFixed64Float64(field Number, v float64) {
 	b.WriteFixed64Uint64(field, math.Float64bits(v))
 }
 
+func (b *Buffer) WriteString(field Number, v string) {
+	b.EncodeTag(field, BytesType)
+	b.buf = AppendString(b.buf, v)
+}
+
 // EncodeVarint appends an unsigned varint encoding to the buffer.
 func (b *Buffer) EncodeVarint(v uint64) {
 	b.buf = AppendVarint(b.buf, v)
@@ -446,201 +477,187 @@ var (
 )
 
 // ReadUint32 reads next encoded number preferring 32-bits
-func (b *Buffer) ReadUint32() (uint32, error) {
+func (b *Buffer) ReadUint32() uint32 {
 	if b.field == 0 {
-		return 0, ErrReadTagFirst
+		b.err = ErrReadTagFirst
+		return 0
 	}
 	switch b.typ {
 	case VarintType:
 		v, err := b.DecodeVarint()
 		if err != nil {
-			return 0, err
+			b.err = err
+			return 0
 		}
-		return uint32(v), nil
+		return uint32(v)
 	case Fixed64Type:
 		v, err := b.DecodeFixed64()
 		if err != nil {
-			return 0, err
+			b.err = err
+			return 0
 		}
-		return uint32(v), nil
+		return uint32(v)
 	case Fixed32Type:
 		v, n := ConsumeFixed32(b.buf[b.idx:])
 		if n < 0 {
-			return 0, ParseError(n)
+			b.err = ParseError(n)
+			return 0
 		}
 		b.idx += n
-		return v, nil
+		return v
 	default:
 		if b.typ == 0 {
-			return 0, ErrReadTagFirst
+			b.err = ErrReadTagFirst
+			return 0
 		}
 		_ = b.ConsumeFieldValue(b.field, b.typ)
-		return 0, ErrExpectedNumber
+		b.err = ErrExpectedNumber
+		return 0
 	}
 }
 
 // ReadUint64 reads next encoded number preferring 64-bits
-func (b *Buffer) ReadUint64() (uint64, error) {
+func (b *Buffer) ReadUint64() uint64 {
 	if b.field == 0 {
-		return 0, ErrReadTagFirst
+		b.err = ErrReadTagFirst
+		return 0
 	}
 	switch b.typ {
 	case VarintType:
-		return b.DecodeVarint()
+		v, err := b.DecodeVarint()
+		if err != nil {
+			b.err = err
+			return 0
+		}
+		return v
 	case Fixed64Type:
-		return b.DecodeFixed64()
+		v, err := b.DecodeFixed64()
+		if err != nil {
+			b.err = err
+			return 0
+		}
+		return v
 	case Fixed32Type:
 		v, n := ConsumeFixed32(b.buf[b.idx:])
 		if n < 0 {
-			return 0, ParseError(n)
+			b.err = ParseError(n)
+			return 0
 		}
 		b.idx += n
-		return uint64(v), nil
+		return uint64(v)
 	default:
 		if b.typ == 0 {
-			return 0, ErrReadTagFirst
+			b.err = ErrReadTagFirst
+			return 0
 		}
-		return 0, errors.New("expected number")
+		_ = b.ConsumeFieldValue(b.field, b.typ)
+		b.err = ErrExpectedNumber
+		return 0
 	}
 }
 
 // ReadUint32ZigZag reads next zigzag encoded number preferring 32-bits
-func (b *Buffer) ReadUint32ZigZag() (uint32, error) {
-	v, err := b.ReadUint32()
-	if err != nil {
-		return 0, err
-	}
-	return uint32((uint32(v) >> 1) ^ uint32((int32(v&1)<<31)>>31)), nil
+func (b *Buffer) ReadUint32ZigZag() uint32 {
+	v := b.ReadUint32()
+	return uint32((uint32(v) >> 1) ^ uint32((int32(v&1)<<31)>>31))
 }
 
 // ReadUint64ZigZag reads next zigzag encoded number preferring 64-bits
-func (b *Buffer) ReadUint64ZigZag() (uint64, error) {
-	v, err := b.ReadUint64()
-	if err != nil {
-		return 0, err
-	}
-	return uint64((uint64(v) >> 1) ^ uint64((int64(v&1)<<63)>>63)), nil
+func (b *Buffer) ReadUint64ZigZag() uint64 {
+	v := b.ReadUint64()
+	return uint64((uint64(v) >> 1) ^ uint64((int64(v&1)<<63)>>63))
 }
 
 // DecodeInt16 consumes an encoded unsigned varint from the buffer.
-func (b *Buffer) ReadInt16() (int16, error) {
-	v, err := b.ReadUint32()
-	if err != nil {
-		return 0, err
-	}
-	return int16(v), nil
+func (b *Buffer) ReadInt16() int16 {
+	v := b.ReadUint32()
+	return int16(v)
 }
 
 // ReadInt16ZigZag reads next zigzag encoded number preferring 32-bits
-func (b *Buffer) ReadInt16ZigZag() (int16, error) {
-	v, err := b.ReadUint32ZigZag()
-	if err != nil {
-		return 0, err
-	}
-	return int16(v), nil
+func (b *Buffer) ReadInt16ZigZag() int16 {
+	v := b.ReadUint32ZigZag()
+	return int16(v)
 }
 
 // ReadUint16 reads next uint16 value
-func (b *Buffer) ReadUint16() (uint16, error) {
-	v, err := b.ReadUint32()
-	if err != nil {
-		return 0, err
-	}
-	return uint16(v), nil
+func (b *Buffer) ReadUint16() uint16 {
+	v := b.ReadUint32()
+	return uint16(v)
 }
 
 // ReadUint16ZigZag reads next zigzag encoded number preferring 32-bits
-func (b *Buffer) ReadUint16ZigZag() (uint16, error) {
-	v, err := b.ReadUint32ZigZag()
-	if err != nil {
-		return 0, err
-	}
-	return uint16(v), nil
+func (b *Buffer) ReadUint16ZigZag() uint16 {
+	v := b.ReadUint32ZigZag()
+	return uint16(v)
 }
 
 // ReadInt32 reads next int32 value
-func (b *Buffer) ReadInt32() (int32, error) {
-	v, err := b.ReadUint32()
-	if err != nil {
-		return 0, err
-	}
-	return int32(v), nil
+func (b *Buffer) ReadInt32() int32 {
+	v := b.ReadUint32()
+	return int32(v)
 }
 
 // ReadInt32Zigzag reads next zigzag encoded number preferring 32-bits
-func (b *Buffer) ReadInt32Zigzag() (int32, error) {
-	v, err := b.ReadUint32ZigZag()
-	if err != nil {
-		return 0, err
-	}
-	return int32(v), nil
+func (b *Buffer) ReadInt32Zigzag() int32 {
+	v := b.ReadUint32ZigZag()
+	return int32(v)
 }
 
 // ReadInt64 reads next int64 value
-func (b *Buffer) ReadInt64() (int64, error) {
-	v, err := b.ReadUint64()
-	if err != nil {
-		return 0, err
-	}
-	return int64(v), nil
+func (b *Buffer) ReadInt64() int64 {
+	v := b.ReadUint64()
+	return int64(v)
 }
 
 // ReadInt64ZigZag reads next zigzag encoded number preferring 32-bits
-func (b *Buffer) ReadInt64ZigZag() (int64, error) {
-	v, err := b.ReadUint64ZigZag()
-	if err != nil {
-		return 0, err
-	}
-	return int64(v), nil
+func (b *Buffer) ReadInt64ZigZag() int64 {
+	v := b.ReadUint64ZigZag()
+	return int64(v)
 }
 
 // ReadFloat32 reads next float32 value.
-func (b *Buffer) ReadFloat32() (float32, error) {
-	v, err := b.ReadUint32()
-	if err != nil {
-		return 0, err
-	}
-	return math.Float32frombits(v), nil
+func (b *Buffer) ReadFloat32() float32 {
+	v := b.ReadUint32()
+	return math.Float32frombits(v)
 }
 
 // ReadFloat32ZigZag reads next zigzag encoded number preferring 32-bits
-func (b *Buffer) ReadFloat32ZigZag() (float32, error) {
-	v, err := b.ReadUint32ZigZag()
-	if err != nil {
-		return 0, err
-	}
-	return math.Float32frombits(v), nil
+func (b *Buffer) ReadFloat32ZigZag() float32 {
+	v := b.ReadUint32ZigZag()
+	return math.Float32frombits(v)
 }
 
 // ReadFloat64 reads next float64 value
-func (b *Buffer) ReadFloat64() (float64, error) {
-	v, err := b.ReadUint64()
-	if err != nil {
-		return 0, err
-	}
-	return math.Float64frombits(v), nil
+func (b *Buffer) ReadFloat64() float64 {
+	v := b.ReadUint64()
+	return math.Float64frombits(v)
 }
 
 // ReadFloat64ZigZag reads next zigzag encoded number preferring 64-bits
-func (b *Buffer) ReadFloat64ZigZag() (float64, error) {
-	v, err := b.ReadUint64ZigZag()
-	if err != nil {
-		return 0, err
-	}
-	return math.Float64frombits(v), nil
+func (b *Buffer) ReadFloat64ZigZag() float64 {
+	v := b.ReadUint64ZigZag()
+	return math.Float64frombits(v)
 }
 
 // ReadString reads next string.
-func (b *Buffer) ReadString() (string, error) {
+func (b *Buffer) ReadString() string {
 	switch b.typ {
 	case BytesType:
-		return b.DecodeStringBytes()
+		v, err := b.DecodeStringBytes()
+		if err != nil {
+			b.err = err
+			return ""
+		}
+		return v
 	default:
 		if b.typ == 0 {
-			return "", ErrReadTagFirst
+			b.err = ErrReadTagFirst
+			return ""
 		}
 		_ = b.ConsumeFieldValue(b.field, b.typ)
-		return "", ErrExpectedString
+		b.err = ErrExpectedString
+		return ""
 	}
 }
 
@@ -718,16 +735,16 @@ func (b *Buffer) DecodeStringBytes() (string, error) {
 	return v, nil
 }
 
-func (b *Buffer) Consume() error {
+func (b *Buffer) Consume() {
 	if b.field == 0 {
-		return nil
+		return
 	}
 	n := ConsumeFieldValue(b.field, b.typ, b.buf[b.idx:])
 	if n < 0 {
-		return ParseError(n)
+		b.err = ParseError(n)
+		return
 	}
 	b.idx += n
-	return nil
 }
 
 func (b *Buffer) ConsumeFieldValue(num Number, t Type) error {

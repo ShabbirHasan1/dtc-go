@@ -27,13 +27,13 @@ func TestWrite(t *testing.T) {
 		}
 		switch f {
 		case 1:
-			i32, err = b.ReadInt32()
+			i32 = b.ReadInt32()
 			fmt.Println("Field 1 = ", i32)
 		case 2:
-			f32, err = b.ReadFloat32()
+			f32 = b.ReadFloat32()
 			fmt.Println("Field 2 = ", f32)
 		case 3:
-			i32, err = b.ReadInt32Zigzag()
+			i32 = b.ReadInt32Zigzag()
 			//i32, err = b.ReadInt32()
 			fmt.Println("Field 3 = ", i32)
 		default:

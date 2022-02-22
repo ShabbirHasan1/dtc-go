@@ -13,6 +13,7 @@ func TestEncodingRequestFixed_Encoding(t *testing.T) {
 
 	//b.SetProtocolVersion(8)
 	r := b.Finish()
+	defer r.Close()
 
 	var bb types.EncodingRequestBuilder = b
 	bb.Encoding()

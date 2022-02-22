@@ -114,6 +114,114 @@ LOOP:
 	return r, nil
 }
 
+func (r *Reader) WantComma() {
+	r.Lexer.WantComma()
+}
+
+func (r *Reader) FieldName() (string, error) {
+	if r.Lexer.fatalError != nil {
+		return "", r.Lexer.fatalError
+	}
+	if r.Lexer.IsDelim('}') {
+		return "", nil
+	}
+	name := r.Lexer.UnsafeFieldName(false)
+	r.Lexer.WantColon()
+	return name, nil
+}
+
+func (r *Reader) IsError() bool {
+	return r.Lexer.fatalError != nil
+}
+
+func (r *Reader) Error() error {
+	return r.Lexer.fatalError
+}
+
+func (r *Reader) Bool() bool {
+	if r.Lexer.IsNull() {
+		return false
+	}
+	return r.Lexer.Bool()
+}
+
+func (r *Reader) Int8() int8 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Int8()
+}
+
+func (r *Reader) Uint8() uint8 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Uint8()
+}
+
+func (r *Reader) Int16() int16 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Int16()
+}
+
+func (r *Reader) Uint16() uint16 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Uint16()
+}
+
+func (r *Reader) Int32() int32 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Int32()
+}
+
+func (r *Reader) Uint32() uint32 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Uint32()
+}
+
+func (r *Reader) Int64() int64 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Int64()
+}
+
+func (r *Reader) Uint64() uint64 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Uint64()
+}
+
+func (r *Reader) Float32() float32 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Float32()
+}
+
+func (r *Reader) Float64() float64 {
+	if r.Lexer.IsNull() {
+		return 0
+	}
+	return r.Lexer.Float64()
+}
+
+func (r *Reader) String() string {
+	if r.Lexer.IsNull() {
+		return ""
+	}
+	return r.Lexer.String()
+}
+
 /* Compact JSON Messages
 HEARTBEAT
 MARKET_DATA_SNAPSHOT

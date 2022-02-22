@@ -13,5 +13,5 @@ type fixedImpl struct {
 }
 
 func (fixedImpl) EncodingRequest() types.EncodingRequestFactory {
-	return fixed.EncodingRequestFactory{}
+	return fixed.EncodingRequestFactoryImpl{}
 }

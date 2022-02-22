@@ -26,6 +26,18 @@ func AllocFixed(size uintptr) MessageFixedPointer {
 	return MessageFixedPointer{MessagePointer{nogc.Alloc(size)}}
 }
 
+func AllocCopyFrom(b []byte) MessageFixedPointer {
+	if len(b) == 0 {
+		return MessageFixedPointer{}
+	}
+	m := MessageFixedPointer{MessagePointer{nogc.Alloc(uintptr(len(b)))}}
+	if m.p == 0 {
+		panic(ErrOutOfMemory)
+	}
+	m.p.SetBytes(0, b)
+	return m
+}
+
 func NewVLS(size uintptr) MessageVLS {
 	return MessageVLS{MessageGC{gcAlloc(size)}}
 }

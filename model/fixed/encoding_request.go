@@ -1,42 +1,50 @@
 package fixed
 
 import (
-	dtc "github.com/moontrade/dtc-go"
+	"github.com/moontrade/dtc-go"
 	"github.com/moontrade/dtc-go/json"
+	"github.com/moontrade/dtc-go/model/serialize"
 	"github.com/moontrade/dtc-go/model/types"
 	"github.com/moontrade/nogc"
 )
 
 var (
-	_ types.EncodingRequest        = EncodingRequest{}
-	_ types.EncodingRequest        = EncodingRequestPointer{}
-	_ types.EncodingRequestBuilder = EncodingRequestBuilder{}
-	_ types.EncodingRequestBuilder = EncodingRequestPointerBuilder{}
-	_ types.EncodingRequestFactory = EncodingRequestFactory{}
+	_                      types.EncodingRequest        = EncodingRequest{}
+	_                      types.EncodingRequest        = EncodingRequestPointer{}
+	_                      types.EncodingRequestBuilder = EncodingRequestBuilder{}
+	_                      types.EncodingRequestBuilder = EncodingRequestPointerBuilder{}
+	EncodingRequestFactory types.EncodingRequestFactory = EncodingRequestFactoryImpl{}
 )
 
-type EncodingRequestFactory struct {
+type EncodingRequestFactoryImpl struct {
 }
 
-func (EncodingRequestFactory) New() types.EncodingRequestBuilder {
+func (EncodingRequestFactoryImpl) New() types.EncodingRequestBuilder {
 	return NewEncodingRequest()
 }
 
-func (EncodingRequestFactory) Alloc() types.EncodingRequestBuilder {
+func (EncodingRequestFactoryImpl) NewEx(flex int) types.EncodingRequestBuilder {
 	return AllocEncodingRequest()
 }
 
-func (EncodingRequestFactory) FromJSON(b []byte, into types.EncodingRequestBuilder) error {
-	lexer := json.Lexer{
-		Data:              b,
-		UseMultipleErrors: false,
-	}
-	_ = lexer
-	return nil
+func (EncodingRequestFactoryImpl) Alloc() types.EncodingRequestBuilder {
+	return AllocEncodingRequest()
 }
 
-func (EncodingRequestFactory) FromJSONCompact(b []byte, to types.EncodingRequestBuilder) (types.EncodingRequestBuilder, error) {
-	return NewEncodingRequestFromJSONCompact(&json.Lexer{Data: b}, to)
+func (EncodingRequestFactoryImpl) AllocEx(flex int) types.EncodingRequestBuilder {
+	return AllocEncodingRequest()
+}
+
+func (EncodingRequestFactoryImpl) Wrap(b []byte) types.EncodingRequest {
+	return EncodingRequest{dtc.WrapFixedFromBytes(b)}
+}
+
+func (EncodingRequestFactoryImpl) NewCopy(b []byte) types.EncodingRequest {
+	return EncodingRequest{dtc.NewFixedFromBytes(b)}
+}
+
+func (EncodingRequestFactoryImpl) AllocCopy(b []byte) types.EncodingRequest {
+	return EncodingRequestPointer{dtc.AllocCopyFrom(b)}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -57,10 +65,6 @@ type EncodingRequestPointer struct {
 
 type EncodingRequestPointerBuilder struct {
 	dtc.MessageFixedPointer
-}
-
-func WrapEncodingRequest(b []byte) EncodingRequest {
-	return EncodingRequest{}
 }
 
 func (e EncodingRequestBuilder) CopyFrom(from types.EncodingRequest) {
@@ -149,7 +153,7 @@ func (e EncodingRequestBuilder) Finish() types.EncodingRequest {
 	return EncodingRequest{e.MessageFixed}
 }
 func (e EncodingRequestPointerBuilder) Finish() types.EncodingRequest {
-	return EncodingRequestPointer{e.TakePointer()}
+	return EncodingRequestPointer{e.MessageFixedPointer}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +172,7 @@ func clearEncodingRequest(p nogc.Pointer) {
 func (e EncodingRequestBuilder) Clear() {
 	clearEncodingRequest(e.AsPointer())
 }
-func (e EncodingRequestPointer) Clear() {
+func (e EncodingRequestPointerBuilder) Clear() {
 	clearEncodingRequest(e.AsPointer())
 }
 
@@ -196,56 +200,80 @@ func (e EncodingRequestPointerBuilder) SetProtocolType(value string) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// JSON Compact
+// JSON Unmarshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func NewEncodingRequestFromJSONCompact(r *json.Lexer, to types.EncodingRequestBuilder) (types.EncodingRequestBuilder, error) {
-	if to == nil {
-		to = NewEncodingRequest()
+func (e EncodingRequestBuilder) UnmarshalJSON(r *json.Reader) error {
+	if r.IsCompact {
+		return serialize.EncodingRequestUnmarshalJSONCompact(r, e)
 	}
-	return encodingRequestFromJSONCompact(r, to)
+	return serialize.EncodingRequestFromJSON(r, e)
 }
-
-func AllocEncodingRequestFromJSONCompact(r *json.Lexer, to types.EncodingRequestBuilder) (types.EncodingRequestBuilder, error) {
-	if to == nil {
-		to = AllocEncodingRequest()
-		result, err := encodingRequestFromJSONCompact(r, to)
-		if err != nil {
-			// free memory
-			to.Finish()
-			return nil, err
-		}
-		return result, nil
+func (e EncodingRequestPointerBuilder) UnmarshalJSON(r *json.Reader) error {
+	if r.IsCompact {
+		return serialize.EncodingRequestUnmarshalJSONCompact(r, e)
 	}
-	return encodingRequestFromJSONCompact(r, to)
-}
-
-func encodingRequestFromJSONCompact(r *json.Lexer, to types.EncodingRequestBuilder) (types.EncodingRequestBuilder, error) {
-	return to, nil
+	return serialize.EncodingRequestFromJSON(r, e)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// JSON Compact
+// JSON Compact Marshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func encodingRequestFromJSON(r *json.Lexer, to types.EncodingRequestBuilder) (types.EncodingRequestBuilder, error) {
-	return to, nil
+func (e EncodingRequest) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
+}
+func (e EncodingRequestBuilder) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
+}
+func (e EncodingRequestPointer) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
+}
+func (e EncodingRequestPointerBuilder) MarshalJSONCompact(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSONCompact(e, b)
 }
 
-func encodingRequestWriteJSONCompact(m types.EncodingRequest, b []byte) ([]byte, error) {
-	w := json.NewCompactWriterI32(b, 6, m.ProtocolVersion())
-	w.Int32Compact(m.Encoding()).StringCompact(m.ProtocolType())
-	return w.Finish(), nil
+//////////////////////////////////////////////////////////////////////////////////////////
+// JSON Marshal
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (e EncodingRequest) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
+}
+func (e EncodingRequestBuilder) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
+}
+func (e EncodingRequestPointer) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
+}
+func (e EncodingRequestPointerBuilder) MarshalJSON(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalJSON(e, b)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// JSON
+// Protocol Buffers Unmarshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func encodingRequestWriteJSON(m types.EncodingRequest, b []byte) ([]byte, error) {
-	w := json.NewWriter(b, m.Type())
-	w.Int32Field("ProtocolVersion", m.ProtocolVersion())
-	w.Int32Field("Encoding", m.Encoding())
-	w.StringField("ProtocolType", m.ProtocolType())
-	return w.Finish(), nil
+func (e EncodingRequestBuilder) UnmarshalProtobuf(b []byte) error {
+	return serialize.EncodingRequestUnmarshalProtobuf(b, e)
+}
+func (e EncodingRequestPointerBuilder) UnmarshalProtobuf(b []byte) error {
+	return serialize.EncodingRequestUnmarshalProtobuf(b, e)
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Protocol Buffers Marshal
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (e EncodingRequest) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
+}
+func (e EncodingRequestBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
+}
+func (e EncodingRequestPointer) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
+}
+func (e EncodingRequestPointerBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
+	return serialize.EncodingRequestMarshalProtobuf(e, b)
 }
