@@ -11,6 +11,41 @@ func TestParseAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	allConstants := make(map[string]*Const)
+	allEnums := make(map[string]*Enum)
+
+	for _, namespace := range namespaces.Namespaces {
+		//fmt.Println("Namespace:", namespace.Name)
+		//fmt.Println("\tConstants")
+		for _, constant := range namespace.Constants {
+			//fmt.Println("\t\t", constant.Name)
+			if allConstants[constant.Name] != nil {
+				dup := allConstants[constant.Name]
+				if dup.File.Path != constant.File.Path {
+					fmt.Println("duplicate constant named: "+constant.Name, " in file:", constant.File.Path, " and file:", allConstants[constant.Name].File.Path)
+				}
+			}
+			allConstants[constant.Name] = constant
+		}
+		//fmt.Println("\tEnums")
+		for _, enum := range namespace.Enums {
+			//fmt.Println("\t\t", enum.Name)
+			if allEnums[enum.Name] != nil {
+				dup := allEnums[enum.Name]
+				if enum.File.Path != dup.File.Path {
+					fmt.Println("duplicate constant named: "+enum.Name, " in file:", enum.File.Path, " and file:", allEnums[enum.Name].File.Path)
+				}
+			}
+			allEnums[enum.Name] = enum
+		}
+		//fmt.Println("\tStructs")
+		for _, st := range namespace.Structs {
+			//fmt.Println("\t\t", st.Name)
+			_ = st
+		}
+	}
+
 	fmt.Println(namespaces)
 }
 

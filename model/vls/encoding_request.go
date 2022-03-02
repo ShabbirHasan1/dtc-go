@@ -1,18 +1,18 @@
 package vls
 
 import (
-	"github.com/moontrade/dtc-go"
-	"github.com/moontrade/dtc-go/json"
+	"github.com/moontrade/dtc-go/message"
+	"github.com/moontrade/dtc-go/message/json"
+	"github.com/moontrade/dtc-go/model"
 	"github.com/moontrade/dtc-go/model/serialize"
-	"github.com/moontrade/dtc-go/model/types"
 	"github.com/moontrade/nogc"
 )
 
 var (
-	_ types.EncodingRequest        = EncodingRequest{}
-	_ types.EncodingRequest        = EncodingRequestPointer{}
-	_ types.EncodingRequestBuilder = EncodingRequestBuilder{}
-	_ types.EncodingRequestBuilder = EncodingRequestPointerBuilder{}
+	_ model.EncodingRequest        = EncodingRequest{}
+	_ model.EncodingRequest        = EncodingRequestPointer{}
+	_ model.EncodingRequestBuilder = EncodingRequestBuilder{}
+	_ model.EncodingRequestBuilder = EncodingRequestPointerBuilder{}
 )
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -20,48 +20,113 @@ var (
 //////////////////////////////////////////////////////////////////////////////////////////
 
 type EncodingRequest struct {
-	dtc.MessageVLS
+	message.VLS
 }
 
 type EncodingRequestBuilder struct {
-	*dtc.MessageVLSBuilder
+	*message.VLSBuilder
 }
 
 type EncodingRequestPointer struct {
-	dtc.MessageVLSPointer
+	message.VLSPointer
 }
 
 type EncodingRequestPointerBuilder struct {
-	*dtc.MessageVLSPointerBuilder
+	*message.VLSPointerBuilder
 }
 
-//func NewEncodingRequest() EncodingRequestBuilder {
-//	return NewEncodingRequestBuilderFrom(nil, 32, 32)
-//}
+//////////////////////////////////////////////////////////////////////////////////////////
+// Factory
+//////////////////////////////////////////////////////////////////////////////////////////
+
+type EncodingRequestFactoryImpl struct{}
+
+func (EncodingRequestFactoryImpl) New() model.EncodingRequestBuilder {
+	return NewEncodingRequest()
+}
+
+func (EncodingRequestFactoryImpl) NewEx(flex int) model.EncodingRequestBuilder {
+	return AllocEncodingRequest()
+}
+
+func (EncodingRequestFactoryImpl) Alloc() model.EncodingRequestBuilder {
+	return AllocEncodingRequest()
+}
+
+func (EncodingRequestFactoryImpl) AllocEx(flex int) model.EncodingRequestBuilder {
+	return AllocEncodingRequest()
+}
+
+func (EncodingRequestFactoryImpl) Wrap(b []byte) model.EncodingRequest {
+	return EncodingRequest{message.WrapVLSFromBytes(b)}
+}
+
+func (EncodingRequestFactoryImpl) NewCopy(b []byte) model.EncodingRequest {
+	return EncodingRequest{message.NewVLSFromBytes(b)}
+}
+
+func (EncodingRequestFactoryImpl) AllocCopy(b []byte) model.EncodingRequest {
+	return EncodingRequestPointer{dtc.AllocVLSCopyFrom(b)}
+}
+
+func (f EncodingRequestFactoryImpl) Clone(of model.EncodingRequest) model.EncodingRequest {
+	if of.IsGC() {
+		return f.NewClone(of)
+	}
+	return f.AllocClone(of)
+}
+
+func (EncodingRequestFactoryImpl) NewClone(of model.EncodingRequest) model.EncodingRequest {
+	a := NewEncodingRequest()
+	a.CopyFrom(of)
+	return a
+}
+
+func (EncodingRequestFactoryImpl) AllocClone(of model.EncodingRequest) model.EncodingRequest {
+	a := AllocEncodingRequest()
+	a.CopyFrom(of)
+	return a
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// CopyFrom
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func encodingRequestCopyFrom(from model.EncodingRequest, to model.EncodingRequestBuilder) {
+	clearEncodingRequest(to.AsPointer())
+	to.SetEncoding(from.Encoding())
+	to.SetProtocolVersion(from.ProtocolVersion())
+	to.SetProtocolType(from.ProtocolType())
+}
+
+func (e EncodingRequestBuilder) CopyFrom(from model.EncodingRequest) {
+	encodingRequestCopyFrom(from, e)
+}
+func (e EncodingRequestPointerBuilder) CopyFrom(from model.EncodingRequest) {
+	encodingRequestCopyFrom(from, e)
+}
+
+func NewEncodingRequest() EncodingRequestBuilder {
+	return NewEncodingRequestBuilderFrom(nil, 32, 32)
+}
+
 //
 //func NewEncodingRequestFromBytes(b []byte) EncodingRequest {
 //	return EncodingRequest{dtc.NewVLSFromBytesOfType(b, 6)}
 //}
-//
-//func WrapEncodingRequest(b []byte) EncodingRequest {
-//	return EncodingRequest{dtc.WrapVLSFromBytesOfType(b, 6)}
-//}
-//func NewEncodingRequestBuilderFrom(b dtc.MessageBuffer, flex uintptr, growBy int) EncodingRequestBuilder {
-//	a := EncodingRequestBuilder{dtc.MessageVLSBuilderReset(b, nil, 16, flex, growBy)}
-//	clearEncodingRequest(a.AsPointer())
-//	return a
-//}
+
+func NewEncodingRequestBuilderFrom(b message.Buffer, flex uintptr, growBy int) EncodingRequestBuilder {
+	a := EncodingRequestBuilder{message.VLSBuilderReset(b, nil, 16, flex, growBy)}
+	clearEncodingRequest(a.AsPointer())
+	return a
+}
 
 func AllocEncodingRequest() EncodingRequestPointerBuilder {
 	return AllocEncodingRequestFrom(nil, 32, 32)
 }
 
-func AllocEncodingRequestFromBytes(b []byte) EncodingRequestPointer {
-	return EncodingRequestPointer{dtc.AllocVLSFromBytesOfType(b, 6)}
-}
-
-func AllocEncodingRequestFrom(b dtc.MessageBuffer, flex uintptr, growBy int) EncodingRequestPointerBuilder {
-	a := EncodingRequestPointerBuilder{dtc.MessageVLSPointerBuilderReset(b, nil, 16, flex, growBy)}
+func AllocEncodingRequestFrom(b message.Buffer, flex uintptr, growBy int) EncodingRequestPointerBuilder {
+	a := EncodingRequestPointerBuilder{message.VLSPointerBuilderReset(b, nil, 16, flex, growBy)}
 	clearEncodingRequest(a.AsPointer())
 	return a
 }
@@ -70,23 +135,23 @@ func AllocEncodingRequestFrom(b dtc.MessageBuffer, flex uintptr, growBy int) Enc
 // ToBuilder
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func (e EncodingRequest) ToBuilder() types.EncodingRequestBuilder {
+func (e EncodingRequest) ToBuilder() model.EncodingRequestBuilder {
 	return e.ToBuilderWithBuffer(nil, 16)
 }
-func (e EncodingRequestBuilder) ToBuilder() types.EncodingRequestBuilder {
+func (e EncodingRequestBuilder) ToBuilder() model.EncodingRequestBuilder {
 	return e
 }
-func (e EncodingRequest) ToBuilderWithBuffer(b dtc.MessageBuffer, flex uintptr) types.EncodingRequestBuilder {
-	return EncodingRequestBuilder{dtc.MessageVLSBuilderReset(b, &e.MessageVLS, 16, 16, 0)}
+func (e EncodingRequest) ToBuilderWithBuffer(b message.Buffer, flex uintptr) model.EncodingRequestBuilder {
+	return EncodingRequestBuilder{message.VLSBuilderReset(b, &e.VLS, 16, 16, 0)}
 }
-func (e EncodingRequestPointer) ToBuilder() types.EncodingRequestBuilder {
+func (e EncodingRequestPointer) ToBuilder() model.EncodingRequestBuilder {
 	return e.ToBuilderWithBuffer(nil, 16)
 }
-func (e EncodingRequestPointerBuilder) ToBuilder() types.EncodingRequestBuilder {
+func (e EncodingRequestPointerBuilder) ToBuilder() model.EncodingRequestBuilder {
 	return e
 }
-func (e EncodingRequestPointer) ToBuilderWithBuffer(b dtc.MessageBuffer, flex uintptr) types.EncodingRequestBuilder {
-	return EncodingRequestPointerBuilder{dtc.MessageVLSPointerBuilderReset(b, &e.MessageVLSPointer, 16, flex, 0)}
+func (e EncodingRequestPointer) ToBuilderWithBuffer(b message.Buffer, flex uintptr) model.EncodingRequestBuilder {
+	return EncodingRequestPointerBuilder{message.VLSPointerBuilderReset(b, &e.VLSPointer, 16, flex, 0)}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -94,52 +159,52 @@ func (e EncodingRequestPointer) ToBuilderWithBuffer(b dtc.MessageBuffer, flex ui
 //////////////////////////////////////////////////////////////////////////////////////////
 
 func (e EncodingRequest) ProtocolVersion() int32 {
-	return dtc.Int32(e.AsPointer(), e.Size(), 8, 4)
+	return message.Int32(e.AsPointer(), e.Size(), 8, 4)
 }
 func (e EncodingRequestPointer) ProtocolVersion() int32 {
-	return dtc.Int32(e.AsPointer(), e.Size(), 8, 4)
+	return message.Int32(e.AsPointer(), e.Size(), 8, 4)
 }
 func (e EncodingRequest) Encoding() int32 {
-	return dtc.Int32(e.AsPointer(), e.Size(), 12, 8)
+	return message.Int32(e.AsPointer(), e.Size(), 12, 8)
 }
 func (e EncodingRequestPointer) Encoding() int32 {
-	return dtc.Int32(e.AsPointer(), e.Size(), 12, 8)
+	return message.Int32(e.AsPointer(), e.Size(), 12, 8)
 }
 func (e EncodingRequest) ProtocolType() string {
-	return dtc.StringVLS(e.AsPointer(), 16, 12)
+	return message.StringVLS(e.AsPointer(), 16, 12)
 }
 func (e EncodingRequestPointer) ProtocolType() string {
-	return dtc.StringVLS(e.AsPointer(), 16, 12)
+	return message.StringVLS(e.AsPointer(), 16, 12)
 }
 
 func (e EncodingRequestBuilder) ProtocolVersion() int32 {
-	return dtc.Int32(e.AsPointer(), e.BaseSize(), 8, 4)
+	return message.Int32(e.AsPointer(), e.BaseSize(), 8, 4)
 }
 func (e EncodingRequestPointerBuilder) ProtocolVersion() int32 {
-	return dtc.Int32(e.AsPointer(), e.BaseSize(), 8, 4)
+	return message.Int32(e.AsPointer(), e.BaseSize(), 8, 4)
 }
 func (e EncodingRequestBuilder) Encoding() int32 {
-	return dtc.Int32(e.AsPointer(), e.BaseSize(), 12, 8)
+	return message.Int32(e.AsPointer(), e.BaseSize(), 12, 8)
 }
 func (e EncodingRequestPointerBuilder) Encoding() int32 {
-	return dtc.Int32(e.AsPointer(), e.BaseSize(), 12, 8)
+	return message.Int32(e.AsPointer(), e.BaseSize(), 12, 8)
 }
 func (e EncodingRequestBuilder) ProtocolType() string {
-	return dtc.StringVLS(e.AsPointer(), 16, 12)
+	return message.StringVLS(e.AsPointer(), 16, 12)
 }
 func (e EncodingRequestPointerBuilder) ProtocolType() string {
-	return dtc.StringVLS(e.AsPointer(), 16, 12)
+	return message.StringVLS(e.AsPointer(), 16, 12)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Finish
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func (e EncodingRequestBuilder) Finish() types.EncodingRequest {
-	return EncodingRequest{e.MessageVLSBuilder.Finish()}
+func (e EncodingRequestBuilder) Finish() model.EncodingRequest {
+	return EncodingRequest{e.VLSBuilder.Finish()}
 }
-func (e EncodingRequestPointerBuilder) Finish() types.EncodingRequest {
-	return EncodingRequestPointer{e.MessageVLSPointerBuilder.Finish()}
+func (e EncodingRequestPointerBuilder) Finish() model.EncodingRequest {
+	return EncodingRequestPointer{e.VLSPointerBuilder.Finish()}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -166,22 +231,22 @@ func (e EncodingRequestPointerBuilder) Clear() {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 func (e EncodingRequestBuilder) SetProtocolVersion(value int32) {
-	dtc.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
+	message.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
 }
 func (e EncodingRequestPointerBuilder) SetProtocolVersion(value int32) {
-	dtc.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
+	message.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
 }
 func (e EncodingRequestBuilder) SetEncoding(value int32) {
-	dtc.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
+	message.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
 }
 func (e EncodingRequestPointerBuilder) SetEncoding(value int32) {
-	dtc.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
+	message.SetInt32(e.AsPointer(), e.Size(), 12, 4, value)
 }
 func (e EncodingRequestBuilder) SetProtocolType(value string) {
-	dtc.SetStringVLS(e.MessageVLSBuilder, 16, 16, 12, value)
+	message.SetStringVLS(e.VLSBuilder, 16, 16, 12, value)
 }
 func (e EncodingRequestPointerBuilder) SetProtocolType(value string) {
-	dtc.SetStringVLSPointer(e.MessageVLSPointerBuilder, 16, 16, 12, value)
+	message.SetStringVLSPointer(e.VLSPointerBuilder, 16, 16, 12, value)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

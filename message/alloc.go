@@ -1,4 +1,6 @@
-package dtc
+//go:build !tinygo
+
+package message
 
 import (
 	"unsafe"

@@ -3,6 +3,7 @@ package codegen
 import (
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -14,8 +15,11 @@ func parseError(lineIndex int, line, message string) error {
 
 func NewNamespaces() *Namespaces {
 	return &Namespaces{
-		Files:      make(map[string]*File),
-		Namespaces: make(map[string]*Namespace),
+		Files:             make(map[string]*File),
+		Namespaces:        make(map[string]*Namespace),
+		ConstantsByName:   make(map[string]*Const),
+		EnumsByName:       make(map[string]*Enum),
+		EnumOptionsByName: make(map[string]*EnumOption),
 	}
 }
 
@@ -289,10 +293,20 @@ func (f *File) parseConst(line string) (*Const, error) {
 	if f.ConstantsByName[constant.Name] != nil {
 		return nil, errors.New("duplicate constant declared: " + line)
 	}
+	if f.currentNamespace.Namespaces.ConstantsByName[constant.Name] != nil {
+		// Use existing constant
+		f.currentNamespace.Namespaces.DuplicateConstants = append(f.currentNamespace.Namespaces.DuplicateConstants, constant)
+		constant = f.currentNamespace.Namespaces.ConstantsByName[constant.Name]
+	} else {
+		f.currentNamespace.Namespaces.Constants = append(f.currentNamespace.Namespaces.Constants, constant)
+		f.currentNamespace.Namespaces.ConstantsByName[constant.Name] = constant
+	}
+
 	f.Constants = append(f.Constants, constant)
 	f.ConstantsByName[constant.Name] = constant
 	f.currentNamespace.Constants = append(f.currentNamespace.Constants, constant)
 	f.currentNamespace.ConstantsByName[constant.Name] = constant
+
 	return constant, nil
 }
 
@@ -487,6 +501,15 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 						if err != nil {
 							return nil, err
 						}
+						if field.Init.Type == ValueTypeBool {
+							switch field.Type.Kind {
+							case KindInt8, KindUint8:
+								field.Type.Kind = KindBool
+							default:
+								//field.Init.Type
+							}
+							field.Init.Type = ValueTypeInt
+						}
 					}
 				} else if funcDecl == "union" {
 					union := Type{
@@ -666,7 +689,7 @@ func (f *File) findConstValue(str string) *Value {
 			Namespace: namespace,
 			Type:      ValueTypeConst,
 			Int:       constant.Value.Int,
-			Float:     constant.Value.Float,
+			Float64:   constant.Value.Float64,
 			Const:     constant,
 		}
 	}
@@ -718,6 +741,154 @@ func (f *File) parseValue(str string) (*Value, error) {
 		}, nil
 	}
 
+	if str == "FLT_MAX" {
+		return &Value{
+			File:    f,
+			Type:    ValueTypeFloat32Max,
+			Float64: math.MaxFloat32,
+		}, nil
+	}
+	if str == "DBL_MAX" {
+		return &Value{
+			File:    f,
+			Type:    ValueTypeFloat64Max,
+			Float64: math.MaxFloat64,
+		}, nil
+	}
+
+	/*
+		CHAR_BIT	Number of bits in a char object (byte)	8 or greater*
+		SCHAR_MIN	Minimum value for an object of type signed char	-127 (-27+1) or less*
+		SCHAR_MAX	Maximum value for an object of type signed char	127 (27-1) or greater*
+		UCHAR_MAX	Maximum value for an object of type unsigned char	255 (28-1) or greater*
+		CHAR_MIN	Minimum value for an object of type char	either SCHAR_MIN or 0
+		CHAR_MAX	Maximum value for an object of type char	either SCHAR_MAX or UCHAR_MAX
+		MB_LEN_MAX	Maximum number of bytes in a multibyte character, for any locale	1 or greater*
+		SHRT_MIN	Minimum value for an object of type short int	-32767 (-215+1) or less*
+		SHRT_MAX	Maximum value for an object of type short int	32767 (215-1) or greater*
+		USHRT_MAX	Maximum value for an object of type unsigned short int	65535 (216-1) or greater*
+		INT_MIN	Minimum value for an object of type int	-32767 (-215+1) or less*
+		INT_MAX	Maximum value for an object of type int	32767 (215-1) or greater*
+		UINT_MAX	Maximum value for an object of type unsigned int	65535 (216-1) or greater*
+		LONG_MIN	Minimum value for an object of type long int	-2147483647 (-231+1) or less*
+		LONG_MAX	Maximum value for an object of type long int	2147483647 (231-1) or greater*
+		ULONG_MAX	Maximum value for an object of type unsigned long int	4294967295 (232-1) or greater*
+		LLONG_MIN	Minimum value for an object of type long long int	-9223372036854775807 (-263+1) or less*
+		LLONG_MAX	Maximum value for an object of type long long int	9223372036854775807 (263-1) or greater*
+		ULLONG_MAX	Maximum value for an object of type unsigned long long int	18446744073709551615 (264-1) or greater*
+	*/
+	switch str {
+	case "true":
+		return &Value{
+			File: f,
+			Type: ValueTypeBool,
+			Int:  1,
+		}, nil
+	case "false":
+		return &Value{
+			File: f,
+			Type: ValueTypeBool,
+			Int:  0,
+		}, nil
+	case "SCHAR_MIN":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MinInt8,
+		}, nil
+	case "SCHAR_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MaxInt8,
+		}, nil
+	case "UCHAR_MAX", "CHAR_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeUint,
+			Uint: math.MaxUint8,
+		}, nil
+	case "CHAR_MIN":
+		return &Value{
+			File: f,
+			Type: ValueTypeUint,
+			Uint: 0,
+		}, nil
+	case "SHRT_MIN", "INT_MIN":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MinInt16,
+		}, nil
+	case "SHRT_MAX", "INT_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MaxInt16,
+		}, nil
+	case "USHRT_MAX", "UINT_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeUint,
+			Uint: math.MaxUint16,
+		}, nil
+	case "LONG_MIN":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MinInt32,
+		}, nil
+	case "LONG_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MaxInt32,
+		}, nil
+	case "ULONG_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeUint,
+			Uint: math.MaxUint32,
+		}, nil
+	case "LLONG_MIN":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MinInt64,
+		}, nil
+	case "LLONG_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeInt,
+			Int:  math.MaxInt64,
+		}, nil
+	case "ULLONG_MAX":
+		return &Value{
+			File: f,
+			Type: ValueTypeUint,
+			Uint: math.MaxUint64,
+		}, nil
+	case "FLT_MAX":
+		return &Value{
+			File:    f,
+			Type:    ValueTypeFloat32Max,
+			Float32: math.MaxFloat32,
+		}, nil
+	case "DBL_MAX":
+		return &Value{
+			File:    f,
+			Type:    ValueTypeFloat64Max,
+			Float64: math.MaxFloat64,
+		}, nil
+	}
+
+	if strings.Contains(str, "_MIN") {
+		fmt.Println("")
+	}
+	if strings.Contains(str, "_MAX") {
+		fmt.Println("HI")
+	}
+
 	if strings.Index(str, "\"") > -1 {
 		return &Value{
 			File:   f,
@@ -729,9 +900,9 @@ func (f *File) parseValue(str string) (*Value, error) {
 		number, err := strconv.ParseFloat(str, 64)
 		if err == nil {
 			return &Value{
-				File:  f,
-				Type:  ValueTypeFloat,
-				Float: number,
+				File:    f,
+				Type:    ValueTypeFloat,
+				Float64: number,
 			}, nil
 		}
 	}
@@ -758,6 +929,7 @@ func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) 
 		}
 		options = strings.Split(strings.Join(lines, ""), ",")
 	)
+
 	for _, option := range options {
 		option = strings.TrimSpace(option)
 		var (
@@ -800,10 +972,26 @@ func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) 
 
 		enum.Options = append(enum.Options, opt)
 		enum.OptionsByName[opt.Name] = opt
-		f.EnumOptions[opt.Name] = opt
-		f.currentNamespace.EnumOptions[opt.Name] = opt
 	}
 
+	if f.currentNamespace.Namespaces.EnumsByName[enum.Name] != nil {
+		// Use existing enum
+		f.currentNamespace.Namespaces.DuplicateEnums = append(f.currentNamespace.Namespaces.DuplicateEnums, enum)
+		enum = f.currentNamespace.Namespaces.EnumsByName[enum.Name]
+	} else {
+		f.currentNamespace.Namespaces.Enums = append(f.currentNamespace.Namespaces.Enums, enum)
+		f.currentNamespace.Namespaces.EnumsByName[enum.Name] = enum
+
+		for _, opt := range enum.Options {
+			f.EnumOptions[opt.Name] = opt
+			f.currentNamespace.EnumOptions[opt.Name] = opt
+
+			if f.currentNamespace.Namespaces.EnumOptionsByName[opt.Name] != nil {
+				return nil, errors.New("duplicate enum option name used: " + opt.Name)
+			}
+			f.currentNamespace.Namespaces.EnumOptionsByName[opt.Name] = opt
+		}
+	}
 	f.Enums = append(f.Enums, enum)
 	f.EnumsByName[enum.Name] = enum
 	f.currentNamespace.Enums = append(f.currentNamespace.Enums, enum)

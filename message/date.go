@@ -1,4 +1,4 @@
-package dtc
+package message
 
 type (
 	// DateTime Standard UNIX date-time value. In seconds.

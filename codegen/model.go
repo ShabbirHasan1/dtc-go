@@ -6,21 +6,22 @@ type Kind byte
 
 const (
 	KindUnknown     Kind = 0
-	KindInt8        Kind = 1
-	KindUint8       Kind = 2
-	KindInt16       Kind = 3
-	KindUint16      Kind = 4
-	KindInt32       Kind = 5
-	KindUint32      Kind = 6
-	KindInt64       Kind = 7
-	KindUint64      Kind = 8
-	KindFloat32     Kind = 9
-	KindFloat64     Kind = 10
-	KindStringFixed Kind = 11
-	KindStringVLS   Kind = 12
-	KindAlias       Kind = 19
-	KindEnum        Kind = 20
-	KindUnion       Kind = 21
+	KindBool        Kind = 1
+	KindInt8        Kind = 2
+	KindUint8       Kind = 3
+	KindInt16       Kind = 4
+	KindUint16      Kind = 5
+	KindInt32       Kind = 6
+	KindUint32      Kind = 7
+	KindInt64       Kind = 8
+	KindUint64      Kind = 9
+	KindFloat32     Kind = 10
+	KindFloat64     Kind = 11
+	KindStringFixed Kind = 12
+	KindStringVLS   Kind = 13
+	KindAlias       Kind = 20
+	KindEnum        Kind = 21
+	KindUnion       Kind = 22
 	KindStruct      Kind = 30
 )
 
@@ -39,8 +40,15 @@ type Type struct {
 }
 
 type Namespaces struct {
-	Files      map[string]*File
-	Namespaces map[string]*Namespace
+	Files              map[string]*File
+	Namespaces         map[string]*Namespace
+	Constants          []*Const
+	ConstantsByName    map[string]*Const
+	DuplicateConstants []*Const
+	Enums              []*Enum
+	EnumsByName        map[string]*Enum
+	EnumOptionsByName  map[string]*EnumOption
+	DuplicateEnums     []*Enum
 }
 
 type Namespace struct {
@@ -111,12 +119,21 @@ type Field struct {
 type ValueType int
 
 const (
-	ValueTypeInt        ValueType = 0
-	ValueTypeFloat      ValueType = 1
-	ValueTypeString     ValueType = 2
-	ValueTypeConst      ValueType = 3
-	ValueTypeEnumOption ValueType = 4
-	ValueTypeSizeof     ValueType = 5
+	ValueTypeUnknown ValueType = 0
+	ValueTypeInt     ValueType = 1
+	ValueTypeUint    ValueType = 2
+	//ValueTypeInt32Max   ValueType = 2
+	//ValueTypeUint32Max  ValueType = 3
+	//ValueTypeInt64Max   ValueType = 4
+	//ValueTypeUint64Max  ValueType = 5
+	ValueTypeBool       ValueType = 9
+	ValueTypeFloat      ValueType = 10
+	ValueTypeFloat32Max ValueType = 11
+	ValueTypeFloat64Max ValueType = 12
+	ValueTypeString     ValueType = 20
+	ValueTypeConst      ValueType = 30
+	ValueTypeEnumOption ValueType = 40
+	ValueTypeSizeof     ValueType = 50
 )
 
 type Value struct {
@@ -124,7 +141,9 @@ type Value struct {
 	Namespace  *Namespace
 	Type       ValueType
 	Int        int64
-	Float      float64
+	Uint       uint64
+	Float32    float64
+	Float64    float64
 	String     string
 	Const      *Const
 	EnumOption *EnumOption

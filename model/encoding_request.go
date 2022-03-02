@@ -1,7 +1,7 @@
-package types
+package model
 
 import (
-	dtc "github.com/moontrade/dtc-go"
+	"github.com/moontrade/dtc-go/message"
 )
 
 type EncodingRequestFactory interface {
@@ -11,7 +11,7 @@ type EncodingRequestFactory interface {
 }
 
 type EncodingRequest interface {
-	dtc.Message
+	message.Message
 
 	ToBuilder() EncodingRequestBuilder
 
@@ -23,7 +23,8 @@ type EncodingRequest interface {
 }
 
 type EncodingRequestBuilder interface {
-	dtc.MessageBuilder
+	message.Builder
+
 	EncodingRequest
 
 	Finish() EncodingRequest

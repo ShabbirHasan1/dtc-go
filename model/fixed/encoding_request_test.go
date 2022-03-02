@@ -2,7 +2,7 @@ package fixed
 
 import (
 	"fmt"
-	"github.com/moontrade/dtc-go/model/types"
+	"github.com/moontrade/dtc-go/model"
 	"testing"
 )
 
@@ -15,7 +15,7 @@ func TestEncodingRequestFixed_Encoding(t *testing.T) {
 	r := b.Finish()
 	defer r.Close()
 
-	var bb types.EncodingRequestBuilder = b
+	var bb model.EncodingRequestBuilder = b
 	bb.Encoding()
 
 	fmt.Println("EncodingRequest {")

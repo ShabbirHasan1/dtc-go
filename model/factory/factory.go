@@ -1,17 +1,17 @@
 package factory
 
 import (
+	"github.com/moontrade/dtc-go/model"
 	"github.com/moontrade/dtc-go/model/fixed"
-	"github.com/moontrade/dtc-go/model/types"
 )
 
 type Factory interface {
-	EncodingRequest() types.EncodingRequestFactory
+	EncodingRequest() model.EncodingRequestFactory
 }
 
 type fixedImpl struct {
 }
 
-func (fixedImpl) EncodingRequest() types.EncodingRequestFactory {
+func (fixedImpl) EncodingRequest() model.EncodingRequestFactory {
 	return fixed.EncodingRequestFactoryImpl{}
 }

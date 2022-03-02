@@ -1,7 +1,8 @@
-package dtc
+package message
 
 import (
 	"github.com/moontrade/nogc"
+	"math"
 	"strings"
 )
 
@@ -229,4 +230,140 @@ func SetFloat64(p nogc.Pointer, baseSize, bounds uint16, offset int, value float
 		return
 	}
 	p.SetFloat64LE(offset, value)
+}
+
+//type VLS_t struct {
+//	Offset uint16
+//	Length uint16
+//}
+
+// StringVLS returns an unsafe Go string
+func StringVLS(p nogc.Pointer, bounds uint16, offset int) string {
+	if p == 0 {
+		return ""
+	}
+	var (
+		size     = p.UInt16LE(0)
+		baseSize = p.UInt16LE(4)
+	)
+	if baseSize < bounds {
+		return ""
+	}
+	vlsOffset := p.UInt16LE(offset)
+	vlsLength := p.UInt16LE(offset + 2)
+	if vlsLength > 4096 {
+		vlsLength = 4096
+	}
+	if vlsOffset == 0 || vlsLength == 0 {
+		return ""
+	}
+	if size < vlsOffset+vlsLength {
+		return ""
+	}
+
+	if p.Byte(int(vlsOffset+vlsLength)-1) == 0 {
+		return p.String(int(vlsOffset), int(vlsLength)-1)
+	} else {
+		return p.String(int(vlsOffset), int(vlsLength))
+	}
+}
+
+// SetStringVLSPointer replaces existing VLS if new one fits, otherwise appends to end possibly growing
+// the existing allocation in order to do so.
+func SetStringVLSPointer(b *VLSPointerBuilder, baseSize, bounds uint16, offset int, value string) {
+	if baseSize < bounds {
+		return
+	}
+	vlsOffset := int(b.p.UInt16LE(offset))
+	vlsLength := int(b.p.UInt16LE(offset + 2))
+	if vlsLength > 4096 {
+		vlsLength = 4096
+	}
+	newLength := len(value) + 1
+	if newLength > 4096 {
+		value = value[0:4095]
+		newLength = 4096
+	}
+	if vlsLength >= newLength {
+		// Set new length
+		b.p.SetUInt16LE(offset+2, uint16(len(value)+1))
+		b.p.SetString(vlsOffset, value)
+		b.p.SetByte(vlsOffset+len(value), 0)
+		return
+	}
+
+	newSize := int(b.Size()) + newLength
+	if newSize > math.MaxUint16 {
+		return
+	}
+	vlsOffset = int(b.Size())
+	if b.cap < newSize {
+		b.Extend(newLength)
+		if b.p == 0 {
+			return
+		}
+	}
+
+	// Set new size
+	b.p.SetUInt16LE(0, uint16(newSize))
+	// Set VLS offset
+	b.p.SetUInt16LE(offset, b.Size())
+	// Set VLS length
+	b.p.SetUInt16LE(offset+2, uint16(newLength))
+	// Set string
+	b.p.SetString(int(b.Size()), value)
+	// Set null terminator
+	b.p.SetByte(int(b.Size())+len(value), 0)
+	// Update to new length
+	b.p.SetUInt16LE(0, uint16(newSize))
+}
+
+// SetStringVLS replaces existing VLS if new one fits, otherwise appends to end possibly growing
+// the existing allocation in order to do so.
+func SetStringVLS(b *VLSBuilder, baseSize, bounds uint16, offset int, value string) {
+	if baseSize < bounds {
+		return
+	}
+	vlsOffset := int(b.p.UInt16LE(offset))
+	vlsLength := int(b.p.UInt16LE(offset + 2))
+	if vlsLength > 4096 {
+		vlsLength = 4096
+	}
+	newLength := len(value) + 1
+	if newLength > 4096 {
+		value = value[0:4095]
+		newLength = 4096
+	}
+	if vlsLength >= newLength {
+		// Set new length
+		b.p.SetUInt16LE(offset+2, uint16(len(value)+1))
+		b.p.SetString(vlsOffset, value)
+		b.p.SetByte(vlsOffset+len(value), 0)
+		return
+	}
+
+	newSize := int(b.Size()) + newLength
+	if newSize > math.MaxUint16 {
+		return
+	}
+	vlsOffset = int(b.Size())
+	if b.cap < newSize {
+		b.Extend(newLength)
+		if b.p == 0 {
+			return
+		}
+	}
+
+	// Set new size
+	b.p.SetUInt16LE(0, uint16(newSize))
+	// Set VLS offset
+	b.p.SetUInt16LE(offset, b.Size())
+	// Set VLS length
+	b.p.SetUInt16LE(offset+2, uint16(newLength))
+	// Set string
+	b.p.SetString(int(b.Size()), value)
+	// Set null terminator
+	b.p.SetByte(int(b.Size())+len(value), 0)
+	// Update to new length
+	b.p.SetUInt16LE(0, uint16(newSize))
 }

@@ -1,19 +1,19 @@
 package serialize
 
 import (
-	"github.com/moontrade/dtc-go"
-	"github.com/moontrade/dtc-go/json"
-	"github.com/moontrade/dtc-go/model/types"
-	"github.com/moontrade/dtc-go/pb"
+	"github.com/moontrade/dtc-go/message"
+	"github.com/moontrade/dtc-go/message/json"
+	"github.com/moontrade/dtc-go/message/pb"
+	"github.com/moontrade/dtc-go/model"
 )
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // JSON Unmarshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func EncodingRequestUnmarshalJSONCompact(r *json.Reader, to types.EncodingRequestBuilder) error {
+func EncodingRequestUnmarshalJSONCompact(r *json.Reader, to model.EncodingRequestBuilder) error {
 	if r.Type != 6 {
-		return dtc.ErrWrongType
+		return message.ErrWrongType
 	}
 	to.SetProtocolVersion(r.Int32())
 	if r.IsError() {
@@ -34,9 +34,9 @@ func EncodingRequestUnmarshalJSONCompact(r *json.Reader, to types.EncodingReques
 	return nil
 }
 
-func EncodingRequestFromJSON(r *json.Reader, to types.EncodingRequestBuilder) error {
+func EncodingRequestFromJSON(r *json.Reader, to model.EncodingRequestBuilder) error {
 	if r.Type != 6 {
-		return dtc.ErrWrongType
+		return message.ErrWrongType
 	}
 	in := &r.Lexer
 LOOP:
@@ -47,7 +47,7 @@ LOOP:
 		}
 		switch key {
 		case "f", "F":
-			return dtc.ErrJSONCompactDetected
+			return message.ErrJSONCompactDetected
 		case "ProtocolVersion":
 			to.SetProtocolVersion(r.Int32())
 		case "Encoding":
@@ -68,7 +68,7 @@ LOOP:
 // JSON Compact Marshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func EncodingRequestMarshalJSONCompact(m types.EncodingRequest, b []byte) ([]byte, error) {
+func EncodingRequestMarshalJSONCompact(m model.EncodingRequest, b []byte) ([]byte, error) {
 	w := json.NewCompactWriterI32(b, 6, m.ProtocolVersion())
 	w.Int32Compact(m.Encoding()).StringCompact(m.ProtocolType())
 	return w.Finish(), nil
@@ -78,7 +78,7 @@ func EncodingRequestMarshalJSONCompact(m types.EncodingRequest, b []byte) ([]byt
 // JSON Marshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func EncodingRequestMarshalJSON(m types.EncodingRequest, b []byte) ([]byte, error) {
+func EncodingRequestMarshalJSON(m model.EncodingRequest, b []byte) ([]byte, error) {
 	w := json.NewWriter(b, m.Type())
 	w.Int32Field("ProtocolVersion", m.ProtocolVersion())
 	w.Int32Field("Encoding", m.Encoding())
@@ -90,7 +90,7 @@ func EncodingRequestMarshalJSON(m types.EncodingRequest, b []byte) ([]byte, erro
 // Protocol Buffers Unmarshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func EncodingRequestUnmarshalProtobuf(b []byte, builder types.EncodingRequestBuilder) error {
+func EncodingRequestUnmarshalProtobuf(b []byte, builder model.EncodingRequestBuilder) error {
 	var (
 		r   = pb.NewBuffer(b)
 		f   pb.Number
@@ -122,7 +122,7 @@ func EncodingRequestUnmarshalProtobuf(b []byte, builder types.EncodingRequestBui
 // Protocol Buffers Marshal
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func EncodingRequestMarshalProtobuf(m types.EncodingRequest, b []byte) ([]byte, error) {
+func EncodingRequestMarshalProtobuf(m model.EncodingRequest, b []byte) ([]byte, error) {
 	w := pb.NewWriter(b, 6)
 	/*
 		message EncodingRequest
