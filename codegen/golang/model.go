@@ -3,42 +3,129 @@ package golang
 import (
 	"fmt"
 	"github.com/moontrade/dtc-go/codegen"
-	"reflect"
 	"strings"
 )
 
+// A Kind represents the specific kind of type that a Type represents.
+// The zero Kind is not a valid kind.
+type Kind uint
+
+const (
+	Invalid Kind = iota
+	Bool
+	Int
+	Int8
+	Int16
+	Int32
+	Int64
+	Uint8
+	Uint16
+	Uint32
+	Uint64
+	Float32
+	Float64
+	String
+)
+
+func (k Kind) String() string {
+	switch k {
+	case Int8:
+		return "int8"
+	case Int16:
+		return "int16"
+	case Int32:
+		return "int32"
+	case Int64:
+		return "int64"
+	case Uint8:
+		return "uint8"
+	case Uint16:
+		return "uint16"
+	case Uint32:
+		return "uint32"
+	case Uint64:
+		return "uint64"
+	case Float32:
+		return "float32"
+	case Float64:
+		return "float64"
+	case String:
+		return "string"
+	}
+	return "invalid"
+}
+
 type Package struct {
-	Name      string
-	Path      string
-	Namespace *codegen.Namespace
+	Name            string
+	Path            string
+	Enums           []*Enum
+	EnumsByName     map[string]*Enum
+	Constants       []*Constant
+	ConstantsByName map[string]*Constant
+	Aliases         []*Alias
+	AliasesByMame   map[string]*Alias
+	Structs         []*Struct
+	StructsByName   map[string]*Struct
 }
 
 type Message struct {
-	Fixed *Struct
-	VLS   *Struct
+	Fixed       *Struct
+	VLS         *Struct
+	NonStandard bool
+}
+
+type Alias struct {
+	Package *Package
+	*codegen.Alias
+	Name string
+	Kind Kind
+}
+
+type Constant struct {
+	Package *Package
+	*codegen.Const
+	Name  string
+	Kind  Kind
+	Value string
 }
 
 type Enum struct {
+	Package *Package
 	*codegen.Enum
+	Name          string
+	Type          Kind
+	Options       []*EnumOption
+	OptionsByName map[string]*EnumOption
 }
 
 type EnumOption struct {
 	*codegen.EnumOption
+	Enum *Enum
+	Name string
 }
 
 type Struct struct {
 	*codegen.Struct
+	Name         string
+	Fields       []*Field
+	FieldsByName map[string]*Field
 }
 
 type Field struct {
 	*codegen.Field
+	Struct *Struct
+	Name   string
+	Type   *Type
+	Fields []*Field
 }
 
 type Type struct {
-	Import *Import
-	Name   string
-	DTC    codegen.Type
-	Kind   reflect.Kind
+	Package   *Package
+	Import    *Import
+	Name      string
+	DTC       codegen.Type
+	Kind      Kind
+	Primitive bool
 }
 
 func (t *Type) String() string {
@@ -53,9 +140,10 @@ func (t *Type) IsVLS() bool {
 }
 
 type Import struct {
-	Alias string
-	Name  string
-	Path  string
+	Package *Package
+	Alias   string
+	Name    string
+	Path    string
 }
 
 func (imp *Import) Clause() string {
@@ -78,157 +166,52 @@ func (imp *Import) Prefix() string {
 	return ""
 }
 
-func TypeOf(typ codegen.Type) Type {
-	switch typ.Kind {
-	case codegen.KindUnknown:
-	case codegen.KindInt8:
-		return Type{
-			Import: nil,
-			Name:   "int8",
-			DTC:    typ,
-			Kind:   reflect.Int8,
-		}
-	case codegen.KindUint8:
-		return Type{
-			Import: nil,
-			Name:   "uint8",
-			DTC:    typ,
-			Kind:   reflect.Uint8,
-		}
-	case codegen.KindInt16:
-		return Type{
-			Import: nil,
-			Name:   "int16",
-			DTC:    typ,
-			Kind:   reflect.Int16,
-		}
-	case codegen.KindUint16:
-		return Type{
-			Import: nil,
-			Name:   "uint16",
-			DTC:    typ,
-			Kind:   reflect.Uint16,
-		}
-	case codegen.KindInt32:
-		return Type{
-			Import: nil,
-			Name:   "int32",
-			DTC:    typ,
-			Kind:   reflect.Int32,
-		}
-	case codegen.KindUint32:
-		return Type{
-			Import: nil,
-			Name:   "uint32",
-			DTC:    typ,
-			Kind:   reflect.Uint32,
-		}
-	case codegen.KindInt64:
-		return Type{
-			Import: nil,
-			Name:   "int64",
-			DTC:    typ,
-			Kind:   reflect.Int64,
-		}
-	case codegen.KindUint64:
-		return Type{
-			Import: nil,
-			Name:   "uint64",
-			DTC:    typ,
-			Kind:   reflect.Uint64,
-		}
-	case codegen.KindFloat32:
-		return Type{
-			Import: nil,
-			Name:   "float32",
-			DTC:    typ,
-			Kind:   reflect.Float32,
-		}
-	case codegen.KindFloat64:
-		return Type{
-			Import: nil,
-			Name:   "float64",
-			DTC:    typ,
-			Kind:   reflect.Float64,
-		}
-	case codegen.KindStringFixed:
-		return Type{
-			Import: nil,
-			Name:   "string",
-			DTC:    typ,
-			Kind:   reflect.String,
-		}
-	case codegen.KindStringVLS:
-		return Type{
-			Import: nil,
-			Name:   "string",
-			DTC:    typ,
-			Kind:   reflect.String,
-		}
-	case codegen.KindAlias:
-		underlying := TypeOf(typ.Alias.Type)
-		return Type{
-			Import: nil,
-			Name:   cleanName(typ.Alias.Name),
-			DTC:    typ,
-			Kind:   underlying.Kind,
-		}
-	case codegen.KindEnum:
-		underlying := primitiveKind(typ.Kind)
-		return Type{
-			Import: nil,
-			Name:   cleanName(typ.Enum.Name),
-			DTC:    typ,
-			Kind:   underlying,
-		}
-
-	case codegen.KindUnion:
-	case codegen.KindStruct:
-	}
-	return Type{}
-}
-
-func primitiveKind(k codegen.Kind) reflect.Kind {
+func primitiveKind(k codegen.Kind) Kind {
 	switch k {
 	case codegen.KindInt8:
-		return reflect.Int8
+		return Int8
 	case codegen.KindUint8:
-		return reflect.Uint8
+		return Uint8
 	case codegen.KindInt16:
-		return reflect.Int16
+		return Int16
 	case codegen.KindUint16:
-		return reflect.Uint16
+		return Uint16
 	case codegen.KindInt32:
-		return reflect.Int32
+		return Int32
 	case codegen.KindUint32:
-		return reflect.Uint32
+		return Uint32
 	case codegen.KindInt64:
-		return reflect.Int64
+		return Int64
 	case codegen.KindUint64:
-		return reflect.Uint64
+		return Uint64
 	case codegen.KindFloat32:
-		return reflect.Float32
+		return Float32
 	case codegen.KindFloat64:
-		return reflect.Float64
+		return Float64
 	case codegen.KindStringFixed:
-		return reflect.String
+		return String
 	case codegen.KindStringVLS:
-		return reflect.String
+		return String
 	case codegen.KindStruct:
-		return reflect.Struct
+		return Invalid
 	default:
-		return reflect.Invalid
+		return Invalid
 	}
 }
 
 func cleanName(n string) string {
-	index := strings.IndexByte(n, '_')
-	if index > -1 {
-		n = n[index+1:]
+	if strings.HasPrefix(n, "s_") {
+		return strings.TrimSpace(n[2:])
+	}
+	if strings.HasPrefix(n, "m_") {
+		return strings.TrimSpace(n[2:])
+	}
+	if strings.HasPrefix(n, "t_") {
+		return strings.TrimSpace(n[2:])
 	}
 	n = strings.TrimSpace(n)
-	if strings.HasSuffix(n, "Enum") {
-		n = n[0 : len(n)-4]
-	}
+	//if strings.HasSuffix(n, "Enum") {
+	//	n = n[0 : len(n)-4]
+	//}
 	return n
 }

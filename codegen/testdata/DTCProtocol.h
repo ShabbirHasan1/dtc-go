@@ -10,9 +10,6 @@
 #pragma once
 
 #include <cstdint>
-//#include <climits>
-//#include <limits>
-#include <float.h>
 
 using std::int16_t;   //   signed 16-bit integer
 using std::int32_t;   //   signed 32-bit integer
@@ -26,10 +23,10 @@ typedef unsigned char uint8_t;
 
 namespace DTC
 {
-// In general because these structures are placed into a stream of data 
-// and the beginning position of the structure in the stream is variable 
-// and not to any particular boundary, structure member alignment here is 
-// not beneficial. So this could be changed to #pragma pack(1). It is 
+// In general because these structures are placed into a stream of data
+// and the beginning position of the structure in the stream is variable
+// and not to any particular boundary, structure member alignment here is
+// not beneficial. So this could be changed to #pragma pack(1). It is
 // maintained at 8 since there is a reliance on that alignment for existing
 // compiled code.
 #pragma pack(push, 8)
@@ -37,7 +34,7 @@ namespace DTC
 	// DTC protocol version
 	const int32_t CURRENT_VERSION = 8;
 
-	// Text string lengths when using fixed length string binary encoding. 
+	// Text string lengths when using fixed length string binary encoding.
 	const int32_t USERNAME_PASSWORD_LENGTH = 32;
 	const int32_t SYMBOL_EXCHANGE_DELIMITER_LENGTH = 4;
 	const int32_t SYMBOL_LENGTH = 64;
@@ -70,11 +67,11 @@ namespace DTC
 	const uint16_t MARKET_DATA_REQUEST = 101;
 	const uint16_t MARKET_DATA_REJECT = 103;
 	const uint16_t MARKET_DATA_SNAPSHOT = 104;
-	//125
+	const uint16_t MARKET_DATA_SNAPSHOT_INT = 125;
 
 	const uint16_t MARKET_DATA_UPDATE_TRADE = 107;
 	const uint16_t MARKET_DATA_UPDATE_TRADE_COMPACT = 112;
-	//126
+	const uint16_t MARKET_DATA_UPDATE_TRADE_INT = 126;
 	const uint16_t MARKET_DATA_UPDATE_LAST_TRADE_SNAPSHOT = 134;
 	const uint16_t MARKET_DATA_UPDATE_TRADE_WITH_UNBUNDLED_INDICATOR = 137;
 	const uint16_t MARKET_DATA_UPDATE_TRADE_WITH_UNBUNDLED_INDICATOR_2 = 146;
@@ -82,32 +79,32 @@ namespace DTC
 
 	const uint16_t MARKET_DATA_UPDATE_BID_ASK = 108;
 	const uint16_t MARKET_DATA_UPDATE_BID_ASK_COMPACT = 117;
-	//127
+	const uint16_t MARKET_DATA_UPDATE_BID_ASK_INT = 127;
 	const uint16_t MARKET_DATA_UPDATE_BID_ASK_NO_TIMESTAMP = 143;
 	const uint16_t MARKET_DATA_UPDATE_BID_ASK_FLOAT_WITH_MICROSECONDS = 144;
 
 	const uint16_t MARKET_DATA_UPDATE_SESSION_OPEN = 120;
-	//128
+	const uint16_t MARKET_DATA_UPDATE_SESSION_OPEN_INT = 128;
 	const uint16_t MARKET_DATA_UPDATE_SESSION_HIGH = 114;
-	//129
+	const uint16_t MARKET_DATA_UPDATE_SESSION_HIGH_INT = 129;
 	const uint16_t MARKET_DATA_UPDATE_SESSION_LOW = 115;
-	//130
+	const uint16_t MARKET_DATA_UPDATE_SESSION_LOW_INT = 130;
 	const uint16_t MARKET_DATA_UPDATE_SESSION_VOLUME = 113;
 	const uint16_t MARKET_DATA_UPDATE_OPEN_INTEREST = 124;
 	const uint16_t MARKET_DATA_UPDATE_SESSION_SETTLEMENT = 119;
-	//131
+	const uint16_t MARKET_DATA_UPDATE_SESSION_SETTLEMENT_INT = 131;
 	const uint16_t MARKET_DATA_UPDATE_SESSION_NUM_TRADES = 135;
 	const uint16_t MARKET_DATA_UPDATE_TRADING_SESSION_DATE = 136;
 
 	const uint16_t MARKET_DEPTH_REQUEST = 102;
 	const uint16_t MARKET_DEPTH_REJECT = 121;
 	const uint16_t MARKET_DEPTH_SNAPSHOT_LEVEL = 122;
-	//132
+	const uint16_t MARKET_DEPTH_SNAPSHOT_LEVEL_INT = 132;
 	const uint16_t MARKET_DEPTH_SNAPSHOT_LEVEL_FLOAT = 145;
 	const uint16_t MARKET_DEPTH_UPDATE_LEVEL = 106;
 	const uint16_t MARKET_DEPTH_UPDATE_LEVEL_FLOAT_WITH_MILLISECONDS = 140;
 	const uint16_t MARKET_DEPTH_UPDATE_LEVEL_NO_TIMESTAMP = 141;
-	//133
+	const uint16_t MARKET_DEPTH_UPDATE_LEVEL_INT = 133;
 
 	const uint16_t MARKET_DATA_FEED_STATUS = 100;
 	const uint16_t MARKET_DATA_FEED_SYMBOL_STATUS = 116;
@@ -124,17 +121,17 @@ namespace DTC
 
 	// Order entry and modification
 	const uint16_t SUBMIT_NEW_SINGLE_ORDER = 208;
-	//206
+	const uint16_t SUBMIT_NEW_SINGLE_ORDER_INT = 206;
 
 	const uint16_t SUBMIT_NEW_OCO_ORDER = 201;
-	//207
+	const uint16_t SUBMIT_NEW_OCO_ORDER_INT = 207;
 	const uint16_t SUBMIT_FLATTEN_POSITION_ORDER = 209;
 	const uint16_t FLATTEN_POSITIONS_FOR_TRADE_ACCOUNT = 210;
 
 	const uint16_t CANCEL_ORDER = 203;
 
 	const uint16_t CANCEL_REPLACE_ORDER = 204;
-	//205
+	const uint16_t CANCEL_REPLACE_ORDER_INT = 205;
 
 	// Trading related
 	const uint16_t OPEN_ORDERS_REQUEST = 300;
@@ -172,7 +169,7 @@ namespace DTC
 
 	// Account Balance Data
 	const uint16_t ACCOUNT_BALANCE_REQUEST = 601;
-	const uint16_t ACCOUNT_BALANCE_REJECT = 602;	
+	const uint16_t ACCOUNT_BALANCE_REJECT = 602;
 	const uint16_t ACCOUNT_BALANCE_UPDATE = 600;
 	const uint16_t ACCOUNT_BALANCE_ADJUSTMENT = 607;
 	const uint16_t ACCOUNT_BALANCE_ADJUSTMENT_REJECT = 608;
@@ -190,15 +187,15 @@ namespace DTC
 	const uint16_t JOURNAL_ENTRIES_REQUEST = 704;
 	const uint16_t JOURNAL_ENTRIES_REJECT = 705;
 	const uint16_t JOURNAL_ENTRY_RESPONSE = 706;
-	
+
 	// Historical price data
 	const uint16_t HISTORICAL_PRICE_DATA_REQUEST = 800;
 	const uint16_t HISTORICAL_PRICE_DATA_RESPONSE_HEADER = 801;
 	const uint16_t HISTORICAL_PRICE_DATA_REJECT = 802;
 	const uint16_t HISTORICAL_PRICE_DATA_RECORD_RESPONSE = 803;
 	const uint16_t HISTORICAL_PRICE_DATA_TICK_RECORD_RESPONSE = 804;
-	//805
-	//806
+	const uint16_t HISTORICAL_PRICE_DATA_RECORD_RESPONSE_INT = 805;
+	const uint16_t HISTORICAL_PRICE_DATA_TICK_RECORD_RESPONSE_INT = 806;
 	const uint16_t HISTORICAL_PRICE_DATA_RESPONSE_TRAILER = 807;
 
 	// Historical market depth data
@@ -270,6 +267,14 @@ namespace DTC
 	};
 
 	/*==========================================================================*/
+	enum TradeModeEnum : int32_t
+	{ TRADE_MODE_UNSET = 0
+	, TRADE_MODE_DEMO = 1
+	, TRADE_MODE_SIMULATED = 2
+	, TRADE_MODE_LIVE = 3
+	};
+
+	/*==========================================================================*/
 	enum RequestActionEnum : int32_t
 	{ SUBSCRIBE = 1
 	, UNSUBSCRIBE = 2
@@ -313,7 +318,7 @@ namespace DTC
 	, ORDER_CANCEL_REJECTED = 9
 	, ORDER_CANCEL_REPLACE_REJECTED = 10
 	};
-	
+
 	/*==========================================================================*/
 	enum AtBidOrAskEnum8 : uint8_t
 	{ BID_ASK_UNSET_8 = 0
@@ -351,7 +356,7 @@ namespace DTC
 		, MESSAGE_SET_BOUNDARY_BEGIN = 1
 		, MESSAGE_SET_BOUNDARY_END = 2
 	};
-	
+
 	/*==========================================================================*/
 	enum OrderTypeEnum : int32_t
 	{ ORDER_TYPE_UNSET = 0
@@ -363,7 +368,7 @@ namespace DTC
 	, ORDER_TYPE_LIMIT_IF_TOUCHED = 6
 	, ORDER_TYPE_MARKET_LIMIT = 7
 	};
-	
+
 	/*==========================================================================*/
 	enum TimeInForceEnum : int32_t
 	{ TIF_UNSET = 0
@@ -374,7 +379,7 @@ namespace DTC
 	, TIF_ALL_OR_NONE = 5
 	, TIF_FILL_OR_KILL = 6
 	};
-	
+
 	/*==========================================================================*/
 	enum BuySellEnum : int32_t
 	{ BUY_SELL_UNSET = 0
@@ -457,7 +462,7 @@ namespace DTC
 	, PRICE_DISPLAY_FORMAT_DENOMINATOR_32_EIGHTHS = 140
 	, PRICE_DISPLAY_FORMAT_DENOMINATOR_32_QUARTERS = 136
 	, PRICE_DISPLAY_FORMAT_DENOMINATOR_32_HALVES = 134
-	, PRICE_DISPLAY_FORMAT_DENOMINATOR_32 = 132 
+	, PRICE_DISPLAY_FORMAT_DENOMINATOR_32 = 132
 	, PRICE_DISPLAY_FORMAT_DENOMINATOR_16 = 116
 	, PRICE_DISPLAY_FORMAT_DENOMINATOR_8 = 108
 	, PRICE_DISPLAY_FORMAT_DENOMINATOR_4 = 104
@@ -490,7 +495,7 @@ namespace DTC
 	, SEARCH_TYPE_BY_SYMBOL = 1
 	, SEARCH_TYPE_BY_DESCRIPTION = 2
 	};
-	
+
 	/*==========================================================================*/
 	enum HistoricalDataIntervalEnum : int32_t
 	{ INTERVAL_TICK = 0
@@ -542,7 +547,7 @@ namespace DTC
 		}
 
 		uint16_t GetMessageSize() const;
-		void CopyFrom(void * p_SourceData);		
+		void CopyFrom(void * p_SourceData);
 		void Clear()
 		{
 			memset(this, 0, sizeof(*this));
@@ -605,9 +610,9 @@ namespace DTC
 		char GeneralTextData[GENERAL_IDENTIFIER_LENGTH];
 		int32_t Integer_1;
 		int32_t Integer_2;
-		int32_t HeartbeatIntervalInSeconds; 
-		int32_t Unused1;
-		char TradeAccount[TRADE_ACCOUNT_LENGTH]; 
+		int32_t  HeartbeatIntervalInSeconds;
+		TradeModeEnum TradeMode;
+		char TradeAccount[TRADE_ACCOUNT_LENGTH];
 		char HardwareIdentifier[GENERAL_IDENTIFIER_LENGTH];
 		char ClientName[32];
 		int32_t MarketDataTransmissionInterval;
@@ -638,6 +643,7 @@ namespace DTC
 		int32_t GetInteger_1() const;
 		int32_t GetInteger_2() const;
 		int32_t GetHeartbeatIntervalInSeconds() const;
+		TradeModeEnum GetTradeMode() const;
 		const char* GetTradeAccount();
 		void SetTradeAccount(const char* NewValue);
 		const char* GetHardwareIdentifier();
@@ -669,7 +675,7 @@ namespace DTC
 		uint8_t MarketDepthIsSupported;
 		uint8_t OneHistoricalPriceDataRequestPerConnection;
 		uint8_t BracketOrdersSupported;
-		uint8_t Unused_1;
+		uint8_t UseIntegerPriceOrderMessages;
 		uint8_t UsesMultiplePositionsPerSymbolAndTradeAccount;
 		uint8_t MarketDataSupported;
 
@@ -700,7 +706,7 @@ namespace DTC
 		void SetReconnectAddress(const char* NewValue);
 		int32_t GetInteger_1() const;
 		const char* GetServerName();
-		void SetServerName(const char* NewValue);		
+		void SetServerName(const char* NewValue);
 		uint8_t GetMarketDepthUpdatesBestBidAndAsk() const;
 		uint8_t GetTradingIsSupported() const;
 		uint8_t GetOCOOrdersSupported() const;
@@ -712,6 +718,7 @@ namespace DTC
 		uint8_t GetResubscribeWhenMarketDataFeedAvailable() const;
 		uint8_t GetMarketDepthIsSupported() const;
 		uint8_t GetOneHistoricalPriceDataRequestPerConnection() const;
+		uint8_t GetUseIntegerPriceOrderMessages() const;
 		uint8_t GetBracketOrdersSupported() const;
 		uint8_t GetUsesMultiplePositionsPerSymbolAndTradeAccount() const;
 		uint8_t GetMarketDataSupported() const;
@@ -757,7 +764,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -782,7 +789,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -862,7 +869,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -894,7 +901,7 @@ namespace DTC
 		char Exchange[EXCHANGE_LENGTH] = {};
 		int32_t NumLevels = 0;
 
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 
@@ -914,7 +921,7 @@ namespace DTC
 		uint16_t Type = MARKET_DATA_REJECT;
 		uint32_t SymbolID = 0;
 		char RejectText[TEXT_DESCRIPTION_LENGTH] = {};
-				
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 
@@ -954,7 +961,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -1001,6 +1008,91 @@ namespace DTC
 		t_DateTime4Byte GetTradingSessionDate() const;
 		TradingStatusEnum GetTradingStatus() const;
 		t_DateTimeWithMilliseconds GetMarketDepthUpdateDateTime() const;
+	};
+
+	/*==========================================================================*/
+	struct s_MarketDataSnapshot_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+		uint32_t SymbolID;
+		int32_t SessionSettlementPrice;
+		int32_t SessionOpenPrice;
+		int32_t SessionHighPrice;
+		int32_t SessionLowPrice;
+		int32_t SessionVolume;
+		uint32_t SessionNumTrades;
+		uint32_t OpenInterest;
+
+		int32_t BidPrice;
+		int32_t AskPrice;
+		int32_t AskQuantity;
+		int32_t BidQuantity;
+		int32_t LastTradePrice;
+		int32_t LastTradeVolume;
+		t_DateTimeWithMilliseconds LastTradeDateTime;
+		t_DateTimeWithMilliseconds BidAskDateTime;
+		t_DateTime4Byte SessionSettlementDateTime;
+		t_DateTime4Byte TradingSessionDate;
+		TradingStatusEnum TradingStatus;
+
+		s_MarketDataSnapshot_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DATA_SNAPSHOT_INT;
+			Size = sizeof(*this);
+
+			SessionSettlementPrice = INT_MAX;
+			SessionOpenPrice = INT_MAX;
+			SessionHighPrice = INT_MAX;
+			SessionLowPrice = INT_MAX;
+			SessionVolume = INT_MAX;
+			SessionNumTrades = UINT_MAX;
+
+			OpenInterest = UINT_MAX;
+
+			BidPrice = INT_MAX;
+			AskPrice = INT_MAX;
+			AskQuantity = INT_MAX;
+			BidQuantity = INT_MAX;
+
+			LastTradePrice = INT_MAX;
+			LastTradeVolume = INT_MAX;
+		}
+
+		uint32_t GetSymbolID() const;
+		int32_t GetSessionSettlementPrice() const;
+		int32_t GetSessionOpenPrice() const;
+		int32_t GetSessionHighPrice() const;
+		int32_t GetSessionLowPrice() const;
+		int32_t GetSessionVolume() const;
+		uint32_t GetSessionNumTrades() const;
+		uint32_t GetOpenInterest() const;
+		int32_t GetBidPrice() const;
+		int32_t GetAskPrice() const;
+		int32_t GetAskQuantity() const;
+		int32_t GetBidQuantity() const;
+		int32_t GetLastTradePrice() const;
+		int32_t GetLastTradeVolume() const;
+		t_DateTimeWithMilliseconds GetLastTradeDateTime() const;
+		t_DateTimeWithMilliseconds GetBidAskDateTime() const;
+		t_DateTime4Byte GetSessionSettlementDateTime() const;
+		t_DateTime4Byte GetTradingSessionDate() const;
+		TradingStatusEnum GetTradingStatus() const;
+	};
+
+
+	struct s_DepthEntry
+	{
+		double Price;
+		float Quantity;
 	};
 
 	/*==========================================================================*/
@@ -1083,10 +1175,53 @@ namespace DTC
 		FinalUpdateInBatchEnum GetFinalUpdateInBatch() const;
 	};
 #pragma pack(pop)
-	
+
+	/*==========================================================================*/
+	struct s_MarketDepthSnapshotLevel_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+		uint32_t SymbolID;
+		AtBidOrAskEnum Side;
+		int32_t Price;
+		int32_t Quantity;
+		uint16_t  Level;
+
+		uint8_t IsFirstMessageInBatch;
+		uint8_t IsLastMessageInBatch;
+
+		t_DateTimeWithMilliseconds DateTime;
+
+		uint32_t NumOrders;
+
+		s_MarketDepthSnapshotLevel_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DEPTH_SNAPSHOT_LEVEL_INT;
+			Size = sizeof(*this);
+		}
+
+		uint32_t GetSymbolID() const;
+		AtBidOrAskEnum GetSide() const;
+		int32_t GetPrice() const;
+		int32_t GetQuantity() const;
+		uint16_t GetLevel() const;
+		uint8_t GetIsFirstMessageInBatch() const;
+		uint8_t GetIsLastMessageInBatch() const;
+		t_DateTimeWithMilliseconds GetDateTime() const;
+		uint32_t GetNumOrders() const;
+	};
+
 	/*==========================================================================*/
 	struct s_MarketDepthUpdateLevel
-	{	 
+	{
 		uint16_t Size;
 		uint16_t Type;
 
@@ -1102,7 +1237,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -1116,6 +1251,44 @@ namespace DTC
 		AtBidOrAskEnum GetSide() const;
 		double GetPrice() const;
 		double GetQuantity() const;
+		MarketDepthUpdateTypeEnum GetUpdateType() const;
+		t_DateTimeWithMilliseconds GetDateTime() const;
+		uint32_t GetNumOrders() const;
+	};
+
+	/*==========================================================================*/
+	struct s_MarketDepthUpdateLevel_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		uint32_t SymbolID;
+		AtBidOrAskEnum Side;
+		int32_t Price;
+		int32_t Quantity;
+		MarketDepthUpdateTypeEnum UpdateType;
+		t_DateTimeWithMilliseconds DateTime;
+
+		uint32_t NumOrders;
+
+		s_MarketDepthUpdateLevel_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DEPTH_UPDATE_LEVEL_INT;
+			Size = sizeof(*this);
+		}
+
+		uint32_t GetSymbolID() const;
+		AtBidOrAskEnum GetSide() const;
+		int32_t GetPrice() const;
+		int32_t GetQuantity() const;
 		MarketDepthUpdateTypeEnum GetUpdateType() const;
 		t_DateTimeWithMilliseconds GetDateTime() const;
 		uint32_t GetNumOrders() const;
@@ -1267,6 +1440,35 @@ namespace DTC
 	};
 
 	/*==========================================================================*/
+	struct s_MarketDataUpdateSessionSettlement_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		uint32_t SymbolID;
+		int32_t Price;
+		t_DateTime4Byte DateTime;
+
+		s_MarketDataUpdateSessionSettlement_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DATA_UPDATE_SESSION_SETTLEMENT_INT;
+			Size = sizeof(*this);
+		}
+
+		uint32_t GetSymbolID() const;
+		int32_t GetPrice() const;
+		t_DateTime4Byte GetDateTime() const;
+	};
+
+	/*==========================================================================*/
 	struct s_MarketDataUpdateSessionOpen
 	{
 		uint16_t Size;
@@ -1292,6 +1494,35 @@ namespace DTC
 
 		uint32_t GetSymbolID() const;
 		double GetPrice() const;
+		t_DateTime4Byte GetTradingSessionDate() const;
+	};
+
+	/*==========================================================================*/
+	struct s_MarketDataUpdateSessionOpen_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		uint32_t SymbolID;
+		int32_t Price;
+		t_DateTime4Byte TradingSessionDate;
+
+		s_MarketDataUpdateSessionOpen_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DATA_UPDATE_SESSION_OPEN_INT;
+			Size = sizeof(*this);
+		}
+
+		uint32_t GetSymbolID() const;
+		int32_t GetPrice() const;
 		t_DateTime4Byte GetTradingSessionDate() const;
 	};
 
@@ -1416,6 +1647,43 @@ namespace DTC
 	};
 
 	/*==========================================================================*/
+	struct s_MarketDataUpdateTrade_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		uint32_t SymbolID;
+
+		AtBidOrAskEnum AtBidOrAsk;
+
+		int32_t Price;
+		int32_t Volume;
+		t_DateTimeWithMilliseconds DateTime;
+
+
+		s_MarketDataUpdateTrade_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DATA_UPDATE_TRADE_INT;
+			Size = sizeof(*this);
+		}
+
+		uint32_t GetSymbolID() const;
+		AtBidOrAskEnum GetAtBidOrAsk() const;
+		int32_t GetPrice() const;
+		int32_t GetVolume() const;
+		t_DateTimeWithMilliseconds GetDateTime() const;
+
+	};
+
+	/*==========================================================================*/
 	struct s_MarketDataUpdateTradeWithUnbundledIndicator
 	{
 		uint16_t Size;
@@ -1535,6 +1803,45 @@ namespace DTC
 		float GetBidQuantity() const;
 		double GetAskPrice() const;
 		float GetAskQuantity() const;
+		t_DateTime4Byte GetDateTime() const;
+	};
+
+	/*==========================================================================*/
+	struct s_MarketDataUpdateBidAsk_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		uint32_t SymbolID;
+
+		int32_t BidPrice;
+		int32_t BidQuantity;
+		int32_t AskPrice;
+		int32_t AskQuantity;
+		t_DateTime4Byte DateTime;
+
+		s_MarketDataUpdateBidAsk_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DATA_UPDATE_BID_ASK_INT;
+			Size = sizeof(*this);
+
+			BidPrice = INT_MAX;
+			AskPrice = INT_MAX;
+		}
+
+		uint32_t GetSymbolID() const;
+		int32_t GetBidPrice() const;
+		int32_t GetBidQuantity() const;
+		int32_t GetAskPrice() const;
+		int32_t GetAskQuantity() const;
 		t_DateTime4Byte GetDateTime() const;
 	};
 
@@ -1665,7 +1972,7 @@ namespace DTC
 	{
 		uint16_t Size;
 		uint16_t Type;
-	
+
 		float Price;
 		float Volume;
 		t_DateTime4Byte DateTime;
@@ -1676,7 +1983,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -1782,6 +2089,35 @@ namespace DTC
 	};
 
 	/*==========================================================================*/
+	struct s_MarketDataUpdateSessionHigh_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		uint32_t SymbolID;
+		int32_t Price;
+		t_DateTime4Byte TradingSessionDate;
+
+		s_MarketDataUpdateSessionHigh_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DATA_UPDATE_SESSION_HIGH_INT;
+			Size = sizeof(*this);
+		}
+
+		uint32_t GetSymbolID() const;
+		int32_t GetPrice() const;
+		t_DateTime4Byte GetTradingSessionDate() const;
+	};
+
+	/*==========================================================================*/
 	struct s_MarketDataUpdateSessionLow
 	{
 		uint16_t Size;
@@ -1795,7 +2131,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -1807,6 +2143,35 @@ namespace DTC
 
 		uint32_t GetSymbolID() const;
 		double GetPrice() const;
+		t_DateTime4Byte GetTradingSessionDate() const;
+	};
+
+	/*==========================================================================*/
+	struct s_MarketDataUpdateSessionLow_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		uint32_t SymbolID;
+		int32_t Price;
+		t_DateTime4Byte TradingSessionDate;
+
+		s_MarketDataUpdateSessionLow_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = MARKET_DATA_UPDATE_SESSION_LOW_INT;
+			Size = sizeof(*this);
+		}
+
+		uint32_t GetSymbolID() const;
+		int32_t GetPrice() const;
 		t_DateTime4Byte GetTradingSessionDate() const;
 	};
 
@@ -1899,7 +2264,7 @@ namespace DTC
 
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void* p_SourceData);
-		
+
 		uint32_t GetSymbolID() const;
 		DTC::BuySellEnum GetSide() const;
 		uint32_t GetQuantity() const;
@@ -1915,7 +2280,6 @@ namespace DTC
 		uint16_t Type = MARKET_ORDERS_MODIFY;
 
 		uint32_t SymbolID = 0;
-		DTC::BuySellEnum Side = DTC::BUY_SELL_UNSET;
 		uint32_t Quantity = 0;
 		double Price = 0;
 		uint64_t OrderID = 0;
@@ -1928,7 +2292,6 @@ namespace DTC
 		void CopyFrom(void* p_SourceData);
 
 		uint32_t GetSymbolID() const;
-		DTC::BuySellEnum GetSide() const;
 		uint32_t GetQuantity() const;
 		double GetPrice() const;
 		uint64_t GetOrderID() const;
@@ -1965,7 +2328,7 @@ namespace DTC
 	};
 
 	/*==========================================================================*/
-	
+
 	struct s_MarketOrdersSnapshotMessageBoundary
 	{
 		uint16_t Size = sizeof(*this);
@@ -2006,7 +2369,7 @@ namespace DTC
 		TimeInForceEnum TimeInForce;
 
 		t_DateTime GoodTillDateTime;
-		
+
 		uint8_t IsAutomatedOrder;
 
 		uint8_t IsParentOrder;
@@ -2059,6 +2422,77 @@ namespace DTC
 		void SetPrice1AsString(const char* NewValue);
 		const char* GetPrice2AsString();
 		void SetPrice2AsString(const char* NewValue);
+	};
+
+	/*==========================================================================*/
+	struct s_SubmitNewSingleOrderInt
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		char Symbol[SYMBOL_LENGTH];
+		char Exchange[EXCHANGE_LENGTH];
+
+		char TradeAccount[TRADE_ACCOUNT_LENGTH];
+		char ClientOrderID[ORDER_ID_LENGTH];
+
+		OrderTypeEnum OrderType;
+		BuySellEnum BuySell;
+
+		int64_t Price1;
+		int64_t Price2;
+		float Divisor;
+		int64_t Quantity;
+
+		TimeInForceEnum TimeInForce;
+		t_DateTime GoodTillDateTime;
+
+		uint8_t IsAutomatedOrder;
+		uint8_t IsParentOrder;
+
+		char FreeFormText[ORDER_FREE_FORM_TEXT_LENGTH];
+
+		OpenCloseTradeEnum OpenOrClose;
+
+
+		s_SubmitNewSingleOrderInt()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = SUBMIT_NEW_SINGLE_ORDER_INT;
+			Size = sizeof(*this);
+		}
+
+		const char* GetSymbol();
+		void SetSymbol(const char* NewValue);
+		const char* GetExchange();
+		void SetExchange(const char* NewValue);
+		const char* GetTradeAccount();
+		void SetTradeAccount(const char* NewValue);
+		const char* GetClientOrderID();
+		void SetClientOrderID(const char* NewValue);
+
+		OrderTypeEnum GetOrderType() const;
+		BuySellEnum GetBuySell() const;
+		int64_t GetPrice1() const;
+		int64_t GetPrice2() const;
+		float GetDivisor() const;
+		int64_t GetQuantity() const;
+		TimeInForceEnum GetTimeInForce() const;
+		t_DateTime GetGoodTillDateTime() const;
+		uint8_t GetIsAutomatedOrder() const;
+		uint8_t GetIsParentOrder() const;
+
+		const char* GetFreeFormText();
+		void SetFreeFormText(const char* NewValue);
+
+		OpenCloseTradeEnum GetOpenOrClose() const;
 	};
 
 	/*==========================================================================*/
@@ -2135,7 +2569,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2171,11 +2605,65 @@ namespace DTC
 	};
 
 	/*==========================================================================*/
+	struct s_CancelReplaceOrderInt
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		char ServerOrderID[ORDER_ID_LENGTH];
+		char ClientOrderID[ORDER_ID_LENGTH];
+
+		int64_t Price1;
+		int64_t Price2;
+		float Divisor;
+		int64_t Quantity;
+		uint8_t Price1IsSet;
+		uint8_t Price2IsSet;
+
+		int32_t Unused;
+		TimeInForceEnum TimeInForce;
+		t_DateTime GoodTillDateTime;
+		uint8_t UpdatePrice1OffsetToParent;
+
+		s_CancelReplaceOrderInt()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void* p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = CANCEL_REPLACE_ORDER_INT;
+			Size = sizeof(*this);
+
+			Divisor = 1.0f;
+			Price1IsSet = 1;
+			Price2IsSet = 1;
+		}
+
+		const char* GetServerOrderID();
+		void SetServerOrderID(const char* NewValue);
+		const char* GetClientOrderID();
+		void SetClientOrderID(const char* NewValue);
+		int64_t GetPrice1() const;
+		int64_t GetPrice2() const;
+		float GetDivisor() const;
+		int64_t GetQuantity() const;
+		uint8_t GetPrice1IsSet() const;
+		uint8_t GetPrice2IsSet() const;
+		TimeInForceEnum GetTimeInForce() const;
+		t_DateTime GetGoodTillDateTime() const;
+		uint8_t GetUpdatePrice1OffsetToParent() const;
+	};
+
+	/*==========================================================================*/
 	struct s_CancelOrder
 	{
 		uint16_t Size;
 		uint16_t Type;
-		
+
 		char ServerOrderID[ORDER_ID_LENGTH];
 		char ClientOrderID[ORDER_ID_LENGTH];
 		char TradeAccount[TRADE_ACCOUNT_LENGTH];
@@ -2254,7 +2742,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void* p_SourceData);
 		void Clear()
@@ -2309,6 +2797,92 @@ namespace DTC
 	};
 
 	/*==========================================================================*/
+	struct s_SubmitNewOCOOrderInt
+	{
+		uint16_t Size;
+		uint16_t Type;
+
+		char Symbol[SYMBOL_LENGTH];
+		char Exchange[EXCHANGE_LENGTH];
+
+		char ClientOrderID_1[ORDER_ID_LENGTH];
+		OrderTypeEnum OrderType_1;
+		BuySellEnum BuySell_1;
+		int64_t Price1_1;
+		int64_t Price2_1;
+		int64_t Quantity_1;
+
+		char ClientOrderID_2[ORDER_ID_LENGTH];
+		OrderTypeEnum OrderType_2;
+		BuySellEnum BuySell_2;
+		int64_t Price1_2;
+		int64_t Price2_2;
+		int64_t Quantity_2;
+
+		TimeInForceEnum TimeInForce;
+		t_DateTime GoodTillDateTime;
+
+		char TradeAccount[TRADE_ACCOUNT_LENGTH];
+
+		uint8_t IsAutomatedOrder;
+
+		char ParentTriggerClientOrderID[ORDER_ID_LENGTH];
+
+		char FreeFormText[ORDER_FREE_FORM_TEXT_LENGTH];
+
+		float Divisor;
+
+		OpenCloseTradeEnum OpenOrClose;
+
+		PartialFillHandlingEnum PartialFillHandling;
+
+		s_SubmitNewOCOOrderInt()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void* p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = SUBMIT_NEW_OCO_ORDER_INT;
+			Size = sizeof(*this);
+		}
+
+		void SetClientOrderID_1(const char* NewValue);
+		void SetClientOrderID_2(const char* NewValue);
+		const char* GetFreeFormText();
+		void SetFreeFormText(const char* NewValue);
+		const char* GetClientOrderID_1();
+		const char* GetClientOrderID_2();
+		const char* GetSymbol();
+		void SetSymbol(const char* NewValue);
+		const char* GetExchange();
+		void SetExchange(const char* NewValue);
+		OrderTypeEnum GetOrderType_1() const;
+		OrderTypeEnum GetOrderType_2() const;
+		BuySellEnum GetBuySell_1() const;
+		BuySellEnum GetBuySell_2() const;
+		TimeInForceEnum GetTimeInForce() const;
+		t_DateTime GetGoodTillDateTime() const;
+		void SetParentTriggerClientOrderID(const char* NewValue);
+		const char* GetParentTriggerClientOrderID();
+		uint8_t GetIsAutomatedOrder() const;
+		int64_t GetPrice1_1() const;
+		int64_t GetPrice2_1() const;
+		int64_t GetPrice1_2() const;
+		int64_t GetPrice2_2() const;
+		int64_t GetQuantity_1() const;
+		int64_t GetQuantity_2() const;
+		const char* GetTradeAccount();
+		void SetTradeAccount(const char* NewValue);
+		float GetDivisor() const;
+		OpenCloseTradeEnum GetOpenOrClose() const;
+		PartialFillHandlingEnum GetPartialFillHandling() const;
+	};
+
+	/*==========================================================================*/
 	struct s_OpenOrdersRequest
 	{
 		uint16_t Size;
@@ -2325,7 +2899,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2365,7 +2939,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2426,7 +3000,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2529,8 +3103,6 @@ namespace DTC
 		t_DateTimeWithMillisecondsInt OrderReceivedDateTime;
 		t_DateTimeWithMilliseconds LatestTransactionDateTime;
 
-		char Username[USERNAME_PASSWORD_LENGTH];
-
 		s_OrderUpdate()
 		{
 			Clear();
@@ -2546,7 +3118,7 @@ namespace DTC
 
 			//The following initializations indicate to the Client that these variables are in an unset state and their values should not be used
 			Price1 = DBL_MAX;
-			Price2 = DBL_MAX; 
+			Price2 = DBL_MAX;
 
 			OrderQuantity = DBL_MAX;
 			FilledQuantity = DBL_MAX;
@@ -2612,11 +3184,8 @@ namespace DTC
 
 		const char* GetFreeFormText();
 		void SetFreeFormText(const char* NewValue);
-
-		const char* GetUsername();
-		void SetUsername(const char* NewValue);
 	};
-	
+
 	/*==========================================================================*/
 	struct s_OpenOrdersReject
 	{
@@ -2630,7 +3199,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2651,7 +3220,7 @@ namespace DTC
 		uint16_t Size;
 		uint16_t Type;
 
-		int32_t RequestID; 
+		int32_t RequestID;
 
 		int32_t TotalNumberMessages;
 		int32_t MessageNumber;
@@ -2666,7 +3235,7 @@ namespace DTC
 		char UniqueExecutionID[ORDER_FILL_EXECUTION_LENGTH];
 		char TradeAccount[TRADE_ACCOUNT_LENGTH];
 
-		OpenCloseTradeEnum OpenClose; 
+		OpenCloseTradeEnum OpenClose;
 
 		uint8_t NoOrderFills;
 		char InfoText[TEXT_DESCRIPTION_LENGTH];
@@ -2679,7 +3248,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2750,7 +3319,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2860,7 +3429,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2891,7 +3460,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -2920,7 +3489,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3018,7 +3587,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3150,7 +3719,7 @@ namespace DTC
 		char Exchange[EXCHANGE_LENGTH];
 
 		SecurityTypeEnum SecurityType;
-		
+
 		char Description[SYMBOL_DESCRIPTION_LENGTH];
 		float MinPriceIncrement;
 		PriceDisplayFormatEnum PriceDisplayFormat;
@@ -3162,7 +3731,7 @@ namespace DTC
 		float IntToFloatPriceDivisor;
 
 		char UnderlyingSymbol[UNDERLYING_SYMBOL_LENGTH];
-		
+
 		uint8_t UpdatesBidAskOnly;
 
 		float StrikePrice;
@@ -3195,14 +3764,12 @@ namespace DTC
 		uint32_t OpenInterest;
 		t_DateTime4Byte RolloverDate;
 		uint8_t IsDelayed;
-		int64_t SecurityIdentifier = 0;
-		char ProductIdentifier[GENERAL_IDENTIFIER_LENGTH];
 
 		s_SecurityDefinitionResponse()
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3259,13 +3826,9 @@ namespace DTC
 		uint32_t GetOpenInterest() const;
 		t_DateTime4Byte GetRolloverDate() const;
 		uint8_t GetIsDelayed() const;
-		int64_t GetSecurityIdentifier() const;
-
-		const char* GetProductIdentifier();
-		void SetProductIdentifier(const char* NewValue);
 	};
 
-	
+
 	/*==========================================================================*/
 	struct s_SecurityDefinitionReject
 	{
@@ -3368,7 +3931,7 @@ namespace DTC
 		char AccountCurrency[8];
 
 		char TradeAccount[TRADE_ACCOUNT_LENGTH];
-		double SecuritiesValue; 
+		double SecuritiesValue;
 		double MarginRequirement;
 
 		int32_t TotalNumberMessages;
@@ -3401,7 +3964,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3671,7 +4234,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3700,7 +4263,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3855,7 +4418,7 @@ namespace DTC
 		t_DateTime GetDateTime() const;
 		uint8_t GetIsFinalResponse() const;
 	};
-	
+
 	/*==========================================================================*/
 	struct s_HistoricalPriceDataRequest
 	{
@@ -3911,7 +4474,7 @@ namespace DTC
 		HistoricalDataIntervalEnum RecordInterval;
 
 		uint8_t UseZLibCompression;
-		
+
 		uint8_t NoRecordsToReturn;
 
 		float IntToFloatPriceDivisor;
@@ -3920,7 +4483,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3953,7 +4516,7 @@ namespace DTC
 		{
 			Clear();
 		}
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 		void Clear()
@@ -3977,7 +4540,7 @@ namespace DTC
 		uint16_t Type;
 		int32_t RequestID;
 
-		//Format can also be t_DateTime. Check value to determine. 
+		//Format can also be t_DateTime. Check value to determine.
 		t_DateTimeWithMicrosecondsInt StartDateTime;
 
 		double OpenPrice;
@@ -3997,7 +4560,7 @@ namespace DTC
 
 		s_HistoricalPriceDataRecordResponse()
 		{
-			Clear(); 
+			Clear();
 		}
 
 		uint16_t GetMessageSize() const;
@@ -4037,7 +4600,7 @@ namespace DTC
 		double Volume = 0;
 
 		uint8_t IsFinalRecord = 0;
-		
+
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void * p_SourceData);
 
@@ -4046,6 +4609,83 @@ namespace DTC
 		double GetPrice() const;
 		double GetVolume() const;
 		AtBidOrAskEnum GetAtBidOrAsk() const;
+		uint8_t GetIsFinalRecord() const;
+	};
+
+	/*==========================================================================*/
+	struct s_HistoricalPriceDataRecordResponse_Int
+	{
+		uint16_t Size = sizeof(*this);
+		uint16_t Type = HISTORICAL_PRICE_DATA_RECORD_RESPONSE_INT;
+		int32_t RequestID = 0;
+
+		t_DateTime StartDateTime = 0;
+		int32_t OpenPrice = 0;
+		int32_t HighPrice = 0;
+		int32_t LowPrice = 0;
+		int32_t LastPrice = 0;
+		int32_t Volume = 0;
+		union
+		{
+			uint32_t OpenInterest = 0;
+			uint32_t NumTrades;
+		};
+		int32_t BidVolume = 0;
+		int32_t AskVolume = 0;
+
+		uint8_t IsFinalRecord = 0;
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+
+		int32_t GetRequestID() const;
+		t_DateTime GetStartDateTime() const;
+		int32_t GetOpenPrice() const;
+		int32_t GetHighPrice() const;
+		int32_t GetLowPrice() const;
+		int32_t GetLastPrice() const;
+		int32_t GetVolume() const;
+		uint32_t GetOpenInterest() const;
+		uint32_t GetNumTrades() const;
+		int32_t GetBidVolume() const;
+		int32_t GetAskVolume() const;
+		uint8_t GetIsFinalRecord() const;
+	};
+
+	/*==========================================================================*/
+	struct s_HistoricalPriceDataTickRecordResponse_Int
+	{
+		uint16_t Size;
+		uint16_t Type;
+		int32_t RequestID;
+
+		t_DateTimeWithMilliseconds DateTime;
+
+		int32_t Price;
+		int32_t Volume;
+
+		AtBidOrAskEnum AtBidOrAsk;
+		uint8_t IsFinalRecord;
+
+		s_HistoricalPriceDataTickRecordResponse_Int()
+		{
+			Clear();
+		}
+
+		uint16_t GetMessageSize() const;
+		void CopyFrom(void * p_SourceData);
+		void Clear()
+		{
+			memset(this, 0, sizeof(*this));
+			Type = HISTORICAL_PRICE_DATA_TICK_RECORD_RESPONSE_INT;
+			Size = sizeof(*this);
+		}
+
+		int32_t GetRequestID() const;
+		t_DateTimeWithMilliseconds GetDateTime() const;
+		AtBidOrAskEnum GetAtBidOrAsk() const;
+		int32_t GetPrice() const;
+		int32_t GetVolume() const;
 		uint8_t GetIsFinalRecord() const;
 	};
 

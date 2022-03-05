@@ -156,7 +156,7 @@ enum DTCMessageType
   JOURNAL_ENTRY_RESPONSE = 706;
 
   // Historical price data
-  HISTORICAL_PRICE_DATA_REQUEST = 800;
+  HISTORICAL_PRICE_DATA_REQUEST= 800;
   HISTORICAL_PRICE_DATA_RESPONSE_HEADER = 801;
   HISTORICAL_PRICE_DATA_REJECT = 802;
   HISTORICAL_PRICE_DATA_RECORD_RESPONSE = 803;
@@ -197,6 +197,15 @@ enum MessageSupportedEnum
 {
   MESSAGE_UNSUPPORTED = 0;
   MESSAGE_SUPPORTED = 1;
+}
+
+//============================================================================
+enum TradeModeEnum
+{
+  TRADE_MODE_UNSET= 0;
+  TRADE_MODE_DEMO = 1;
+  TRADE_MODE_SIMULATED = 2;
+  TRADE_MODE_LIVE = 3;
 }
 
 //============================================================================
@@ -360,14 +369,14 @@ enum PriceDisplayFormatEnum
   PRICE_DISPLAY_FORMAT_DENOMINATOR_8 = 108;
   PRICE_DISPLAY_FORMAT_DENOMINATOR_4 = 104;
   PRICE_DISPLAY_FORMAT_DENOMINATOR_2 = 102;
-  PRICE_DISPLAY_FORMAT_UNSET = -1;
+  PRICE_DISPLAY_FORMAT_UNSET =  -1;
 }
 
 //============================================================================
 enum SecurityTypeEnum
 {
   SECURITY_TYPE_UNSET = 0;
-  SECURITY_TYPE_FUTURE = 1;
+  SECURITY_TYPE_FUTURES = 1;
   SECURITY_TYPE_STOCK = 2;
   SECURITY_TYPE_FOREX = 3;
   SECURITY_TYPE_INDEX = 4;
@@ -470,7 +479,7 @@ message LogonRequest
   int32  Integer_1 = 5;
   int32  Integer_2 = 6;
   int32  HeartbeatIntervalInSeconds = 7;
-  int32  Unused1 = 8;
+  TradeModeEnum TradeMode = 8;
   string TradeAccount = 9;
   string HardwareIdentifier = 10;
   string ClientName = 11;
@@ -497,7 +506,7 @@ message LogonResponse
   uint32 MarketDepthIsSupported = 15;
   uint32 OneHistoricalPriceDataRequestPerConnection = 16;
   uint32 BracketOrdersSupported = 17;
-  uint32 Unused_1 = 18;
+  uint32 UseIntegerPriceOrderMessages = 18;
   uint32 UsesMultiplePositionsPerSymbolAndTradeAccount = 19;
   uint32 MarketDataSupported = 20;
 }
@@ -1000,14 +1009,13 @@ message MarketOrdersAdd
 message MarketOrdersModify
 {
   uint32 SymbolID = 1;
-  BuySellEnum Side = 2;
-  double Price = 3;
-  uint32 Quantity = 4;
-  uint64 OrderID = 5;
-  double PriorPrice = 6;
-  uint32 PriorQuantity = 7;
-  uint64 PriorOrderID = 8;
-  uint64 DateTime = 9;
+  double Price = 2;
+  uint32 Quantity = 3;
+  uint64 OrderID = 4;
+  double PriorPrice = 5;
+  uint32 PriorQuantity = 6;
+  uint64 PriorOrderID = 7;
+  uint64 DateTime = 8;
 }
 
 //============================================================================
@@ -1338,8 +1346,6 @@ message OrderUpdate
 
   sfixed64 OrderReceivedDateTime = 34;
   double LatestTransactionDateTime = 35;
-
-  string Username = 36;
 }
 
 //============================================================================
@@ -1389,7 +1395,7 @@ message PositionUpdate
   string Exchange = 5;
   double Quantity = 6;
   double AveragePrice = 7;
-  string PositionIdentifier = 8;
+  string PositionIdentifier  = 8;
   string TradeAccount = 9;
   uint32 NoPositions = 10;
   uint32 Unsolicited = 11;
@@ -1560,14 +1566,11 @@ message SecurityDefinitionResponse
 
   string Currency = 28;
 
-  float ContractSize = 29;
+  float ContractSize =  29;
   uint32 OpenInterest = 30;
 
   sfixed32 RolloverDate = 31;
   uint32 IsDelayed = 32;
-  int64 SecurityIdentifier = 33;
-
-  string ProductIdentifier = 34;
 }
 
 //============================================================================
@@ -1679,7 +1682,7 @@ message HistoricalAccountBalanceResponse
   double CashBalance = 3;
   string AccountCurrency = 4;
   string TradeAccount = 5;
-  uint32 IsFinalResponse = 6;
+  uint32 IsFinalResponse= 6;
   uint32 NoAccountBalances = 7;
   string InfoText = 8;
   string TransactionId = 9;

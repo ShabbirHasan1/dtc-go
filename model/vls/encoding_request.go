@@ -65,8 +65,8 @@ func (EncodingRequestFactoryImpl) NewCopy(b []byte) model.EncodingRequest {
 	return EncodingRequest{message.NewVLSFromBytes(b)}
 }
 
-func (EncodingRequestFactoryImpl) AllocCopy(b []byte) model.EncodingRequest {
-	return EncodingRequestPointer{dtc.AllocVLSCopyFrom(b)}
+func (EncodingRequestFactoryImpl) AllocFrom(b []byte) model.EncodingRequest {
+	return EncodingRequestPointer{message.AllocVLSFrom(b)}
 }
 
 func (f EncodingRequestFactoryImpl) Clone(of model.EncodingRequest) model.EncodingRequest {
@@ -109,11 +109,6 @@ func (e EncodingRequestPointerBuilder) CopyFrom(from model.EncodingRequest) {
 func NewEncodingRequest() EncodingRequestBuilder {
 	return NewEncodingRequestBuilderFrom(nil, 32, 32)
 }
-
-//
-//func NewEncodingRequestFromBytes(b []byte) EncodingRequest {
-//	return EncodingRequest{dtc.NewVLSFromBytesOfType(b, 6)}
-//}
 
 func NewEncodingRequestBuilderFrom(b message.Buffer, flex uintptr, growBy int) EncodingRequestBuilder {
 	a := EncodingRequestBuilder{message.VLSBuilderReset(b, nil, 16, flex, growBy)}

@@ -1,6 +1,11 @@
 package codegen
 
-import "github.com/yoheimuta/go-protoparser/v4/parser"
+import (
+	"fmt"
+	"github.com/moontrade/dtc-go/message/pb"
+	"github.com/yoheimuta/go-protoparser/v4/parser"
+	"strconv"
+)
 
 type Kind byte
 
@@ -39,20 +44,30 @@ type Type struct {
 	Union     *Union
 }
 
-type Namespaces struct {
+type Message struct {
+	Fixed       *Struct
+	VLS         *Struct
+	NonStandard bool
+}
+
+type Schema struct {
 	Files              map[string]*File
 	Namespaces         map[string]*Namespace
+	Aliases            []*Alias
+	AliasesByMame      map[string]*Alias
 	Constants          []*Const
 	ConstantsByName    map[string]*Const
 	DuplicateConstants []*Const
 	Enums              []*Enum
 	EnumsByName        map[string]*Enum
 	EnumOptionsByName  map[string]*EnumOption
+	Messages           []*Message
+	MessagesByName     map[string]*Message
 	DuplicateEnums     []*Enum
 }
 
 type Namespace struct {
-	Namespaces      *Namespaces
+	Schema          *Schema
 	Name            string
 	Alias           []*Alias
 	AliasByName     map[string]*Alias
@@ -67,7 +82,7 @@ type Namespace struct {
 
 type File struct {
 	Path             string
-	Namespaces       *Namespaces
+	Schema           *Schema
 	currentNamespace *Namespace
 	Alias            []*Alias
 	AliasByName      map[string]*Alias
@@ -101,6 +116,7 @@ type Struct struct {
 	Namespace    *Namespace
 	File         *File
 	Name         string
+	NamePretty   string
 	MaxAlign     int
 	Size         int
 	VLS          bool
@@ -110,10 +126,14 @@ type Struct struct {
 }
 
 type Field struct {
-	Name  string
-	Type  Type
-	Init  *Value
-	Proto *parser.Field
+	Name            string
+	Type            Type
+	Init            *Value
+	InitExpression  string
+	ClearExpression string
+	Proto           *parser.Field
+	ProtoType       pb.Type
+	ProtoZigzag     bool
 }
 
 type ValueType int
@@ -144,10 +164,11 @@ type Value struct {
 	Uint       uint64
 	Float32    float64
 	Float64    float64
-	String     string
+	Str        string
 	Const      *Const
 	EnumOption *EnumOption
 	Sizeof     string
+	Struct     *Struct
 }
 
 type Enum struct {
@@ -172,6 +193,40 @@ type EnumOption struct {
 
 type Union struct {
 	Fields []*Field
+}
+
+func (enum *Enum) OptionByValue(value int64) *EnumOption {
+	for _, o := range enum.Options {
+		if o.Value == value {
+			return o
+		}
+	}
+	return nil
+}
+
+func (enum *Enum) Bind(proto *parser.Enum) error {
+	for _, ef := range proto.EnumBody {
+		switch ef := ef.(type) {
+		case *parser.EnumField:
+			value, err := strconv.ParseInt(ef.Number, 10, 64)
+			if err != nil {
+				return fmt.Errorf("proto: enum %s.%s has invalid number: %s", proto.EnumName, ef.Ident, err.Error())
+			}
+			opt := enum.OptionsByName[ef.Ident]
+			if opt == nil {
+				opt = enum.OptionByValue(value)
+			}
+			if opt == nil {
+				if ef.Number == "0" {
+					continue
+				}
+				return fmt.Errorf("proto: enum %s.%s does not match any options for %s", proto.EnumName, ef.Ident, enum.Name)
+			}
+			opt.Proto = ef
+		}
+	}
+	enum.Proto = proto
+	return nil
 }
 
 func (s *Struct) Layout() {
@@ -218,6 +273,101 @@ func (s *Struct) Layout() {
 	} else {
 		s.Size = align(offset, s.MaxAlign)
 	}
+}
+
+func (s *Struct) Bind(proto *parser.Message) error {
+	for _, pf := range proto.MessageBody {
+		switch pf := pf.(type) {
+		case *parser.Field:
+			f := s.FieldsByName[pf.FieldName]
+			if f == nil {
+				f = s.FieldsByName["m_"+pf.FieldName]
+			}
+			if f == nil {
+				return fmt.Errorf("proto: %s.%s does not match any fields for %s", proto.MessageName, pf.FieldName, s.Name)
+			}
+
+			kind := f.Type.Kind
+			if f.Type.Alias != nil {
+				kind = f.Type.Alias.Type.Kind
+			}
+			if f.Type.Enum != nil {
+				kind = f.Type.Enum.Type
+			}
+
+			switch pf.Type {
+			case "sint32", "sint64":
+				f.ProtoType = pb.VarintType
+				f.ProtoZigzag = true
+				switch kind {
+				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				default:
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+				}
+
+			case "fixed32", "sfixed32":
+				f.ProtoType = pb.Fixed32Type
+				switch kind {
+				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				default:
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+				}
+
+			case "fixed64", "sfixed64":
+				f.ProtoType = pb.Fixed64Type
+				switch kind {
+				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				default:
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+				}
+
+			case "int32", "uint32", "short", "long", "int", "int64", "uint64", "bool":
+				f.ProtoType = pb.VarintType
+				switch kind {
+				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				default:
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+				}
+
+			case "float":
+				f.ProtoType = pb.Fixed32Type
+				switch kind {
+				case KindFloat32, KindFloat64:
+				default:
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindFloat32 | KindFloat64", proto.MessageName, pf.FieldName, pf.Type)
+				}
+
+			case "double":
+				f.ProtoType = pb.Fixed64Type
+				switch kind {
+				case KindFloat32, KindFloat64:
+				default:
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindFloat32 | KindFloat64", proto.MessageName, pf.FieldName, pf.Type)
+				}
+
+			case "string", "bytes":
+				switch kind {
+				case KindStringFixed, KindStringVLS:
+				default:
+					return fmt.Errorf("proto: %s.%s type %s does not match field type KindStringFixed | KindStringVLS", proto.MessageName, pf.FieldName, pf.Type)
+				}
+
+			default:
+				enum := f.Type.Enum
+				if enum != nil {
+					if enum.Name != pf.Type {
+						return fmt.Errorf("proto: %s.%s type %s does not match field type enum: %s", proto.MessageName, pf.FieldName, pf.Type, enum.Name)
+					}
+					f.ProtoType = pb.VarintType
+				} else {
+					return fmt.Errorf("proto: %s.%s type %s does not match field type enum: %s", proto.MessageName, pf.FieldName, pf.Type, enum.Name)
+				}
+			}
+			f.Proto = pf
+		}
+	}
+	s.Proto = proto
+	return nil
 }
 
 func align(offset, align int) int {

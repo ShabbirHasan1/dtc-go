@@ -3,6 +3,7 @@ package codegen
 import (
 	"errors"
 	"fmt"
+	"github.com/yoheimuta/go-protoparser/v4/parser"
 	"math"
 	"os"
 	"strconv"
@@ -13,28 +14,138 @@ func parseError(lineIndex int, line, message string) error {
 	return fmt.Errorf("line: %d, '%s' -> %s", lineIndex+1, line, message)
 }
 
-func NewNamespaces() *Namespaces {
-	return &Namespaces{
+func NewSchema() *Schema {
+	return &Schema{
 		Files:             make(map[string]*File),
+		AliasesByMame:     make(map[string]*Alias),
 		Namespaces:        make(map[string]*Namespace),
 		ConstantsByName:   make(map[string]*Const),
 		EnumsByName:       make(map[string]*Enum),
 		EnumOptionsByName: make(map[string]*EnumOption),
+		MessagesByName:    make(map[string]*Message),
 	}
 }
 
-func (namespaces *Namespaces) AddHeaders(paths ...string) error {
+func LoadSchema(protoPath string, headerPaths ...string) (*Schema, error) {
+	schema := NewSchema()
+	err := schema.AddHeaders(headerPaths...)
+	if err != nil {
+		return nil, err
+	}
+	if err = schema.AddProto(protoPath); err != nil {
+		return nil, err
+	}
+	if err = schema.Validate(); err != nil {
+		return nil, err
+	}
+	return schema, nil
+}
+
+func (schema *Schema) AddProto(path string) error {
+	proto, err := ParseProto(path)
+	if err != nil {
+		return err
+	}
+LOOP:
+	for _, v := range proto.ProtoBody {
+		switch v := v.(type) {
+		case *parser.Enum:
+			enum := schema.EnumsByName[v.EnumName]
+			if enum == nil {
+				switch v.EnumName {
+				case "DTCVersion":
+				case "DTCMessageType":
+				case "MessageSupportedEnum":
+					continue LOOP
+				default:
+					return errors.New("could not locate enum named: " + v.EnumName)
+				}
+				continue LOOP
+			}
+			if err = enum.Bind(v); err != nil {
+				return err
+			}
+
+		case *parser.Message:
+			msg := schema.MessagesByName[v.MessageName]
+			if msg == nil {
+				msg = schema.MessagesByName["s_"+v.MessageName]
+			}
+			if msg == nil {
+				switch v.MessageName {
+				case "MarketDataUpdateBidAsk2":
+					// ignore
+					continue LOOP
+				}
+				return errors.New("could not locate struct named: " + v.MessageName)
+			}
+			if msg.Fixed != nil {
+				if err = msg.Fixed.Bind(v); err != nil {
+					return err
+				}
+			}
+			if msg.VLS != nil {
+				if err = msg.VLS.Bind(v); err != nil {
+					return err
+				}
+			}
+
+		case *parser.Package:
+		}
+	}
+	return nil
+}
+
+func (schema *Schema) Validate() error {
+	var (
+		constants = make(map[string]*Const)
+		enums     = make(map[string]*Enum)
+	)
+	for _, namespace := range schema.Namespaces {
+		//fmt.Println("Namespace:", namespace.Name)
+		//fmt.Println("\tConstants")
+		for _, constant := range namespace.Constants {
+			//fmt.Println("\t\t", constant.Name)
+			if constants[constant.Name] != nil {
+				dup := constants[constant.Name]
+				if dup.File.Path != constant.File.Path {
+					return errors.New(fmt.Sprintln("duplicate constant named: "+constant.Name, " in file:", constant.File.Path, " and file:", constants[constant.Name].File.Path))
+				}
+			}
+			constants[constant.Name] = constant
+		}
+		//fmt.Println("\tEnums")
+		for _, enum := range namespace.Enums {
+			//fmt.Println("\t\t", enum.Name)
+			if enums[enum.Name] != nil {
+				dup := enums[enum.Name]
+				if enum.File.Path != dup.File.Path {
+					return errors.New(fmt.Sprintln("duplicate constant named: "+enum.Name, " in file:", enum.File.Path, " and file:", enums[enum.Name].File.Path))
+				}
+			}
+			enums[enum.Name] = enum
+		}
+		//fmt.Println("\tStructs")
+		for _, st := range namespace.Structs {
+			//fmt.Println("\t\t", st.Name)
+			_ = st
+		}
+	}
+	return nil
+}
+
+func (schema *Schema) AddHeaders(paths ...string) error {
 	for _, path := range paths {
-		if _, err := namespaces.AddHeader(path); err != nil {
+		if _, err := schema.AddHeader(path); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
-	if namespaces.Files[path] != nil {
-		return namespaces.Files[path], nil
+func (schema *Schema) AddHeader(path string) (*File, error) {
+	if schema.Files[path] != nil {
+		return schema.Files[path], nil
 	}
 	contents_, err := os.ReadFile(path)
 	if err != nil {
@@ -44,8 +155,8 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 	var (
 		file = &File{
 			Path:             path,
-			Namespaces:       namespaces,
-			currentNamespace: namespaces.GetNamespace(""), // Global namespace
+			Schema:           schema,
+			currentNamespace: schema.GetNamespace(""), // Global namespace
 			AliasByName:      make(map[string]*Alias),
 			ConstantsByName:  make(map[string]*Const),
 			EnumsByName:      make(map[string]*Enum),
@@ -59,6 +170,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 		block        []string
 		state        = 0 // 0 = root, 1 == expect '{', 2 == expect '};'
 		curlyCount   = 0
+		nonStandard  = !strings.Contains(path, "DTCProtocol.h") && !strings.Contains(path, "DTCProtocolVLS.h")
 	)
 
 	lines := strings.Split(contents, "\n")
@@ -96,10 +208,35 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 					if len(packStack) > 0 {
 						pack = packStack[len(packStack)-1]
 					}
-					_, err = file.parseStruct(pack, blockName, block)
+					var s *Struct
+					s, err = file.parseStruct(pack, blockName, block)
 					if err != nil {
 						return nil, parseError(lineIndex, line, err.Error())
 					}
+
+					message := schema.MessagesByName[s.Name]
+					if message == nil {
+						message = &Message{NonStandard: nonStandard}
+						schema.MessagesByName[s.Name] = message
+						schema.Messages = append(schema.Messages, message)
+					}
+					switch s.Namespace.Name {
+					case "DTC":
+						if message.Fixed != nil {
+							return nil, parseError(lineIndex, line, "duplicated fixed struct named: "+s.Name)
+						}
+						message.Fixed = s
+					case "DTC_VLS":
+						if message.VLS != nil {
+							return nil, parseError(lineIndex, line, "duplicated vls struct named: "+s.Name)
+						}
+
+						message.VLS = s
+					default:
+						// Non-Standard
+						return nil, parseError(lineIndex, line, "unknown namespace for struct: "+s.Namespace.Name)
+					}
+
 				case KindEnum:
 					_, err = file.parseEnum(blockName, blockExtends.Kind, block)
 					if err != nil {
@@ -129,7 +266,7 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 					namespaceName = strings.TrimSpace(line)
 				}
 			}
-			file.currentNamespace = namespaces.GetNamespace(namespaceName)
+			file.currentNamespace = schema.GetNamespace(namespaceName)
 
 		case strings.HasPrefix(line, "const"):
 			line = strings.TrimSpace(line[len("const"):])
@@ -219,11 +356,18 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 			if strings.HasSuffix(name, ";") {
 				name = strings.TrimSpace(name[0 : len(name)-1])
 			}
+			if strings.Contains(name, "vls_t") || strings.Contains(name, "uint8_t") {
+				continue
+			}
 			alias := &Alias{
 				File:      file,
 				Namespace: file.currentNamespace,
 				Name:      name,
 				Type:      file.typeOf(base),
+			}
+			file.Schema.Aliases = append(file.Schema.Aliases, alias)
+			if file.Schema.AliasesByMame[alias.Name] != nil {
+				return nil, parseError(lineIndex, line, "duplicate alias name: "+alias.Name)
 			}
 			file.Alias = append(file.Alias, alias)
 			file.AliasByName[alias.Name] = alias
@@ -236,15 +380,15 @@ func (namespaces *Namespaces) AddHeader(path string) (*File, error) {
 		s.Layout()
 	}
 
-	namespaces.Files[path] = file
+	schema.Files[path] = file
 	return file, nil
 }
 
-func (namespaces *Namespaces) GetNamespace(name string) *Namespace {
-	namespace := namespaces.Namespaces[name]
+func (schema *Schema) GetNamespace(name string) *Namespace {
+	namespace := schema.Namespaces[name]
 	if namespace == nil {
 		namespace = &Namespace{
-			Namespaces:      namespaces,
+			Schema:          schema,
 			Name:            name,
 			Alias:           nil,
 			AliasByName:     make(map[string]*Alias),
@@ -256,7 +400,7 @@ func (namespaces *Namespaces) GetNamespace(name string) *Namespace {
 			Structs:         nil,
 			StructsByName:   make(map[string]*Struct),
 		}
-		namespaces.Namespaces[name] = namespace
+		schema.Namespaces[name] = namespace
 	}
 	return namespace
 }
@@ -293,13 +437,13 @@ func (f *File) parseConst(line string) (*Const, error) {
 	if f.ConstantsByName[constant.Name] != nil {
 		return nil, errors.New("duplicate constant declared: " + line)
 	}
-	if f.currentNamespace.Namespaces.ConstantsByName[constant.Name] != nil {
+	if f.currentNamespace.Schema.ConstantsByName[constant.Name] != nil {
 		// Use existing constant
-		f.currentNamespace.Namespaces.DuplicateConstants = append(f.currentNamespace.Namespaces.DuplicateConstants, constant)
-		constant = f.currentNamespace.Namespaces.ConstantsByName[constant.Name]
+		f.currentNamespace.Schema.DuplicateConstants = append(f.currentNamespace.Schema.DuplicateConstants, constant)
+		constant = f.currentNamespace.Schema.ConstantsByName[constant.Name]
 	} else {
-		f.currentNamespace.Namespaces.Constants = append(f.currentNamespace.Namespaces.Constants, constant)
-		f.currentNamespace.Namespaces.ConstantsByName[constant.Name] = constant
+		f.currentNamespace.Schema.Constants = append(f.currentNamespace.Schema.Constants, constant)
+		f.currentNamespace.Schema.ConstantsByName[constant.Name] = constant
 	}
 
 	f.Constants = append(f.Constants, constant)
@@ -398,7 +542,7 @@ func (f *File) typeOf(value string) Type {
 	index := strings.LastIndex(value, "::")
 	if index > -1 {
 		namespaceName := strings.TrimSpace(value[0:index])
-		namespace = f.Namespaces.GetNamespace(namespaceName)
+		namespace = f.Schema.GetNamespace(namespaceName)
 		value = strings.TrimSpace(value[index+2:])
 	}
 
@@ -439,6 +583,24 @@ func (f *File) typeOf(value string) Type {
 	}
 
 	return Type{Kind: KindUnknown}
+}
+
+func isFunc(name, value string) bool {
+	index := strings.Index(value, "(")
+	if index > -1 {
+		value = strings.TrimSpace(value[0:index])
+	}
+	index = strings.LastIndex(value, " ")
+	if index == -1 {
+		index = strings.LastIndex(value, "\t")
+		if index == -1 {
+			index = strings.LastIndex(value, "\n")
+		}
+	}
+	if index > -1 {
+		value = strings.TrimSpace(value[index+1:])
+	}
+	return name == value
 }
 
 func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, error) {
@@ -485,21 +647,51 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 			if curlyCount == -1 {
 				state = 0
 
-				if strings.Contains(funcDecl, "Clear()") {
+				var (
+					isClear = isFunc("clear", strings.ToLower(funcDecl))
+					isCtor  = isFunc(message.Name, funcDecl)
+				)
+
+				if isClear || isCtor {
 					// Process default field values
 					for _, line = range funcLines {
-						if !strings.Contains(line, "=") {
-							continue
-						}
-
 						parts := strings.Split(line, "=")
-						field := message.FieldsByName[strings.TrimSpace(parts[0])]
+						left := strings.TrimSpace(parts[0])
+						right := ""
+						field := message.FieldsByName[left]
 						if field == nil {
-							continue
+							if strings.HasPrefix(left, "Set") {
+								left = strings.TrimSpace(left[3:])
+								index = strings.Index(left, "(")
+								if index == -1 {
+									continue
+								}
+								field = message.FieldsByName[left[0:index]]
+								if field == nil {
+									continue
+								}
+								right = left[index+1:]
+								index = strings.LastIndex(right, ")")
+								if index == -1 {
+									continue
+								}
+								right = strings.TrimSpace(right[0:index])
+							} else {
+								continue
+							}
+						} else {
+							right = strings.TrimSpace(parts[1])
 						}
-						field.Init, err = f.parseValue(strings.TrimSpace(parts[1]))
+						field.ClearExpression = right
+						if strings.HasSuffix(field.ClearExpression, ";") {
+							field.ClearExpression = strings.TrimSpace(field.ClearExpression[0 : len(field.ClearExpression)-1])
+						}
+						field.Init, err = f.parseInitValue(message, field.ClearExpression)
 						if err != nil {
 							return nil, err
+						}
+						if field.Init == nil {
+							return nil, errors.New("could not parse init clear expression: " + field.ClearExpression)
 						}
 						if field.Init.Type == ValueTypeBool {
 							switch field.Type.Kind {
@@ -597,6 +789,18 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 		}
 	}
 
+	for _, field := range message.Fields {
+		if field.Type.Kind == KindStringVLS {
+			message.VLS = true
+		}
+		if field.Init == nil && len(field.InitExpression) > 0 {
+			field.Init, err = f.parseInitValue(message, field.InitExpression)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	f.Structs = append(f.Structs, message)
 	f.StructsByName[message.Name] = message
 	f.currentNamespace.Structs = append(f.currentNamespace.Structs, message)
@@ -665,6 +869,8 @@ func (f *File) parseField(line string) (*Field, error) {
 		return nil, nil
 	}
 
+	field.InitExpression = expression
+
 	if len(expression) > 0 {
 		field.Init, err = f.parseValue(expression)
 		if err != nil {
@@ -679,10 +885,11 @@ func (f *File) findConstValue(str string) *Value {
 	index := strings.Index(str, "::")
 	namespace := f.currentNamespace
 	if index > -1 {
-		namespace = f.Namespaces.GetNamespace(strings.TrimSpace(str[0:index]))
-		str = strings.TrimSpace(str[index+1:])
+		namespace = f.Schema.GetNamespace(strings.TrimSpace(str[0:index]))
+		str = strings.TrimSpace(str[index+2:])
 	}
-	constant := namespace.ConstantsByName[str]
+	constant := f.currentNamespace.Schema.ConstantsByName[str]
+	//constant := namespace.ConstantsByName[str]
 	if constant != nil {
 		return &Value{
 			File:      constant.File,
@@ -694,7 +901,7 @@ func (f *File) findConstValue(str string) *Value {
 		}
 	}
 
-	option := namespace.EnumOptions[str]
+	option := f.currentNamespace.Schema.EnumOptionsByName[str]
 	if option != nil {
 		return &Value{
 			File:       option.File,
@@ -706,6 +913,24 @@ func (f *File) findConstValue(str string) *Value {
 	}
 
 	return nil
+}
+
+func (f *File) parseInitValue(s *Struct, str string) (*Value, error) {
+	if strings.HasSuffix(str, ";") {
+		str = strings.TrimSpace(str[0 : len(str)-1])
+	}
+	field := s.FieldsByName[str]
+	if field != nil {
+		return field.Init, nil
+	}
+	v, err := f.parseValue(str)
+	if err != nil {
+		return nil, err
+	}
+	if v != nil && v.Type == ValueTypeSizeof {
+		v.Struct = s
+	}
+	return v, nil
 }
 
 func (f *File) parseValue(str string) (*Value, error) {
@@ -721,9 +946,9 @@ func (f *File) parseValue(str string) (*Value, error) {
 
 	if str == "{}" {
 		return &Value{
-			File:   f,
-			Type:   ValueTypeString,
-			String: "",
+			File: f,
+			Type: ValueTypeString,
+			Str:  "",
 		}, nil
 	}
 
@@ -891,12 +1116,15 @@ func (f *File) parseValue(str string) (*Value, error) {
 
 	if strings.Index(str, "\"") > -1 {
 		return &Value{
-			File:   f,
-			Type:   ValueTypeString,
-			String: strings.ReplaceAll(str, "\"", ""),
+			File: f,
+			Type: ValueTypeString,
+			Str:  strings.ReplaceAll(str, "\"", ""),
 		}, nil
 	}
 	if strings.Index(str, ".") > -1 {
+		if strings.HasSuffix(str, "f") {
+			str = str[0 : len(str)-1]
+		}
 		number, err := strconv.ParseFloat(str, 64)
 		if err == nil {
 			return &Value{
@@ -974,22 +1202,22 @@ func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) 
 		enum.OptionsByName[opt.Name] = opt
 	}
 
-	if f.currentNamespace.Namespaces.EnumsByName[enum.Name] != nil {
+	if f.currentNamespace.Schema.EnumsByName[enum.Name] != nil {
 		// Use existing enum
-		f.currentNamespace.Namespaces.DuplicateEnums = append(f.currentNamespace.Namespaces.DuplicateEnums, enum)
-		enum = f.currentNamespace.Namespaces.EnumsByName[enum.Name]
+		f.currentNamespace.Schema.DuplicateEnums = append(f.currentNamespace.Schema.DuplicateEnums, enum)
+		enum = f.currentNamespace.Schema.EnumsByName[enum.Name]
 	} else {
-		f.currentNamespace.Namespaces.Enums = append(f.currentNamespace.Namespaces.Enums, enum)
-		f.currentNamespace.Namespaces.EnumsByName[enum.Name] = enum
+		f.currentNamespace.Schema.Enums = append(f.currentNamespace.Schema.Enums, enum)
+		f.currentNamespace.Schema.EnumsByName[enum.Name] = enum
 
 		for _, opt := range enum.Options {
 			f.EnumOptions[opt.Name] = opt
 			f.currentNamespace.EnumOptions[opt.Name] = opt
 
-			if f.currentNamespace.Namespaces.EnumOptionsByName[opt.Name] != nil {
+			if f.currentNamespace.Schema.EnumOptionsByName[opt.Name] != nil {
 				return nil, errors.New("duplicate enum option name used: " + opt.Name)
 			}
-			f.currentNamespace.Namespaces.EnumOptionsByName[opt.Name] = opt
+			f.currentNamespace.Schema.EnumOptionsByName[opt.Name] = opt
 		}
 	}
 	f.Enums = append(f.Enums, enum)
