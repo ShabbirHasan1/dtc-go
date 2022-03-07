@@ -2,9 +2,13 @@ package codegen
 
 import (
 	"fmt"
+	"github.com/moontrade/dtc-go/message"
 	"github.com/moontrade/dtc-go/message/pb"
+	"github.com/moontrade/nogc"
 	"github.com/yoheimuta/go-protoparser/v4/parser"
+	"math"
 	"strconv"
+	"unsafe"
 )
 
 type Kind byte
@@ -30,6 +34,17 @@ const (
 	KindStruct      Kind = 30
 )
 
+func (k Kind) IsPrimitive() bool {
+	switch k {
+	case KindBool, KindInt8, KindInt16, KindInt32, KindInt64, KindUint8,
+		KindUint16, KindUint32, KindUint64, KindFloat32, KindFloat64,
+		KindStringFixed, KindStringVLS:
+		return true
+	default:
+		return false
+	}
+}
+
 type Type struct {
 	Namespace *Namespace
 	File      *File
@@ -51,6 +66,7 @@ type Message struct {
 }
 
 type Schema struct {
+	Docs               *Docs
 	Files              map[string]*File
 	Namespaces         map[string]*Namespace
 	Aliases            []*Alias
@@ -100,6 +116,7 @@ type Alias struct {
 	File      *File
 	Name      string
 	Type      Type
+	Doc       *TypeDoc
 }
 
 type Const struct {
@@ -117,18 +134,22 @@ type Struct struct {
 	File         *File
 	Name         string
 	NamePretty   string
+	Doc          *MessageDoc
 	MaxAlign     int
 	Size         int
 	VLS          bool
 	Fields       []*Field
 	FieldsByName map[string]*Field
 	Proto        *parser.Message
+	Init         []byte
 }
 
 type Field struct {
+	Struct          *Struct
 	Name            string
+	Doc             *FieldDoc
 	Type            Type
-	Init            *Value
+	Initial         *Value
 	InitExpression  string
 	ClearExpression string
 	Proto           *parser.Field
@@ -179,6 +200,7 @@ type Enum struct {
 	Options       []*EnumOption
 	OptionsByName map[string]*EnumOption
 	Proto         *parser.Enum
+	Doc           *TypeDoc
 }
 
 type EnumOption struct {
@@ -189,6 +211,7 @@ type EnumOption struct {
 	Value     int64
 	Comment   string
 	Proto     *parser.EnumField
+	Doc       *EnumOptionDoc
 }
 
 type Union struct {
@@ -272,6 +295,25 @@ func (s *Struct) Layout() {
 		s.Size = align(offset, maxAlign)
 	} else {
 		s.Size = align(offset, s.MaxAlign)
+	}
+
+	s.Init = make([]byte, s.Size)
+	p := nogc.Pointer(unsafe.Pointer(&s.Init[0]))
+	p.Zero(uintptr(s.Size))
+	for _, field := range s.Fields {
+		if field.Type.Union != nil {
+			for _, field := range field.Type.Union.Fields {
+				if field.Initial == nil {
+					continue
+				}
+				field.Init(p)
+			}
+		} else {
+			if field.Initial == nil {
+				continue
+			}
+			field.Init(p)
+		}
 	}
 }
 
@@ -379,4 +421,102 @@ func align(offset, align int) int {
 		return offset
 	}
 	return ((offset / align) + 1) * align
+}
+
+func (f *Field) Init(p nogc.Pointer) {
+	v := f.Initial
+	if v == nil {
+		return
+	}
+	if f.Type.Union != nil {
+		return
+	}
+	kind := f.Type.Kind
+	if f.Type.Alias != nil {
+		kind = f.Type.Alias.Type.Kind
+	} else if f.Type.Enum != nil {
+		kind = f.Type.Enum.Type
+	}
+	offset := f.Type.Offset
+	for v.Type == ValueTypeConst {
+		v = v.Const.Value
+	}
+	switch v.Type {
+	case ValueTypeSizeof:
+		pointerSetUint(f.Type.Kind, p+nogc.Pointer(offset), uint64(f.Struct.Size))
+	case ValueTypeFloat32Max:
+		p.SetFloat32LE(offset, math.MaxFloat32)
+	case ValueTypeFloat64Max:
+		p.SetFloat64LE(offset, math.MaxFloat64)
+	case ValueTypeInt:
+		pointerSetInt(f.Type.Kind, p+nogc.Pointer(offset), v.Int)
+	case ValueTypeUint:
+		pointerSetUint(f.Type.Kind, p+nogc.Pointer(offset), v.Uint)
+	case ValueTypeFloat:
+		switch kind {
+		case KindFloat32:
+			p.SetFloat32LE(offset, float32(v.Float32))
+		case KindFloat64:
+			p.SetFloat64LE(offset, v.Float64)
+		default:
+			panic("expected float32 or float64")
+		}
+	case ValueTypeBool:
+		p.SetInt8(offset, int8(v.Int))
+	case ValueTypeEnumOption:
+		pointerSetInt(kind, p+nogc.Pointer(offset), v.EnumOption.Value)
+	case ValueTypeString:
+		if f.Struct.VLS {
+			panic("implement Value.Set for VLS strings")
+		}
+		if len(v.Str) > 0 {
+			message.SetStringFixed(p, uint16(offset+f.Type.Size), offset, v.Str)
+		}
+	case ValueTypeConst:
+		panic("ValueTypeConst needs to be unwrapped first")
+	default:
+		panic("Value.Type is not supported")
+	}
+}
+
+func pointerSetInt(kind Kind, p nogc.Pointer, value int64) {
+	switch kind {
+	case KindInt8:
+		p.SetInt8(0, int8(value))
+	case KindInt16:
+		p.SetInt16LE(0, int16(value))
+	case KindInt32:
+		p.SetInt32LE(0, int32(value))
+	case KindInt64:
+		p.SetInt64LE(0, value)
+	case KindUint8:
+		p.SetUInt8(0, uint8(value))
+	case KindUint16:
+		p.SetUInt16LE(0, uint16(value))
+	case KindUint32:
+		p.SetUInt32LE(0, uint32(value))
+	case KindUint64:
+		p.SetUInt64LE(0, uint64(value))
+	}
+}
+
+func pointerSetUint(kind Kind, p nogc.Pointer, value uint64) {
+	switch kind {
+	case KindInt8:
+		p.SetInt8(0, int8(value))
+	case KindInt16:
+		p.SetInt16LE(0, int16(value))
+	case KindInt32:
+		p.SetInt32LE(0, int32(value))
+	case KindInt64:
+		p.SetInt64LE(0, int64(value))
+	case KindUint8:
+		p.SetUInt8(0, uint8(value))
+	case KindUint16:
+		p.SetUInt16LE(0, uint16(value))
+	case KindUint32:
+		p.SetUInt32LE(0, uint32(value))
+	case KindUint64:
+		p.SetUInt64LE(0, value)
+	}
 }

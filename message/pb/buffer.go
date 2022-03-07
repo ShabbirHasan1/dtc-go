@@ -146,7 +146,7 @@ func (b *Buffer) Unread() []byte {
 //func (*Buffer) DebugPrint(s string, b []byte) {
 //	m := MessageReflect(new(unknownFields))
 //	m.SetUnknown(b)
-//	b, _ = prototext.MarshalOptions{AllowPartial: true, Indent: "\t"}.Marshal(m.Interface())
+//	b, _ = prototext.MarshalOptions{AllowPartial: true, IndentLine: "\t"}.Marshal(m.Interface())
 //	fmt.Printf("==== %s ====\n%s==== %s ====\n", s, b, s)
 //}
 

@@ -8,48 +8,78 @@ import (
 
 // A Kind represents the specific kind of type that a Type represents.
 // The zero Kind is not a valid kind.
-type Kind uint
+//type Kind uint
+//
+//const (
+//	Invalid Kind = iota
+//	Bool
+//	Int
+//	Int8
+//	Int16
+//	Int32
+//	Int64
+//	Uint8
+//	Uint16
+//	Uint32
+//	Uint64
+//	Float32
+//	Float64
+//	String
+//)
+//
+//func (k Kind) String() string {
+//	switch k {
+//	case Int8:
+//		return "int8"
+//	case Int16:
+//		return "int16"
+//	case Int32:
+//		return "int32"
+//	case Int64:
+//		return "int64"
+//	case Uint8:
+//		return "uint8"
+//	case Uint16:
+//		return "uint16"
+//	case Uint32:
+//		return "uint32"
+//	case Uint64:
+//		return "uint64"
+//	case Float32:
+//		return "float32"
+//	case Float64:
+//		return "float64"
+//	case String:
+//		return "string"
+//	}
+//	return "invalid"
+//}
 
-const (
-	Invalid Kind = iota
-	Bool
-	Int
-	Int8
-	Int16
-	Int32
-	Int64
-	Uint8
-	Uint16
-	Uint32
-	Uint64
-	Float32
-	Float64
-	String
-)
-
-func (k Kind) String() string {
-	switch k {
-	case Int8:
+func primitiveKindName(kind codegen.Kind) string {
+	switch kind {
+	case codegen.KindInt8:
 		return "int8"
-	case Int16:
+	case codegen.KindInt16:
 		return "int16"
-	case Int32:
+	case codegen.KindInt32:
 		return "int32"
-	case Int64:
+	case codegen.KindInt64:
 		return "int64"
-	case Uint8:
+	case codegen.KindUint8:
 		return "uint8"
-	case Uint16:
+	case codegen.KindUint16:
 		return "uint16"
-	case Uint32:
+	case codegen.KindUint32:
 		return "uint32"
-	case Uint64:
+	case codegen.KindUint64:
 		return "uint64"
-	case Float32:
+	case codegen.KindFloat32:
 		return "float32"
-	case Float64:
+	case codegen.KindFloat64:
 		return "float64"
-	case String:
+	case codegen.KindStringFixed:
+		return "string"
+	case codegen.KindStringVLS:
 		return "string"
 	}
 	return "invalid"
@@ -78,22 +108,18 @@ type Alias struct {
 	Package *Package
 	*codegen.Alias
 	Name string
-	Kind Kind
 }
 
 type Constant struct {
 	Package *Package
 	*codegen.Const
-	Name  string
-	Kind  Kind
-	Value string
+	Name string
 }
 
 type Enum struct {
 	Package *Package
 	*codegen.Enum
 	Name          string
-	Type          Kind
 	Options       []*EnumOption
 	OptionsByName map[string]*EnumOption
 }
@@ -115,29 +141,30 @@ type Field struct {
 	*codegen.Field
 	Struct *Struct
 	Name   string
-	Type   *Type
 	Fields []*Field
 }
 
-type Type struct {
-	Package   *Package
-	Import    *Import
-	Name      string
-	DTC       codegen.Type
-	Kind      Kind
-	Primitive bool
-}
-
-func (t *Type) String() string {
-	if t.Import != nil {
-		return fmt.Sprintf("%s.%s", t.Import.Prefix(), t.Name)
-	}
-	return t.Name
-}
-
-func (t *Type) IsVLS() bool {
-	return t.DTC.Kind == codegen.KindStringVLS
-}
+//type Type struct {
+//	Package   *Package
+//	Import    *Import
+//	Name      string
+//	DTC       codegen.Type
+//	Primitive bool
+//}
+//
+//func (t *Type) String() string {
+//	if t == nil {
+//		return ""
+//	}
+//	if t.Import != nil {
+//		return fmt.Sprintf("%s%s", t.Import.Prefix(), t.Name)
+//	}
+//	return t.Name
+//}
+//
+//func (t *Type) IsVLS() bool {
+//	return t.DTC.Kind == codegen.KindStringVLS
+//}
 
 type Import struct {
 	Package *Package
@@ -164,39 +191,6 @@ func (imp *Import) Prefix() string {
 		return fmt.Sprintf("%s.", imp.Name)
 	}
 	return ""
-}
-
-func primitiveKind(k codegen.Kind) Kind {
-	switch k {
-	case codegen.KindInt8:
-		return Int8
-	case codegen.KindUint8:
-		return Uint8
-	case codegen.KindInt16:
-		return Int16
-	case codegen.KindUint16:
-		return Uint16
-	case codegen.KindInt32:
-		return Int32
-	case codegen.KindUint32:
-		return Uint32
-	case codegen.KindInt64:
-		return Int64
-	case codegen.KindUint64:
-		return Uint64
-	case codegen.KindFloat32:
-		return Float32
-	case codegen.KindFloat64:
-		return Float64
-	case codegen.KindStringFixed:
-		return String
-	case codegen.KindStringVLS:
-		return String
-	case codegen.KindStruct:
-		return Invalid
-	default:
-		return Invalid
-	}
 }
 
 func cleanName(n string) string {

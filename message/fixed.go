@@ -6,7 +6,7 @@ import (
 )
 
 type Fixed struct {
-	GC
+	GCPointer
 }
 
 func (m Fixed) IsVLS() bool {
@@ -18,7 +18,7 @@ func (m Fixed) BaseSize() uint16 {
 }
 
 func NewFixed(size uintptr) Fixed {
-	return Fixed{GC{gcAlloc(size)}}
+	return Fixed{GCPointer{gcAlloc(size)}}
 }
 
 func WrapFixedFromBytes(b []byte) Fixed {
@@ -26,8 +26,8 @@ func WrapFixedFromBytes(b []byte) Fixed {
 		return Fixed{}
 	}
 	h := *(*_bytes)(unsafe.Pointer(&b))
-	m := Fixed{GC{ref: h.Data}}
-	if m.ref == nil {
+	m := Fixed{GCPointer{Ptr: h.Data}}
+	if m.Ptr == nil {
 		return m
 	}
 	return m
@@ -37,11 +37,11 @@ func NewFixedFromBytes(b []byte) Fixed {
 	if len(b) < 4 {
 		return Fixed{}
 	}
-	m := Fixed{GC{gcAlloc(uintptr(len(b)))}}
-	if m.ref == nil {
+	m := Fixed{GCPointer{gcAlloc(uintptr(len(b)))}}
+	if m.Ptr == nil {
 		return m
 	}
-	nogc.Copy(m.ref, unsafe.Pointer(&b[0]), uintptr(len(b)))
+	nogc.Copy(m.Ptr, unsafe.Pointer(&b[0]), uintptr(len(b)))
 	return m
 }
 
@@ -50,9 +50,9 @@ type FixedPointer struct {
 }
 
 func (m FixedPointer) Close() error {
-	if m.Pointer.p != 0 {
-		m.Pointer.p.Free()
-		m.Pointer.p = 0
+	if m.Pointer.Ptr != 0 {
+		m.Pointer.Ptr.Free()
+		m.Pointer.Ptr = 0
 	}
 	return nil
 }
@@ -82,9 +82,9 @@ func AllocFixedFrom(b []byte) FixedPointer {
 		return FixedPointer{}
 	}
 	m := FixedPointer{Pointer{nogc.Alloc(uintptr(len(b)))}}
-	if m.p == 0 {
+	if m.Ptr == 0 {
 		panic(ErrOutOfMemory)
 	}
-	m.p.SetBytes(0, b)
+	m.Ptr.SetBytes(0, b)
 	return m
 }

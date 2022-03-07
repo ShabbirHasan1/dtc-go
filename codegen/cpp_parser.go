@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/yoheimuta/go-protoparser/v4/parser"
@@ -26,8 +27,21 @@ func NewSchema() *Schema {
 	}
 }
 
-func LoadSchema(protoPath string, headerPaths ...string) (*Schema, error) {
+func LoadSchema(docsPath, protoPath string, headerPaths ...string) (*Schema, error) {
 	schema := NewSchema()
+	if len(docsPath) > 0 {
+		docsJson, err := os.ReadFile(docsPath)
+		if err != nil {
+			return nil, err
+		}
+		schema.Docs = &Docs{
+			MessagesByName: make(map[string]*MessageDoc),
+			TypesByName:    make(map[string]*TypeDoc),
+		}
+		if err = json.Unmarshal(docsJson, schema.Docs); err != nil {
+			return nil, err
+		}
+	}
 	err := schema.AddHeaders(headerPaths...)
 	if err != nil {
 		return nil, err
@@ -365,6 +379,9 @@ func (schema *Schema) AddHeader(path string) (*File, error) {
 				Name:      name,
 				Type:      file.typeOf(base),
 			}
+			if file.Schema.Docs != nil {
+				alias.Doc = file.Schema.Docs.TypeNamed(alias.Name)
+			}
 			file.Schema.Aliases = append(file.Schema.Aliases, alias)
 			if file.Schema.AliasesByMame[alias.Name] != nil {
 				return nil, parseError(lineIndex, line, "duplicate alias name: "+alias.Name)
@@ -390,14 +407,10 @@ func (schema *Schema) GetNamespace(name string) *Namespace {
 		namespace = &Namespace{
 			Schema:          schema,
 			Name:            name,
-			Alias:           nil,
 			AliasByName:     make(map[string]*Alias),
-			Constants:       nil,
 			ConstantsByName: make(map[string]*Const),
-			Enums:           nil,
 			EnumsByName:     make(map[string]*Enum),
 			EnumOptions:     make(map[string]*EnumOption),
-			Structs:         nil,
 			StructsByName:   make(map[string]*Struct),
 		}
 		schema.Namespaces[name] = namespace
@@ -686,21 +699,21 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 						if strings.HasSuffix(field.ClearExpression, ";") {
 							field.ClearExpression = strings.TrimSpace(field.ClearExpression[0 : len(field.ClearExpression)-1])
 						}
-						field.Init, err = f.parseInitValue(message, field.ClearExpression)
+						field.Initial, err = f.parseInitValue(message, field.ClearExpression)
 						if err != nil {
 							return nil, err
 						}
-						if field.Init == nil {
+						if field.Initial == nil {
 							return nil, errors.New("could not parse init clear expression: " + field.ClearExpression)
 						}
-						if field.Init.Type == ValueTypeBool {
+						if field.Initial.Type == ValueTypeBool {
 							switch field.Type.Kind {
 							case KindInt8, KindUint8:
 								field.Type.Kind = KindBool
 							default:
-								//field.Init.Type
+								//field.Initial.Type
 							}
-							field.Init.Type = ValueTypeInt
+							field.Initial.Type = ValueTypeInt
 						}
 					}
 				} else if funcDecl == "union" {
@@ -711,7 +724,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 
 					for _, line := range funcLines {
 						// Should be field declaration
-						field, err := f.parseField(line)
+						field, err := f.parseField(message, line)
 						if err != nil {
 							return nil, err
 						}
@@ -778,7 +791,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 		}
 
 		// Should be field declaration
-		field, err := f.parseField(line)
+		field, err := f.parseField(message, line)
 		if err != nil {
 			return nil, err
 		}
@@ -789,12 +802,19 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 		}
 	}
 
+	if f.Schema.Docs != nil {
+		message.Doc = f.Schema.Docs.MessageNamed(message.Name)
+	}
+
 	for _, field := range message.Fields {
+		if message.Doc != nil {
+			field.Doc = message.Doc.FieldNamed(field.Name)
+		}
 		if field.Type.Kind == KindStringVLS {
 			message.VLS = true
 		}
-		if field.Init == nil && len(field.InitExpression) > 0 {
-			field.Init, err = f.parseInitValue(message, field.InitExpression)
+		if field.Initial == nil && len(field.InitExpression) > 0 {
+			field.Initial, err = f.parseInitValue(message, field.InitExpression)
 			if err != nil {
 				return nil, err
 			}
@@ -809,7 +829,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 	return message, nil
 }
 
-func (f *File) parseField(line string) (*Field, error) {
+func (f *File) parseField(s *Struct, line string) (*Field, error) {
 	line = strings.TrimSpace(line)
 	index := strings.Index(line, "//")
 	comment := ""
@@ -825,7 +845,7 @@ func (f *File) parseField(line string) (*Field, error) {
 
 	var (
 		expression = ""
-		field      = &Field{}
+		field      = &Field{Struct: s}
 		err        error
 	)
 	index = strings.Index(line, "=")
@@ -872,7 +892,7 @@ func (f *File) parseField(line string) (*Field, error) {
 	field.InitExpression = expression
 
 	if len(expression) > 0 {
-		field.Init, err = f.parseValue(expression)
+		field.Initial, err = f.parseValue(expression)
 		if err != nil {
 			return nil, err
 		}
@@ -921,7 +941,7 @@ func (f *File) parseInitValue(s *Struct, str string) (*Value, error) {
 	}
 	field := s.FieldsByName[str]
 	if field != nil {
-		return field.Init, nil
+		return field.Initial, nil
 	}
 	v, err := f.parseValue(str)
 	if err != nil {
@@ -1158,6 +1178,10 @@ func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) 
 		options = strings.Split(strings.Join(lines, ""), ",")
 	)
 
+	if f.Schema.Docs != nil {
+		enum.Doc = f.Schema.Docs.TypeNamed(enum.Name)
+	}
+
 	for _, option := range options {
 		option = strings.TrimSpace(option)
 		var (
@@ -1191,6 +1215,10 @@ func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) 
 			opt.Name = strings.TrimSpace(option[0:index])
 		}
 
+		if enum.Doc != nil {
+			opt.Doc = enum.Doc.OptionNamed(opt.Name)
+		}
+
 		if enum.OptionsByName[opt.Name] != nil {
 			return nil, errors.New("duplicate enum option declaration: " + option)
 		}
@@ -1204,20 +1232,20 @@ func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) 
 
 	if f.currentNamespace.Schema.EnumsByName[enum.Name] != nil {
 		// Use existing enum
-		f.currentNamespace.Schema.DuplicateEnums = append(f.currentNamespace.Schema.DuplicateEnums, enum)
-		enum = f.currentNamespace.Schema.EnumsByName[enum.Name]
+		f.Schema.DuplicateEnums = append(f.Schema.DuplicateEnums, enum)
+		enum = f.Schema.EnumsByName[enum.Name]
 	} else {
-		f.currentNamespace.Schema.Enums = append(f.currentNamespace.Schema.Enums, enum)
-		f.currentNamespace.Schema.EnumsByName[enum.Name] = enum
+		f.Schema.Enums = append(f.Schema.Enums, enum)
+		f.Schema.EnumsByName[enum.Name] = enum
 
 		for _, opt := range enum.Options {
 			f.EnumOptions[opt.Name] = opt
 			f.currentNamespace.EnumOptions[opt.Name] = opt
 
-			if f.currentNamespace.Schema.EnumOptionsByName[opt.Name] != nil {
+			if f.Schema.EnumOptionsByName[opt.Name] != nil {
 				return nil, errors.New("duplicate enum option name used: " + opt.Name)
 			}
-			f.currentNamespace.Schema.EnumOptionsByName[opt.Name] = opt
+			f.Schema.EnumOptionsByName[opt.Name] = opt
 		}
 	}
 	f.Enums = append(f.Enums, enum)

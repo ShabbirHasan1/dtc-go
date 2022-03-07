@@ -110,7 +110,7 @@ func (EncodingRequestFactoryImpl) AllocClone(of model.EncodingRequest) model.Enc
 //////////////////////////////////////////////////////////////////////////////////////////
 
 func encodingRequestCopyFrom(from model.EncodingRequest, to model.EncodingRequestBuilder) {
-	clearEncodingRequest(to.AsPointer())
+	clearEncodingRequest(to.Unsafe())
 	to.SetEncoding(from.Encoding())
 	to.SetProtocolVersion(from.ProtocolVersion())
 	to.SetProtocolType(from.ProtocolType())
@@ -145,41 +145,41 @@ func (e EncodingRequestPointerBuilder) ToBuilder() model.EncodingRequestBuilder 
 //////////////////////////////////////////////////////////////////////////////////////////
 
 func (e EncodingRequest) ProtocolVersion() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 8, 4)
+	return message.Int32(e.Unsafe(), e.Size(), 8, 4)
 }
 func (e EncodingRequestPointer) ProtocolVersion() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 8, 4)
+	return message.Int32(e.Unsafe(), e.Size(), 8, 4)
 }
 func (e EncodingRequest) Encoding() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 12, 8)
+	return message.Int32(e.Unsafe(), e.Size(), 12, 8)
 }
 func (e EncodingRequestPointer) Encoding() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 12, 8)
+	return message.Int32(e.Unsafe(), e.Size(), 12, 8)
 }
 func (e EncodingRequest) ProtocolType() string {
-	return message.StringFixed(e.AsPointer(), e.Size(), 16, 12, 4)
+	return message.StringFixed(e.Unsafe(), e.Size(), 16, 12, 4)
 }
 func (e EncodingRequestPointer) ProtocolType() string {
-	return message.StringFixed(e.AsPointer(), e.Size(), 16, 12, 4)
+	return message.StringFixed(e.Unsafe(), e.Size(), 16, 12, 4)
 }
 
 func (e EncodingRequestBuilder) ProtocolVersion() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 8, 4)
+	return message.Int32(e.Unsafe(), e.Size(), 8, 4)
 }
 func (e EncodingRequestPointerBuilder) ProtocolVersion() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 8, 4)
+	return message.Int32(e.Unsafe(), e.Size(), 8, 4)
 }
 func (e EncodingRequestBuilder) Encoding() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 12, 8)
+	return message.Int32(e.Unsafe(), e.Size(), 12, 8)
 }
 func (e EncodingRequestPointerBuilder) Encoding() int32 {
-	return message.Int32(e.AsPointer(), e.Size(), 12, 8)
+	return message.Int32(e.Unsafe(), e.Size(), 12, 8)
 }
 func (e EncodingRequestBuilder) ProtocolType() string {
-	return message.StringFixed(e.AsPointer(), e.Size(), 16, 12, 4)
+	return message.StringFixed(e.Unsafe(), e.Size(), 16, 12, 4)
 }
 func (e EncodingRequestPointerBuilder) ProtocolType() string {
-	return message.StringFixed(e.AsPointer(), e.Size(), 16, 12, 4)
+	return message.StringFixed(e.Unsafe(), e.Size(), 16, 12, 4)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -207,10 +207,10 @@ func clearEncodingRequest(p nogc.Pointer) {
 	p.SetInt32LE(4, 8)
 }
 func (e EncodingRequestBuilder) Clear() {
-	clearEncodingRequest(e.AsPointer())
+	clearEncodingRequest(e.Unsafe())
 }
 func (e EncodingRequestPointerBuilder) Clear() {
-	clearEncodingRequest(e.AsPointer())
+	clearEncodingRequest(e.Unsafe())
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -218,22 +218,22 @@ func (e EncodingRequestPointerBuilder) Clear() {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 func (e EncodingRequestBuilder) SetProtocolVersion(value int32) {
-	message.SetInt32(e.AsPointer(), e.Size(), 8, 4, value)
+	message.SetInt32(e.Unsafe(), e.Size(), 8, 4, value)
 }
 func (e EncodingRequestPointerBuilder) SetProtocolVersion(value int32) {
-	message.SetInt32(e.AsPointer(), e.Size(), 8, 4, value)
+	message.SetInt32(e.Unsafe(), e.Size(), 8, 4, value)
 }
 func (e EncodingRequestBuilder) SetEncoding(value int32) {
-	message.SetInt32(e.AsPointer(), e.Size(), 12, 8, value)
+	message.SetInt32(e.Unsafe(), e.Size(), 12, 8, value)
 }
 func (e EncodingRequestPointerBuilder) SetEncoding(value int32) {
-	message.SetInt32(e.AsPointer(), e.Size(), 12, 8, value)
+	message.SetInt32(e.Unsafe(), e.Size(), 12, 8, value)
 }
 func (e EncodingRequestBuilder) SetProtocolType(value string) {
-	message.SetStringFixed(e.AsPointer(), e.Size(), 16, 12, 4, value)
+	message.SetStringFixed(e.Unsafe(), e.Size(), 16, 12, 4, value)
 }
 func (e EncodingRequestPointerBuilder) SetProtocolType(value string) {
-	message.SetStringFixed(e.AsPointer(), e.Size(), 16, 12, 4, value)
+	message.SetStringFixed(e.Unsafe(), e.Size(), 16, 12, 4, value)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

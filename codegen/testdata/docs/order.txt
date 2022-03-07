@@ -1,0 +1,554 @@
+SUBMIT_NEW_SINGLE_ORDER [s_SubmitNewSingleOrder structure] Client >> Server
+[Link] - [Top]
+This message is used to submit a new single order into the market from the Client to the Server.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] Symbol
+The symbol for the order.
+
+[char] Exchange
+The optional exchange for the symbol.
+
+[char] ClientOrderID
+This is the Client supplied order identifier. The Server will maintain this order identifier throughout the life of the order and always provide it back through the ClientOrderID field in the ORDER_UPDATE messages for the order.
+
+This identifier cannot be an identifier used for a currently open order and it cannot be an identifier previously used in the current trading session. The trading session typically will be a 24-hour period defined by the Server. The Server shall reject an order with a client order identifier that is for a currently open order or which has already been used during the current trading session.
+
+[OrderTypeEnum] OrderType
+The order type. For list of order types, refer to OrderTypeEnum.
+
+[BuySellEnum] BuySell
+The side of the order. Either Buy or Sell.
+
+[double] Price1
+This is the price of the order. This is the limit price for a Limit order, the stop price for a Stop order, or the trigger price for a Market if Touched order.
+
+[double] Price2
+For a Stop-Limit order, this is the limit price. This only applies to Stop-Limit orders.
+
+[TimeInForceEnum] TimeInForce
+The Time in Force for the order or orders (in the case of an OCO order).
+
+For more information, refer to TimeInForceEnum.
+
+[t_DateTime] GoodTillDateTime
+In the case of when the TimeInForce is TIF_GOOD_TILL_DATE_TIME, this specifies the expiration Date-Time of the order.
+
+[double] Quantity
+The quantity of the order. The exact meaning of this will be specified by the Server implementation.
+
+[char] TradeAccount
+This is the trade account as a text string that the order belongs to.
+
+[unsigned int8] IsAutomatedOrder
+This is set 1 to signify the order has been submitted by an automated trading process.
+
+[unsigned int8] IsParentOrder
+The Client will set this to 1 when the order is part of a bracket order. This indicates that this is the parent order. A bracket order will consist of a SUBMIT_NEW_SINGLE_ORDER message followed by a SUBMIT_NEW_OCO_ORDER message. The Server will use IsParentOrder as a flag to know that this message is a parent order. The Server will hold onto this order until it receives the subsequent SUBMIT_NEW_OCO_ORDER message and then process all of the orders as one complete set.
+
+[char] FreeFormText
+Optional: This is an optional text string which can be set by the Client to associate text with the order. The Server is not under any obligation to use this text and it may place a limitation on the length of this text.
+
+[OpenCloseTradeEnum] OpenOrClose
+For the description for this field, refer to OpenCloseTradeEnum.
+
+[double] MaxShowQuantity
+This field is provided to the exchange and represents the maximum quantity to show in the limit order book for the order.
+
+[char] Price1AsString
+This is an optional field which may be used by the Server.
+
+This field is the order price 1 as a string.
+
+[char] Price2AsString
+This is an optional field which may be used by the Server.
+
+This field is the order price 2 as a string.
+
+SUBMIT_NEW_SINGLE_ORDER_INT [s_SubmitNewSingleOrderInt structure] Client >> Server
+[Link] - [Top]
+The SUBMIT_NEW_SINGLE_ORDER_INT message is identical to SUBMIT_NEW_SINGLE_ORDER except that the order prices are as integers.
+
+The Client will only send this message to the Server if UseIntegerPriceOrderMessages is set in the LOGON_RESPONSE message.
+
+When setting the Price1 and Price2 fields, multiply the order price by the FloatToIntPriceMultiplier value provided in the SECURITY_DEFINITION_RESPONSE message for the Symbol being traded.
+
+This message also contains the Divisor field. This is the FloatToIntPriceMultiplier value provided in the SECURITY_DEFINITION_RESPONSE message for the symbol being traded. The Server needs to divide the Price1 and Price2 fields by this Divisor to get the prices as float values.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] Symbol
+The symbol for the order.
+
+[char] Exchange
+The optional exchange for the symbol.
+
+[char] ClientOrderID
+This is the Client supplied order identifier. The Server will maintain this order identifier throughout the life of the order and always provide it back through the ClientOrderID field in the ORDER_UPDATE messages for the order.
+
+This identifier cannot be an identifier used for a currently open order and it cannot be an identifier previously used in the current trading session. The trading session typically will be a 24-hour period defined by the Server. The Server shall reject an order with a client order identifier that is for a currently open order or which has already been used during the current trading session.
+
+[OrderTypeEnum] OrderType
+The order type. For list of order types, refer to OrderTypeEnum.
+
+[BuySellEnum] BuySell
+The side of the order. Either Buy or Sell.
+
+[int64] Price1
+This is the price of the order. This is the limit price for a Limit order, the stop price for a Stop order, or the trigger price for a Market if Touched order.
+
+[int64] Price2
+For a Stop-Limit order, this is the limit price. This only applies to Stop-Limit orders.
+
+[TimeInForceEnum] TimeInForce
+The Time in Force for the order or orders (in the case of an OCO order).
+
+For more information, refer to TimeInForceEnum.
+
+[t_DateTime] GoodTillDateTime
+In the case of when the TimeInForce is TIF_GOOD_TILL_DATE_TIME, this specifies the expiration Date-Time of the order.
+
+[float] Divisor
+This is the FloatToIntPriceMultiplier value provided in the SECURITY_DEFINITION_RESPONSE message for the symbol being traded. The Server needs to divide the Price1 and Price2 fields by this Divisor to get the prices as float values.
+
+[int64] Quantity
+The quantity of the order. The exact meaning of this will be specified by the Server implementation.
+
+[char] TradeAccount
+This is the trade account as a text string that the order belongs to.
+
+[unsigned int8] IsAutomatedOrder
+This is set 1 to signify the order has been submitted by an automated trading process.
+
+[unsigned int8] IsParentOrder
+The Client will set this to 1 when the order is part of a bracket order. This indicates that this is the parent order. A bracket order will consist of a SUBMIT_NEW_SINGLE_ORDER message followed by a SUBMIT_NEW_OCO_ORDER message. The Server will use IsParentOrder as a flag to know that this message is a parent order. The Server will hold onto this order until it receives the subsequent SUBMIT_NEW_OCO_ORDER message and then process all of the orders as one complete set.
+
+[char] FreeFormText
+Optional: This is an optional text string which can be set by the Client to associate text with the order. The Server is not under any obligation to use this text and it may place a limitation on the length of this text.
+
+[OpenCloseTradeEnum] OpenOrClose
+For the description for this field, refer to OpenCloseTradeEnum.
+
+SUBMIT_NEW_OCO_ORDER [s_SubmitNewOCOOrder structure] Client >> Server
+[Link] - [Top]
+This is a message from the Client to the Server for submitting an order cancels order (OCO) pair into the market. What this means is when one of the orders is filled or canceled, the other order will be canceled. If one order partially fills, the other order will be reduced in quantity by the fill amount of the order that partially filled.
+
+A service provider must implement OCO orders on the server so that they can independently be modified (Cancel/Replace) and canceled independently using each order's distinct ServerOrderID. Although, if one of the orders is canceled by the Client, the other order will be canceled as well unless they have a parent order, as specified through the ParentTriggerClientOrderID field, in which case the other order should remain open.
+
+If the OCO order pair is rejected, this must be communicated through two separate ORDER_UPDATE messages, 1 for each order, with the OrderUpdateReason set to NEW_ORDER_REJECTED.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] Symbol
+The symbol for the order.
+
+[char] Exchange
+The optional exchange for the symbol.
+
+[char] ClientOrderID_1
+The Client supplied order identifier for the first order. The Server will remember this for the life of the order.
+
+[OrderTypeEnum] OrderType_1
+The order type for the first order. For list of order types, refer to OrderTypeEnum.
+
+[BuySellEnum] BuySell_1
+The side for the first order. Either Buy or Sell.
+
+[double] Price1_1
+This is the price of the first order. This is the limit price for a Limit order, the stop price for a Stop order, or the trigger price for a Market if Touched order.
+
+[double] Price2_1
+This is the second price for the first order. For a Stop-Limit order, this is the limit price. Price2_1 only applies to Stop-Limit orders.
+
+[double] Quantity_1
+The quantity for the first order.
+
+[char] ClientOrderID_2
+The Client supplied order identifier for the second order. The Server will remember this for the life of the order.
+
+[OrderTypeEnum] OrderType_2
+The order type for the second order. For list of order types, refer to OrderTypeEnum.
+
+[BuySellEnum] BuySell_2
+The side for the second order. Either Buy or Sell.
+
+[double] Price1_2
+This is the price of the second order. This is the limit price for a Limit order, the stop price for a Stop order, or the trigger price for a Market if Touched order.
+
+[double] Price2_2
+This is the second price for the second order. For a Stop-Limit order, this is the limit price. Price2_2 only applies to Stop-Limit orders.
+
+[double] Quantity_2
+The quantity for the second order.
+
+[TimeInForceEnum] TimeInForce
+The Time in Force for the order or orders (in the case of an OCO order).
+
+For more information, refer to TimeInForceEnum.
+
+[t_DateTime] GoodTillDateTime
+In the case of when the TimeInForce is TIF_GOOD_TILL_DATE_TIME, this specifies the expiration Date-Time of the order. This applies to both of the orders in the OCO pair.
+
+[unsigned int8] IsAutomatedOrder
+Set to 1 for an order submitted by an automated trading system.
+
+[char] TradeAccount
+This is the trade account as a text string that the orders belong to.
+
+[char] ParentTriggerClientOrderID
+Optional: This field supports the submission of an OCO order pair which has a parent. This is known as a Bracket order.
+
+For complete documentation for bracket orders, refer to Bracket Order Procedures.
+
+[char] FreeFormText
+Optional: This is an optional text string which can be set by the Client to associate text with each of the OCO orders. The Server is not under any obligation to use this text and it may place a limitation on the length of this text.
+
+[OpenCloseTradeEnum] OpenOrClose
+For the description for this field, refer to OpenCloseTradeEnum.
+
+[PartialFillHandlingEnum] PartialFillHandling
+Specifies how partial fills should be handled when when one of the orders in the OCO order set partially fills.
+
+For the possible values, refer to PartialFillHandlingEnum.
+
+[unsigned int8] UseOffsets
+This field is only relevant to a Bracket order which is the case when the ParentTriggerClientOrderID field is set.
+
+UseOffsets can be set to 1 and indicates that the OffsetFromParent1 and OffsetFromParent2 fields specify the two OCO order prices as a price offset from the parent order Price1 field, rather than an absolute price. In this case Price1_1 and Price1_2 are not used.
+
+When UseOffsets is set to 0, the default, then the OCO order prices are specified with Price1_1 and Price1_2.
+
+When UseOffsets is set to 1 and the OffsetFromParent1 and OffsetFromParent2 fields are set, it is necessary that the parent order Price1 field be set even in the case of a Market order type. In the case of a Market order type use the current order price. This is so that the server has a reference price for the offsets in case it needs to translate them to actual prices.
+
+When the parent order fills, it is expected the Server will maintain the specified offsets to the parent order fill price for the Target and Stop orders.
+
+A Server is not required to support this field.
+
+[double] OffsetFromParent1
+When UseOffsets is set to 1, then this field specifies the Price1_1 price as an offset from the parent order. In this case Price1_1 will not be set in the message. Instead the Server calculates that price from this offset and parent order price.
+
+This needs to always be set to a positive price value which is an offset from the parent order price. The Server will make the correct calculation based upon the Side and Order Type.
+
+A Server is not required to support this field.
+
+[double] OffsetFromParent2
+When UseOffsets is set to 1, then this field specifies the Price1_2 price as an offset from the parent order. In this case Price1_2 will not be set in the message. Instead the Server calculates that price from this offset and parent order price.
+
+This needs to always be set to a positive price value which is an offset from the parent order price. The Server will make the correct calculation based upon the Side and Order Type.
+
+A Server is not required to support this field.
+
+SUBMIT_NEW_OCO_ORDER_INT [s_SubmitNewOCOOrderInt structure] Client >> Server
+[Link] - [Top]
+The SUBMIT_NEW_OCO_ORDER_INT message is identical to SUBMIT_NEW_OCO_ORDER except that the order prices are as integers.
+
+The Client will only send this message to the Server if UseIntegerPriceOrderMessages is set in the LOGON_RESPONSE message.
+
+When setting the Price1 and Price2 fields, multiply the order price by the FloatToIntPriceMultiplier value provided in the SECURITY_DEFINITION_RESPONSE message for the Symbol being traded.
+
+This message also contains the Divisor field. This is the FloatToIntPriceMultiplier value provided in the SECURITY_DEFINITION_RESPONSE message for the symbol being traded. The Server needs to divide the Price1 and Price2 fields by this Divisor to get the prices as float values.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] Symbol
+The symbol for the order.
+
+[char] Exchange
+The optional exchange for the symbol.
+
+[char] ClientOrderID_1
+The Client supplied order identifier for the first order. The Server will remember this for the life of the order.
+
+[OrderTypeEnum] OrderType_1
+The order type for the first order. For list of order types, refer to OrderTypeEnum.
+
+[BuySellEnum] BuySell_1
+The side for the first order. Either Buy or Sell.
+
+[int64] Price1_1
+This is the price of the first order. This is the limit price for a Limit order, the stop price for a Stop order, or the trigger price for a Market if Touched order.
+
+[int64] Price2_1
+This is the second price for the first order. For a Stop-Limit order, this is the limit price. This only applies to Stop-Limit orders.
+
+[int64] Quantity_1
+The quantity of the first order. The exact meaning of this will be specified by the Server implementation.
+
+[char] ClientOrderID_2
+The Client supplied order identifier for the second order. The Server will remember this for the life of the order.
+
+[OrderTypeEnum] OrderType_2
+The order type of the second order. For list of order types, refer to OrderTypeEnum.
+
+[BuySellEnum] BuySell_2
+The side of the second order. Either Buy or Sell.
+
+[int64] Price1_2
+This is the price of the second order. This is the limit price for a Limit order, the stop price for a Stop order, or the trigger price for a Market if Touched order.
+
+[int64] Price2_2
+This is the second price for the second order. For a Stop-Limit order, this is the limit price. This only applies to Stop-Limit orders.
+
+[int64] Quantity_2
+The quantity of the second order. The exact meaning of this will be specified by the Server implementation.
+
+[TimeInForceEnum] TimeInForce
+The Time in Force for the order or orders (in the case of an OCO order).
+
+For more information, refer to TimeInForceEnum.
+
+[t_DateTime] GoodTillDateTime
+In the case of when the TimeInForce is TIF_GOOD_TILL_DATE_TIME, this specifies the expiration Date-Time of the order. This applies to both of the orders in the OCO pair.
+
+[char] TradeAccount
+This is the trade account as a text string that the orders belong to.
+
+[unsigned int8] IsAutomatedOrder
+Set to 1 for an order submitted by an automated trading system.
+
+[char] ParentTriggerClientOrderID
+Optional: This field supports the submission of an OCO order pair which has a parent. This is known as a Bracket order.
+
+For complete documentation for bracket orders, refer to Bracket Order Procedures.
+
+[char] FreeFormText
+Optional: This is an optional text string which can be set by the Client to associate text with each of the OCO orders. The Server is not under any obligation to use this text and it may place a limitation on the length of this text.
+
+[float] Divisor
+This is the FloatToIntPriceMultiplier value provided in the SECURITY_DEFINITION_RESPONSE message for the Symbol being traded. The Server needs to divide the Price1_* and Price2_* fields by this Divisor to get the prices as float values.
+
+[OpenCloseTradeEnum] OpenOrClose
+For the description for this field, refer to OpenCloseTradeEnum.
+
+[PartialFillHandlingEnum] PartialFillHandling
+Specifies how partial fills should be handled when when one of the orders in the OCO order set partially fills.
+
+For the possible values, refer to PartialFillHandlingEnum.
+
+SUBMIT_FLATTEN_POSITION_ORDER [s_SubmitFlattenPositionOrder structure] Client >> Server
+[Link] - [Top]
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] Symbol
+The symbol of the Trade Position to flatten.
+
+[char] Exchange
+The optional exchange for the Symbol.
+
+[char] TradeAccount
+The trade account as a text string of the Trade Position to flatten.
+
+[char] ClientOrderID
+The Client supplied order identifier for the order which will be created to flatten the Trade Position.
+
+The Server will remember this for the life of the order.
+
+[char] FreeFormText
+Optional: This is an optional text string which can be set by the Client to associate text with the order which will be created to flatten the Trade Position.
+
+The Server is not under any obligation to use this text and it may place a limitation on the length of this text.
+
+[unsigned int8] IsAutomatedOrder
+Set to 1 for an order submitted by an automated trading system.
+
+CANCEL_REPLACE_ORDER [s_CancelReplaceOrder structure] Client >> Server
+[Link] - [Top]
+This message is sent by the Client to the Server to cancel and replace an existing order. This is also known as an order modification.
+
+When the cancel and replace operation is completed, an OrderUpdate message is sent by the Server with the OrderUpdateReasonfield set to ORDER_CANCEL_REPLACE_COMPLETE. If the cancel and replace operation cannot be completed, an OrderUpdate message is sent by the Server with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] ServerOrderID
+This is the order identifier for the order to modify. The Client needs to set this to the ServerOrderID field received back in the most recent ORDER_UPDATE message for the order.
+
+The Server will rely upon this ServerOrderID and only this order identifier to identify the order to be canceled and replaced. Although the given ClientOrderID by the Client must not change.
+
+[char] ClientOrderID
+This is the Client's own order identifier for the order.
+
+This must be the same throughout the life of the order. If the Server sees that this order identifier has changed in relation to the ServerOrderID, then it should reject this message with a ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED
+
+In the case where the order modification cannot be performed because the ServerOrderID does not exist, the Server will send a ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED and ClientOrderID set to the given ClientOrderID in this message. ServerOrderID will be unset because an invalid server order identifier was given.
+
+[double] Price1
+For orders that require a price, this is the new order price.
+
+This value can be left unset indicating to the Server that Price1 must not change and only the Quantity. In this case it is necessary to set Price1IsSet to a 0 value.
+
+[double] Price2
+For Stop-Limit orders this is the new Limit price. For other order types it is not used.
+
+This value can be left unset indicating to the Server that Price2 must not change and only the Quantity. In this case it is necessary to set Price2IsSet to a 0 value.
+
+[double] Quantity
+This is the new order quantity. It this is 0, then this means the order quantity must not be changed by the Server.
+
+If the order has partially filled, then this is going to be the order quantity which also includes the amount which has partially filled.
+
+For example, if the original quantity was 10 and there has been a partial fill of 3, the Client wants a fill of 2 more making a total of 5, then the Client will set this to 5.
+
+[unsigned int8] Price1IsSet
+When this field is set to a nonzero value, it indicates that Price1 is set and the server should use the value, if it applies to the order type.
+
+The default value is 1.
+
+[unsigned int8] Price2IsSet
+When this field is set to a nonzero value, it indicates that Price2 is set and the server should use the value, if it applies to the order type.
+
+The default value is 1.
+
+[TimeInForceEnum] TimeInForce
+The Time in Force for the order. For a list of Time in Force values, refer to TimeInForceEnum.
+
+The default value is TIF_UNSET.
+
+When this field is set to a value other than TIF_UNSET, it indicates that the TimeInForce is being changed.
+
+If the server does not support changing the Time in Force of the order, it needs to reject this CANCEL_REPLACE_ORDER message and send an ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED.
+
+The server is under no obligation to support changing the Time in Force.
+
+[t_DateTime] GoodTillDateTime
+In the case of when the TimeInForce field is TIF_GOOD_TILL_DATE_TIME, this specifies the expiration Date-Time of the order.
+
+[uint8_t] UpdatePrice1OffsetToParent
+This is an optional field. If modifying a child order which is part of a Server managed bracket order, then when this variable is set to 1 it provides an indication to the Server to update the internal server managed price offset to the parent order that this child order has to the parent.
+
+This will ensure the Server will maintain the proper offset of the child order to the fill price of the parent order when the parent order fills.
+
+CANCEL_REPLACE_ORDER_INT [s_CancelReplaceOrderInt structure] Client >> Server
+[Link] - [Top]
+The CANCEL_REPLACE_ORDER_INT is a message from the Client to Server to cancel and replace (modify) an order.
+
+It is identical to CANCEL_REPLACE_ORDER except the prices are as integers.
+
+When the cancel and replace operation is completed, an OrderUpdate message is sent by the Server with the OrderUpdateReasonfield set to ORDER_CANCEL_REPLACE_COMPLETE. If the cancel and replace operation cannot be completed, an OrderUpdate message is sent by the Server with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] ServerOrderID
+This is the order identifier for the order to modify. The Client needs to set this to the ServerOrderID field received back in the most recent ORDER_UPDATE message for the order.
+
+The Server will rely upon this ServerOrderID and only this order identifier to identify the order to be canceled and replaced. Although the given ClientOrderID by the Client must not change.
+
+[char] ClientOrderID
+This is the Client's own order identifier for the order.
+
+This must be the same throughout the life of the order. If the Server sees that this order identifier has changed in relation to the ServerOrderID, then it should reject this message with a ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED
+
+In the case where the order modification cannot be performed because the ServerOrderID does not exist, the Server will send a ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED and ClientOrderID set to the given ClientOrderID in this message. ServerOrderID will be unset because an invalid server order identifier was given.
+
+[int64] Price1
+For orders that require a price, this is the new order price.
+
+This is an integer value. This is calculated by multiplying the actual order price by the FloatToIntPriceMultiplier field from the SECURITY_DEFINITION_RESPONSE message for the Symbol of the order.
+
+This value can be left unset indicating to the Server that Price1 must not change and only the Quantity. In this case it is necessary to set Price1IsSet to a 0 value.
+
+[int64] Price2
+For Stop-Limit orders this is the new Limit price. For other order types it is not used.
+
+This is an integer value. This is calculated by multiplying the actual order price by the FloatToIntPriceMultiplier field from the SECURITY_DEFINITION_RESPONSE message for the Symbol of the order.
+
+This value can be left unset indicating to the Server that Price2 must not change and only the Quantity. In this case it is necessary to set Price2IsSet to a 0 value.
+
+[float] Divisor
+This is the FloatToIntPriceMultiplier field received from the SECURITY_DEFINITION_RESPONSE message for the Symbol of the order.
+
+The Server needs to divide the Price1 or Price2 fields by this Divisor to arrive at the original floating-point value.
+
+[int64] Quantity
+This is the new order quantity. It this is 0, then this means the order quantity must not be changed by the Server.
+
+If the order has partially filled, then this is going to be the order quantity which also includes the amount which has partially filled.
+
+For example, if the original quantity was 10 and there has been a partial fill of 3, the Client wants a fill of 2 more making a total of 5, then the Client will set this to 5.
+
+[unsigned int8] Price1IsSet
+When this field is set to a nonzero value, it indicates that Price1 is set and the server should use the value, if it applies to the order type.
+
+The default value is 1.
+
+[unsigned int8] Price2IsSet
+When this field is set to a nonzero value, it indicates that Price2 is set and the server should use the value, if it applies to the order type.
+
+The default value is 1.
+
+[TimeInForceEnum] TimeInForce
+The Time in Force for the order. For a list of Time in Force values, refer to TimeInForceEnum.
+
+The default value is TIF_UNSET.
+
+When this field is set to a value other than TIF_UNSET, it indicates that the TimeInForce is being changed.
+
+If the server does not support changing the Time in Force of the order, it needs to reject this CANCEL_REPLACE_ORDER_INT message and send an ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REPLACE_REJECTED.
+
+The server is under no obligation to support changing the Time in Force.
+
+[t_DateTime] GoodTillDateTime
+In the case of when the TimeInForce field is TIF_GOOD_TILL_DATE_TIME, this specifies the expiration Date-Time of the order.
+
+[uint8_t] UpdatePrice1OffsetToParent
+This is an optional field. If modifying a child order which is part of a Server managed bracket order, then when this variable is set to 1 it provides an indication to the Server to update the internal server managed price offset to the parent order that this child order has to the parent.
+
+This will ensure the Server will maintain the proper offset of the child order to the fill price of the parent order when the parent order fills.
+
+CANCEL_ORDER [s_CancelOrder structure] Client >> Server
+[Link] - [Top]
+This is a message from the Client to the Server requesting a previously sent order to be canceled.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[char] ServerOrderID
+This is the order identifier for the order to cancel. The Client needs to set this to the ServerOrderID field received back in the most recent ORDER_UPDATE message for the order. The only case in which a ServerOrderID would change is in the case of a successful order Cancel and Replace operation.
+
+The Server will rely upon this ServerOrderID and only this order identifier to identify the order to be canceled. Although the given ClientOrderID from the Client must not change.
+
+[char] ClientOrderID
+This is the Client's own order identifier for the order.
+
+This must be the same throughout the life of the order. If the Server sees that this order identifier has changed in relation to the ServerOrderID , then it should reject this message with a ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REJECTED.
+
+In the case where the order cancellation cannot be performed because the ServerOrderID does not exist, the Server will send a ORDER_UPDATE message with the OrderUpdateReason set to ORDER_CANCEL_REJECTED and ClientOrderID set to the given ClientOrderID in this message. ServerOrderID will be unset because an invalid server order identifier was given.

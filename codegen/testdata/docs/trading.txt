@@ -1,0 +1,505 @@
+OPEN_ORDERS_REQUEST [s_OpenOrdersRequest structure] Client >> Server
+[Link] - [Top]
+This is a message from the Client to the Server requesting the currently open orders.
+
+The Server will send open/working orders in response to this request through ORDER_UPDATE messages.
+
+The Server will not return canceled or filled orders.
+
+When the Server responds to this request, it needs to respond with a separate ORDER_UPDATE for each order.
+
+When the Server responds to this request, OrderUpdateReason in the ORDER_UPDATE message must be set to OPEN_ORDERS_REQUEST_RESPONSE indicating the orders are being restated.
+
+If there are no Open orders, the Server will send back 1 ORDER_UPDATE message with only the TotalNumberMessages, MessageNumber, RequestID, OrderUpdateReason, NoOrders = 1 fields set in the ORDER_UPDATE message.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+A unique request identifier for this request.
+
+[int32] RequestAllOrders
+0 = request a specific order. 1 = for all orders (default).
+
+[char] ServerOrderID
+Leave this field empty if Client wants all orders. Otherwise, specify the specific ServerServerID that want an ORDER_UPDATE message for.
+
+[char] TradeAccount
+Leave this field empty if Client wants open orders for all Trade Accounts. Otherwise, specify the specific TradeAccount that want ORDER_UPDATE messages for.
+
+ORDER_UPDATE [s_OrderUpdate structure] Server >> Client
+[Link] - [Top]
+The ORDER_UPDATE is a unified message from the Server to the Client which communicates the complete details of an order, the Order Status, and the reason for sending the message (OrderUpdateReason).
+
+DTC uses this single unified message to provide an update for an order. The OrderUpdateReason field provides a clear indication for each reason this message is being sent.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+Set to 0 unless this is in response to an OPEN_ORDERS_REQUEST, in which case this must be set to the RequestID given in the OPEN_ORDERS_REQUEST.
+
+If this ORDER_UPDATE is unsolicited, for example a real-time fill or other unsolicited order event, the Server must leave this at 0.
+
+[int32] TotalNumMessages
+This indicates the total number of ORDER_UPDATE messages when a batch of reports is being sent in response to an OPEN_ORDERS_REQUEST. If there is only one order being sent, this will be 1. The Server must use a value of 1 for an unsolicited report. A Client should not rely on this field for an unsolicited report.
+
+[int32] MessageNumber
+This indicates the 1-based index of the ORDER_UPDATE message when a batch of reports is being sent in response to an OPEN_ORDERS_REQUEST. If there is only one order being sent, this will be 1. Use a value of 1 for an unsolicited report. A Client should not rely on this field for an unsolicited report.
+
+[char] Symbol
+The symbol for the order.
+
+[char] Exchange
+The optional exchange for the symbol.
+
+[char] PreviousServerOrderID
+Used upon a Cancel and Replace operation (ORDER_CANCEL_REPLACE_COMPLETE) where a new Server Order identifier is given.
+
+In this case this field needs to be set to the previous Server Order identifier.
+
+This should be left at the default setting of empty in the case where the Server does not change the Server Order identifier upon a Cancel and Replace operation.
+
+[char] ServerOrderID
+The ServerOrderID is set by the server and uniquely identifies the order. When a new order is submitted by the Client and the Server responds with an ORDER_UPDATE, this field needs to be set to the order identifier which is good for the life of the order.
+
+This ServerOrderID can optionally change on a Cancel and Replace operation. In this case, the PreviousServerOrderID field will contain the previous ServerOrderID upon a ORDER_CANCEL_REPLACE_COMPLETE OrderUpdateReason.
+
+ServerOrderID must always be set except it is not required in the cases when the OrderUpdateReason is one of the following: NEW_ORDER_REJECTED, ORDER_CANCEL_REJECTED, ORDER_CANCEL_REPLACE_REJECTED. If it is not set, then the ClientOrderID must be set.
+
+[char] ClientOrderID
+The ClientOrderID is the order identifier provided by the Client. When the Client submits a new order, cancels and replaces an existing order, or cancels an order, then the Client needs to specify this identifier.
+
+The Client must maintain the same order identifier throughout the life of the order.
+
+The Server should persist the ClientOrderID across sessions. A session is defined as the period of time from the start of the network connection between the Client and Server to the end of that connection.
+
+The Client should only rely upon the ClientOrderID being set when the OrderUpdateReason is one of the following: NEW_ORDER_ACCEPTED, NEW_ORDER_REJECTED, ORDER_CANCELED, ORDER_CANCEL_REPLACE_COMPLETE, ORDER_CANCEL_REJECTED, ORDER_CANCEL_REPLACE_REJECTED.
+
+After a new order has been accepted, the Client will rely upon the given ServerOrderID from the server to identify the order and should no longer rely upon the given ClientOrderID. However, the Client needs to maintain a copy of the ClientOrderID for any subsequent order modifications and cancellations because this is a required field for those.
+
+[char] ExchangeOrderID
+The order identifier from the exchange that handles the order. This is optional.
+
+[OrderStatusEnum] OrderStatus
+This is required. Needs to be set to one of the following values by the Server to indicate the current status of the order, unless NoneOrder = 1:
+
+ORDER_STATUS_UNSPECIFIED (0): The status of the order is unset. Use this when NoneOrder = 1, or when the Server does not know the true status of an order when the Order Update Report message is sent.
+ORDER_STATUS_ORDER_SENT (1): When a Client sends an order to the Server, then the Client internally will set the status to ORDER_STATUS_ORDER_SENT. The Server will not set this Status.
+ORDER_STATUS_PENDING_OPEN (2): This means the Server has accepted the order but it is not yet considered in a fully working state for any reason.
+ORDER_STATUS_PENDING_CHILD (3): This status applies to a Limit or Stop order attached to a parent order. It will have this status if the parent order has not yet filled.
+ORDER_STATUS_OPEN (4): Order is open and working.
+ORDER_STATUS_PENDING_CANCEL_REPLACE (5): Order is pending a Cancel and Replace operation. The Server should send a ORDER_UPDATE message with the OrderUpdateReason set to GENERAL_ORDER_UPDATE and the OrderStatus set to this status to indicate the pending Cancel and Replace operation.
+ORDER_STATUS_PENDING_CANCEL (6): Order is pending a Cancel operation. The Server should send a ORDER_UPDATE message with the OrderUpdateReason set to GENERAL_ORDER_UPDATE and the OrderStatus set to this status to indicate the pending Cancel operation.
+ORDER_STATUS_FILLED (7): Order is filled and no longer working.
+ORDER_STATUS_CANCELED (8): Order is canceled. If the user tries to cancel an order that has already been canceled, then continue to return this Order Status for it.
+ORDER_STATUS_REJECTED (9): Order has been rejected after the initial order submission. It is not working.
+ORDER_STATUS_PARTIALLY_FILLED (10): Order is partially filled and still working.
+[OrderUpdateReasonEnum] OrderUpdateReason
+This is required. This field needs to be set to one of the following values by the Server to indicate the reason the ORDER_UPDATE is being sent.
+
+OPEN_ORDERS_REQUEST_RESPONSE (1): When the ORDER_UPDATE is specifically sent in response to an OPEN_ORDERS_REQUEST request, this is the OrderUpdateReason.
+NEW_ORDER_ACCEPTED (2): This OrderUpdate indicates a new order has been accepted.
+GENERAL_ORDER_UPDATE (3): A general order update. For example, when an order is in the process of being canceled, the Server may send an ORDER_UPDATE message with the OrderStatus set to ORDER_STATUS_PENDING_CANCEL. In this particular case the OrderUpdateReason needs to be set to GENERAL_ORDER_UPDATE (3).
+ORDER_FILLED (4): Upon a complete fill of the order, this is the OrderUpdateReason. This OrderUpdateReason must only be used when an ORDER_UPDATE is sent at the moment in time of a fill. A previously filled order that is being restated in response to an OPEN_ORDERS_REQUEST must not use this OrderUpdateReason.
+ORDER_FILLED_PARTIALLY (5): Upon a partial fill of the order, this is the OrderUpdateReason. This OrderUpdateReason must only be used when an ORDER_UPDATE is sent at the moment in time of a fill. A previously filled order that is being restated in response to an OPEN_ORDERS_REQUEST must not use this OrderUpdateReason.
+ORDER_CANCELED (6): This OrderUpdateReason indicates the order is now successfully canceled.
+ORDER_CANCEL_REPLACE_COMPLETE (7): This OrderUpdateReason indicates the order is now successfully canceled and replaced (modified).
+NEW_ORDER_REJECTED (8): After an order has been submitted by the Client, it has been rejected for any reason and was never working, the Server will send through an ORDER_UPDATE with this OrderUpdateReason. In this case the Server needs to set the OrderStatus in the ORDER_UPDATE to ORDER_STATUS_REJECTED.
+
+The following fields need to be set for a NEW_ORDER_REJECTED OrderUpdateReason: OrderUpdateReason, OrderStatus, MessageNumber, TotalNumMessages, ClientOrderID, Symbol, Exchange, TradeAccount.
+ORDER_CANCEL_REJECTED (9): A request by the Client to cancel the order with the CANCEL_ORDER message has been rejected.
+
+The current status of the order must be set in the OrderStatus member of the ORDER_UPDATE message.
+
+In the case where the given ServerOrderID in a CANCEL_ORDER message from the Client is not known, then respond with an ORDER_UPDATE message and set the OrderUpdateReason to ORDER_CANCEL_REJECTED and set the OrderStatus to ORDER_STATUS_REJECTED.
+
+In the case where the ServerOrderID is not known, then in the ORDER_UPDATE message, it should not be set. However, in this case it is necessary to set the ClientOrderID in the ORDER_UPDATE message to the given ClientOrderID in the CANCEL_ORDER message. The ClientOrderID must always be set in this case in an ORDER_UPDATE.
+
+In the case where the order has already been canceled for the given ServerOrderID in a CANCEL_ORDER message, then respond with an ORDER_UPDATE message and set the OrderUpdateReason to ORDER_CANCEL_REJECTED and set the OrderStatus to ORDER_STATUS_CANCELED.
+
+If for some reason the Server is uncertain as to the status of the order that was attempted to be canceled, then set the OrderStatus to ORDER_STATUS_UNSPECIFIED.
+ORDER_CANCEL_REPLACE_REJECTED (10): A request by the Client to cancel and replace the order with the CANCEL_REPLACE_ORDER message has been rejected.
+
+The current status of the order must be set in the OrderStatus member of the ORDER_UPDATE message.
+
+In the case where the given ServerOrderID in a CANCEL_REPLACE_ORDER message from the Client is not known, then respond with an ORDER_UPDATE message and set the OrderUpdateReason to ORDER_CANCEL_REPLACE_REJECTED and set the OrderStatus to ORDER_STATUS_REJECTED.
+
+In the case where the ServerOrderID is not known, then in the ORDER_UPDATE message, it should not be set. However, in this case it is necessary to set the ClientOrderID in the ORDER_UPDATE message to the given ClientOrderID in the CANCEL_REPLACE_ORDER message. The ClientOrderID must always be set in this case in an ORDER_UPDATE.
+
+If for some reason the Server is uncertain as to the status of the order that was attempted to be canceled and replaced, then set the OrderStatus to ORDER_STATUS_UNSPECIFIED.
+[OrderTypeEnum] OrderType
+The order type. Can be set to one of the following.
+
+ORDER_TYPE_MARKET
+ORDER_TYPE_LIMIT
+ORDER_TYPE_STOP
+ORDER_TYPE_STOP_LIMIT
+ORDER_TYPE_MARKET_IF_TOUCHED
+[BuySellEnum] BuySell
+Indicates whether the order is a Buy or Sell order. Can be set to one of the following constants: DTC::BUY (1) or DTC::SELL (2).
+
+[double] Price1
+For orders that require a price, this is the order price.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] Price2
+For Stop-Limit orders this is the Limit price. Otherwise, this is unset.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[TimeInForceEnum] TimeInForce
+The Time in Force of the order. Can be any of the following:
+
+TIF_DAY
+TIF_GOOD_TILL_CANCELED
+TIF_GOOD_TILL_DATE_TIME
+TIF_IMMEDIATE_OR_CANCEL
+TIF_ALL_OR_NONE
+TIF_FILL_OR_KILL
+[t_DateTime] GoodTillDateTime
+The expiration Date and Time of the order in the case when TimeInForce is TIF_GOOD_TILL_DATE_TIME.
+
+[double] OrderQuantity
+The quantity of the order.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] FilledQuantity
+The number of shares or contracts that have filled in the order.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] RemainingQuantity
+The number of shares or contracts that still remain to be filled.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] AverageFillPrice
+The average price of all of the fills for the order.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] LastFillPrice
+The price of the most recent fill.
+
+Only necessary to set if OrderUpdateReason is ORDER_FILLED or ORDER_FILLED_PARTIALLY.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[t_DateTime] LastFillDateTime
+The date and Time of the most recent fill.
+
+Only necessary to set if OrderUpdateReason is ORDER_FILLED or ORDER_FILLED_PARTIALLY.
+
+[double] LastFillQuantity
+The number of contracts/shares that has filled for the specific order fill that is currently reported through the ORDER_UPDATE message.
+
+Only necessary to set if OrderUpdateReason is ORDER_FILLED or ORDER_FILLED_PARTIALLY.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[char] LastFillExecutionID
+The unique identifier for the most recent fill.
+
+Only necessary to set if OrderUpdateReason is ORDER_FILLED or ORDER_FILLED_PARTIALLY.
+
+[char] TradeAccount
+The trade account the order belongs to.
+
+[char] InfoText
+Free-form text with information to communicate about the order. When an order is rejected, this should be set by the Server to indicate the reason for the rejection.
+
+[unsigned int8] NoOrders
+Set by the Server to 1 to indicate there are no orders when OPEN_ORDERS_REQUEST message has been received and is being responded to. Otherwise, leave at the default of 0.
+
+[char] ParentServerOrderID
+This is the ServerOrderID of the parent order when the order that this Order Update Report is for, is a child order in a bracket order. Otherwise, this is an empty text string.
+
+[char] OCOLinkedOrderServerOrderID
+In the case of an OCO order set submitted with SUBMIT_NEW_OCO_ORDER, whether it has a Parent order or not, this is the ServerOrderID of the other order in the OCO pair. These two orders are considered "linked" together. Otherwise, this is an empty text string.
+
+[OpenCloseTradeEnum] OpenOrClose
+For the description for this field, refer to OpenCloseTradeEnum.
+
+[char] PreviousClientOrderID
+The PreviousClientOrderID is the previous ClientOrderID provided by the Client for the order, if the Client changed it during order cancel and replace request or an order cancel request.
+
+A Server only is obligated to provide this field immediately after the ClientOrderID has been changed. Subsequent ORDER_UPDATE messages do not need to set this field.
+
+[char] FreeFormText
+This is the optional free-form text that was originally set with a new order using the new order messages.
+
+[t_DateTime] OrderReceivedDateTime
+This is the Date-Time when the original order was received by the Server. Order modifications normally will not cause this Date-Time to be updated.
+
+OPEN_ORDERS_REJECT [s_OpenOrdersReject structure] Server >> Client
+[Link] - [Top]
+If the Server is unable to serve the request for an OPEN_ORDERS_REQUEST message received, for a reason other than there not being any open orders, then send this message to the Client.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+This is set to the RequestID field sent in the OPEN_ORDERS_REQUEST message from the Client.
+
+[char] RejectText
+Free-form text indicating the reason for rejection.
+
+HISTORICAL_ORDER_FILLS_REQUEST [s_HistoricalOrderFillsRequest structure] Client >> Server
+[Link] - [Top]
+This is a message from the Client to the Server to request order fills/executions for an order or orders.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+A unique request identifier. The Server will return the same identifier in the response.
+
+[char] ServerOrderID
+Leave empty if want all order fills. Otherwise, request order fills for given Server Order identifier.
+
+[char] TradeAccount
+This specifies the particular Trade Account to request order fills for.
+
+[int32] NumberOfDays
+The NumberOfDays field is ignored by the Server when StartDateTime is set.
+
+The NumberOfDays field specifies to the Server to return order fills counting from the current day back by the specified number of days.
+
+If NumberOfDays and StartDateTime are both not set or 0, the Server will return all historical order fills available.
+
+[t_DateTime] StartDateTime
+The NumberOfDays field is ignored by the Server when StartDateTime is set.
+
+The StartDateTime field specifies to the Server to return order fills starting with date time specified.
+
+If NumberOfDays and StartDateTime are both not set or 0, the Server will return all historical order fills available.
+
+HISTORICAL_ORDER_FILL_RESPONSE [s_HistoricalOrderFillResponse structure] Server >> Client
+[Link] - [Top]
+This is a message from the Server to the Client providing an individual historical order fill in response to a HISTORICAL_ORDER_FILLS_REQUEST message.
+
+The Server is expected to send this message to the Client in response to a HISTORICAL_ORDER_FILLS_REQUEST message even when there are no order fills to return. If there are no order fills to return, it needs to set the NoOrderFills field to 1.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+The RequestID specified in the HISTORICAL_ORDER_FILLS_REQUEST message from the Client.
+
+[int32] TotalNumberMessages
+This indicates the total number of order fill reports when a batch of reports is being sent. If there is only one order fill report being sent, this will be 1.
+
+[int32] MessageNumber
+This indicates the 1-based index of the order fill report when a batch of reports is being sent. If there is only one order fill report being sent, this will be 1.
+
+[char] Symbol
+The symbol the order fill is for.
+
+[char] Exchange
+The optional exchange for the symbol.
+
+[char] ServerOrderID
+This is the Server provided order identifier that the order fill was associated with.
+
+[BuySellEnum] BuySell
+This is the fill side and can be either BUY or SELL.
+
+[double] Price
+This is the price of the order fill.
+
+[t_DateTime] DateTime
+This is the Date and Time of the order fill.
+
+[double] Quantity
+This is the quantity of the order fill.
+
+[char] UniqueExecutionID
+This is the unique execution identifier for the order fill.
+
+[char] TradeAccount
+This is the trade account that the order fill is associated with.
+
+[OpenCloseTradeEnum] OpenClose
+Indicates whether this is an opening or closing order fill.
+
+This field is optional.
+
+[unsigned int8] NoOrderFills
+Set to a numeric 1 to indicate there are no historical order fills.
+
+If there are no order fills to return, the Server needs to set this to 1 and send through 1 HISTORICAL_ORDER_FILL_RESPONSE message to indicate there are no order fills. Otherwise, leave this field at the default of 0.
+
+HISTORICAL_ORDER_FILLS_REJECT [s_HistoricalOrderFillsReject structure] Server >> Client
+[Link] - [Top]
+If the Server is unable to serve the request for a HISTORICAL_ORDER_FILLS_REQUEST message received, for a reason other than there not being any historical order fills, then send this message to the Client.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+This is set to the RequestID field sent in the HISTORICAL_ORDER_FILLS_REQUEST message.
+
+[char] RejectText
+Free-form text indicating the reason for rejection.
+
+CURRENT_POSITIONS_REQUEST [s_CurrentPositionsRequest structure] Client >> Server
+[Link] - [Top]
+This is a message from the Client to the Server to request the current open Trade Positions.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+The request identifier. The Server will send this back in the POSITION_UPDATE response messages.
+
+[char] TradeAccount
+This is an optional field. Leave this empty to request the Server to return all current open Trade Positions for all trade accounts on the logged in Username. Otherwise, specify a particular trade account to request Trade Positions for.
+
+POSITION_UPDATE [s_PositionUpdate structure] Server >> Client
+[Link] - [Top]
+This is a message from the Server to the Client to report a Trade Position for a symbol in any Trade Account for the logged in Username.
+
+The Position Update message can either be solicited, in response to CURRENT_POSITIONS_REQUEST. Or unsolicited as a Trade Position for a symbol changes during the connection to the Server. Each Trade Position is contained within a single message.
+
+When the server is responding with one or more POSITION_UPDATE messages in response to a CURRENT_POSITIONS_REQUEST message, it must not send any unsolicited POSITION_UPDATE messages interleaved with the solicited POSITION_UPDATE messages in response to the CURRENT_POSITIONS_REQUEST message.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+The Server sets this to 0, the default, if this is a real-time Trade Position update.
+
+Otherwise, when the Server is sending Trade Positions in response to a CURRENT_POSITIONS_REQUEST message, it must set this to the RequestID given in the CURRENT_POSITIONS_REQUEST message
+
+[int32] TotalNumberMessages
+This indicates the total number of Position Update messages when a batch of messages is being sent. If there is only one Position Update message being sent, this will be 1. Use a value of 1 for an unsolicited message.
+
+A Client should not rely on this field for an unsolicited message. This is required to be set.
+
+[int32] MessageNumber
+This indicates the 1-based index of the Position Update message when a batch of messages is being sent. If there is only one Position Update message being sent, this will be 1. Use a value of 1 for an unsolicited message.
+
+A Client should not rely on this field for an unsolicited message. This is required to be set.
+
+[char] Symbol
+The symbol for the Position.
+
+[char] Exchange
+The optional exchange for the symbol.
+
+[double] Quantity
+The quantity of the current Position for the symbol. A positive number is for a long Position and a negative number is for a short Position.
+
+[double] AveragePrice
+The average position price.
+
+[char] PositionIdentifier
+When the Server sets LOGON_RESPONSE::UsesMultiplePositionsPerSymbolAndTradeAccount to 1, then it must set PositionIdentifier to a unique identifier to identify the Trade Position for the particular Symbol and Trade Account for which it is for.
+
+Otherwise, this field is optional and it is recommended for a Server not to use it if it does not provide multiple positions for a Symbol and Trade Account.
+
+This field identifies an individual Trade Position in the case of where there are multiple Positions for a particular Symbol and Trade Account.
+
+A Client must implement support for PositionIdentifier when LOGON_RESPONSE::UsesMultiplePositionsPerSymbolAndTradeAccount is set to 1.
+
+[char] TradeAccount
+The trade account the Trade Position is in for the Symbol.
+
+[unsigned int8] NoPositions
+Set to an integer value of 1 to indicate there are no Trade Positions in response to a CURRENT_POSITIONS_REQUEST message.
+
+Otherwise, the Server must leave this at the default of 0. The Server is always expected to respond with a single POSITION_UPDATE message when there are no Trade Positions for any Symbol when current Trade Positions have been requested by the Client with CURRENT_POSITIONS_REQUEST.
+
+When the Server is sending a POSITION_UPDATE message to the Client and it is indicating that the Quantity field is 0, then the NoPositions field must be left at the default of 0. It is not used to indicate a Quantity of 0 for a particular Symbol and TradeAccount.
+
+This is always set to the default of 0 for an unsolicited Trade Position Update.
+
+[unsigned int8] Unsolicited
+Set to 1 to indicate this is an unsolicited Position Update message. In other words, it is a real-time Trade Position Update message which is not an initial response to a CURRENT_POSITIONS_REQUEST message.
+
+[double] MarginRequirement
+MarginRequirement is the required margin as a currency value for the current trade Position Quantity and any working orders for the Trade Account.
+
+This is an optional field for the Server to provide.
+
+[t_DateTime4Byte] EntryDateTime
+EntryDateTime is the Date-Time of the initial entry of the Trade Position. It is in the UTC time zone.
+
+This is an optional field for the Server to provide.
+
+[double] OpenProfitLoss
+OpenProfitLoss is the current open Trade Position profit or loss as a currency value.
+
+This is an optional field for the Server to provide.
+
+[double] HighPriceDuringPosition
+HighPriceDuringPosition is the highest price the symbol traded at during the life of the Trade Position. This value can be reset by the Server when there is a change in Trade Position Quantity.
+
+This is an optional field for the Server to provide.
+
+[double] LowPriceDuringPosition
+LowPriceDuringPosition is the lowest price the symbol traded at during the life of the Trade Position. This value can be reset by the Server when there is a change in Trade Position Quantity.
+
+This is an optional field for the Server to provide.
+
+[double] QuantityLimit
+This is the limit or maximum Trade Position Quantity possible for a Trade Position for the Trade Account and Symbol. This applies equally to a long or short position.
+
+This is only an informational value provided from the risk management system.
+
+This is an optional field for the Server to provide.
+
+CURRENT_POSITIONS_REJECT [s_CurrentPositionsReject structure] Server >> Client
+[Link] - [Top]
+If the Server is unable to serve the request for an CURRENT_POSITIONS_REQUEST message received, for a reason other than there not being any current Trade positions, then send this message to the Client.
+
+This must never be sent when there are actually no Trade Positions in the account or accounts requested.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[int32] RequestID
+This is set to the RequestID field sent in the CURRENT_POSITIONS_REQUEST message.
+
+[char] RejectText
+Free-form text indicating the reason for the rejection.
+

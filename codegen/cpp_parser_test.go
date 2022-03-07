@@ -7,6 +7,7 @@ import (
 
 func TestLoad(t *testing.T) {
 	schema, err := LoadSchema(
+		"testdata/docs.json",
 		"testdata/DTCProtocol.proto",
 		"testdata/DTCProtocol.h",
 		"testdata/DTCProtocolVLS.h",

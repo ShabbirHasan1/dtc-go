@@ -21,8 +21,8 @@ type Factory interface {
 }
 
 type Message interface {
-	// AsPointer gets the raw unsafe underlying pointer of the message
-	AsPointer() nogc.Pointer
+	// Unsafe gets the raw unsafe underlying pointer of the message
+	Unsafe() nogc.Pointer
 
 	// Size of message
 	Size() uint16
@@ -51,6 +51,8 @@ type Message interface {
 }
 
 type Builder interface {
+	Clear()
+
 	UnmarshalJSON(r *json.Reader) error
 
 	UnmarshalProtobuf(b []byte) error
@@ -60,64 +62,67 @@ type Buffer interface {
 	Clear()
 }
 
-type GC struct {
-	ref unsafe.Pointer
+// GCPointer is a message allocated using the Go heap and managed by Go's GC.
+type GCPointer struct {
+	Ptr unsafe.Pointer
 }
 
-func (m GC) Close() error {
+func (m GCPointer) Close() error {
 	return nil
 }
 
-func (m GC) AsPointer() nogc.Pointer {
-	return nogc.Pointer(m.ref)
+func (m GCPointer) Unsafe() nogc.Pointer {
+	return nogc.Pointer(m.Ptr)
 }
 
-func (m GC) Size() uint16 {
-	if m.ref == nil {
+func (m GCPointer) Size() uint16 {
+	if m.Ptr == nil {
 		return 0
 	}
-	return m.AsPointer().UInt16LE(0)
+	return nogc.Pointer(m.Ptr).UInt16LE(0)
 }
 
-func (m GC) Type() uint16 {
-	if m.ref == nil {
+func (m GCPointer) Type() uint16 {
+	if m.Ptr == nil {
 		return 0
 	}
-	return m.AsPointer().UInt16LE(2)
+	return nogc.Pointer(m.Ptr).UInt16LE(2)
 }
 
-func (m GC) IsGC() bool {
+func (m GCPointer) IsGC() bool {
 	return true
 }
 
+// Pointer is a message allocated outside the Go heap and NOT managed by Go's GC.
+// Requires manually freeing the memory by calling Close.
 type Pointer struct {
-	p nogc.Pointer
+	Ptr nogc.Pointer
 }
 
 func (m *Pointer) Take() Pointer {
-	p := m.p
+	p := m.Ptr
 	if p != 0 {
-		m.p = 0
+		m.Ptr = 0
 	}
 	return Pointer{p}
 }
 
-func (m Pointer) AsPointer() nogc.Pointer {
-	return m.p
+func (m Pointer) Unsafe() nogc.Pointer {
+	return m.Ptr
 }
 
 func (m Pointer) Size() uint16 {
-	if m.p == 0 {
+	if m.Ptr == 0 {
 		return 0
 	}
-	return m.p.UInt16LE(0)
+	return m.Ptr.UInt16LE(0)
 }
 
 func (m Pointer) Type() uint16 {
-	if m.p == 0 {
+	if m.Ptr == 0 {
 		return 0
 	}
-	return m.p.UInt16LE(2)
+	return m.Ptr.UInt16LE(2)
 }
 
 func (m Pointer) IsGC() bool {

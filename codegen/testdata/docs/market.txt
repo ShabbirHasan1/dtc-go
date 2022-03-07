@@ -1,0 +1,869 @@
+MARKET_DATA_FEED_STATUS [s_MarketDataFeedStatus structure] Server >> Client
+[Link] - [Top]
+The MARKET_DATA_FEED_STATUS message is an optional message sent by the Server to indicate the overall status of the market data feed. This status applies to all symbols that have been subscribed to for market data.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[MarketDataFeedStatusEnum] Status
+This can be set to MARKET_DATA_FEED_UNAVAILABLE, to indicate the market data feed is presently not available. Or it can be set to MARKET_DATA_FEED_AVAILABLE, to indicate the market data feed has been restored.
+
+Upon a connection to the server, MARKET_DATA_FEED_AVAILABLE is assumed to be the status. It is not until there has been expressly given MARKET_DATA_FEED_UNAVAILABLE, will the data feed be considered lost.
+
+MARKET_DATA_FEED_SYMBOL_STATUS [s_MarketDataFeed SymbolStatus structure] Server >> Client
+[Link] - [Top]
+The MARKET_DATA_FEED_SYMBOL_STATUS message is an optional message sent by the Server to indicate status of the market data feed for a particular symbol.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[MarketDataFeedStatusEnum] Status
+This can be set to MARKET_DATA_FEED_UNAVAILABLE, to indicate the market data feed is presently not available for the symbol. Or it can be set to MARKET_DATA_FEED_AVAILABLE, to indicate the market data feed has been restored for the symbol.
+
+Upon a connection to the server, MARKET_DATA_FEED_AVAILABLE is assumed to be the status. It is not until there has been expressly given MARKET_DATA_FEED_UNAVAILABLE, will the market data feed for the symbol be considered lost.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the status in this message is for.
+
+MARKET_DATA_REQUEST [s_MarketDataRequest structure] Client >> Server
+[Link] - [Top]
+The MARKET_DATA_REQUEST message will subscribe to market data for a particular Symbol or request a market data snapshot.
+
+The Server can also send market depth data in response to this message and not require a MARKET_DEPTH_REQUEST.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[RequestActionEnum] RequestAction
+This needs to be set to SUBSCRIBE to subscribe to market data for the Symbol from the Server. The Server will respond with an initial MARKET_DATA_SNAPSHOT message and then provide MARKET_DATA_UPDATE_* updates as necessary.
+
+To unsubscribe, use UNSUBSCRIBE.
+
+To request only a MARKET_DATA_SNAPSHOT message, set this to SNAPSHOT.
+
+[unsigned int32] SymbolID
+This is the identifier which will be used in all of the market data response messages. This identifier is used so that the Symbol and Exchange do not have to be passed back in response messages from the Server. This makes the market data feed bandwidth efficient.
+
+If the Server receives a MARKET_DATA_REQUEST for a Symbol and Exchange to subscribe to data for, that is currently subscribed to and this SymbolID is different, then the Server needs to reject it.
+
+[char] Symbol
+The Symbol that market data is requested for. Not set when unsubscribing.
+
+[char] Exchange
+Optional Exchange. Not set when unsubscribing.
+
+MARKET_DATA_REJECT [s_MarketDataReject structure] Server >> Client
+[Link] - [Top]
+The MARKET_DATA_REJECT message is sent by the Server to the Client to reject a MARKET_DATA_REQUEST message for any reason.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[char] RejectText
+Free-form text explaining the reason for the reject.
+
+MARKET_DATA_SNAPSHOT [s_MarketDataSnapshot structure] Server >> Client
+[Link] - [Top]
+The Server sends the MARKET_DATA_SNAPSHOT message to the Client immediately after a successful MARKET_DATA_REQUEST message has been received from the Client and it has indicated to subscribe to the symbol or requested the snapshot of data.
+
+Any changes to the data fields within the MARKET_DATA_SNAPSHOT message during the trading session will be sent by the Server to the Client through the corresponding MARKET_DATA_UPDATE_* messages.
+
+It is recommended that the MARKET_DATA_SNAPSHOT be sent by the Server at the start of a new trading session.
+
+This message can be sent more often, however it is not intended to be sent frequently.
+
+This message type does not signify a trade has occurred. It should never be interpreted by the Client in that way.
+
+There is no need to send this when there is a new High or Low during the trading session. The Server should use the MARKET_DATA_UPDATE_SESSION_HIGH or MARKET_DATA_UPDATE_SESSION_LOW messages instead.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] SessionSettlementPrice
+The previous Settlement price when this message is sent before the market closes for the trading session. After the market has closed, this is the most recent Settlement price.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] SessionOpenPrice
+The Opening price for the trading session.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] SessionHighPrice
+The the High price for the trading session.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] SessionLowPrice
+The Low price for the trading session.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] SessionVolume
+The total Volume for the trading session.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[unsigned int32] SessionNumTrades
+The number of Trades for the trading session.
+
+For binary encoding, if this field is not set it needs to be set to UINT_MAX. Refer to Unset Message Fields.
+
+[unsigned int32] OpenInterest
+Contains the Open Interest for futures and options.
+
+For binary encoding, if this field is not set it needs to be set to UINT_MAX. Refer to Unset Message Fields.
+
+[double] BidPrice
+The latest best Bid price.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] AskPrice
+The latest best Ask price.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] AskQuantity
+The quantity of the orders at the Ask price.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] BidQuantity
+The quantity of the orders at the Bid price.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] LastTradePrice
+The most recent last trade price.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[double] LastTradeVolume
+The quantity/volume of the most recent last trade.
+
+For binary encoding, if this field is not set it needs to be set to DBL_MAX. Refer to Unset Message Fields.
+
+[t_DateTimeWithMilliseconds] LastTradeDateTime
+The Date-Time of the last trade.
+
+[t_DateTimeWithMilliseconds] BidAskDateTime
+The Date-Time of the last Bid and Ask quote data update.
+
+[t_DateTime4Byte] SessionSettlementDateTime
+The trading date the Settlement price is for. The time component is not normally considered relevant for this field.
+
+This field will be 0 if this field is not available from the data feed.
+
+[t_DateTime4Byte] TradingSessionDate
+This is the Date of the trading session that the data contained in this snapshot message is for.
+
+The time component is not normally considered relevant for this field.
+
+MARKET_DATA_UPDATE_TRADE [s_MarketDataUpdateTrade structure] Server >> Client
+[Link] - [Top]
+The Server sends this market data feed message to the Client when a trade occurs.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[AtBidOrAskEnum] AtBidOrAsk
+Indicator whether the trade occurred at the bid or ask.
+
+[double] Price
+The price of the trade.
+
+[double] Volume
+The volume of the trade.
+
+[t_DateTimeWithMilliseconds] DateTime
+The Date-Time of the trade.
+
+MARKET_DATA_UPDATE_TRADE_WITH_UNBUNDLED_INDICATOR_2 [s_MarketDataUpdateTradeWithUnbundledIndicator2 structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client when a trade occurs. This message has additional fields as compared to the MARKET_DATA_UPDATE_TRADE message and also supports microsecond time stamping.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[float] Price
+The price of the trade.
+
+[unsigned int32] Volume
+The volume of the trade.
+
+[t_DateTimeWithMicrosecondsInt] DateTime
+The timestamp of the trade in UNIX microseconds time format.
+
+[AtBidOrAskEnum8] AtBidOrAsk
+Indicator whether the trade occurred at the Bid or Ask price.
+
+[UnbundledTradeIndicatorEnum] UnbundledTradeIndicator
+This is an optional field.
+
+For symbols on exchanges which support reporting individual trades which are part of a larger summary trade, this message field is used. It indicates whether the trade is part of a larger summary trrade and reported as an unbundled individual trade.
+
+The possible values are listed below.
+
+UNBUNDLED_TRADE_NONE = 0
+FIRST_SUB_TRADE_OF_UNBUNDLED_TRADE = 1
+LAST_SUB_TRADE_OF_UNBUNDLED_TRADE = 2
+[TradeConditionEnum] TradeCondition
+This is an optional field. It usually applies to stock symbols.
+
+This field indicates a special condition which applies to the trade. The possible values are listed below.
+
+TRADE_CONDITION_NONE = 0
+TRADE_CONDITION_NON_LAST_UPDATE_EQUITY_TRADE = 1
+TRADE_CONDITION_ODD_LOT_EQUITY_TRADE = 2
+MARKET_DATA_UPDATE_TRADE_NO_TIMESTAMP [s_MarketDataUpdateTradeNoTimestamp structure] Server >> Client
+[Link] - [Top]
+This message is optional.
+
+Sent by the Server to the Client when a trade occurs. This message is identical to the MARKET_DATA_UPDATE_TRADE_WITH_UNBUNDLED_INDICATOR_2 message except it does not have a timestamp. It needs to be sent when there is no change with the timestamp for the trade as compared to the prior trade.
+
+When the Server sends this message to the Client, the Client needs to use the prior received trade timestamp to know what the timestamp is for this message.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[float] Price
+The price of the trade.
+
+[unsigned int32] Volume
+The volume of the trade.
+
+[AtBidOrAskEnum8] AtBidOrAsk
+Indicator whether the trade occurred at the Bid or Ask price.
+
+[UnbundledTradeIndicatorEnum] UnbundledTradeIndicator
+This is an optional field.
+
+For symbols on exchanges which support reporting individual trades which are part of a larger summary trade, this message field is used. It indicates whether the trade is part of a larger summary trrade and reported as an unbundled individual trade.
+
+The possible values are listed below.
+
+UNBUNDLED_TRADE_NONE = 0
+FIRST_SUB_TRADE_OF_UNBUNDLED_TRADE = 1
+LAST_SUB_TRADE_OF_UNBUNDLED_TRADE = 2
+[TradeConditionEnum] TradeCondition
+This is an optional field. It usually applies to stock symbols.
+
+This field indicates a special condition which applies to the trade. The possible values are listed below.
+
+TRADE_CONDITION_NONE = 0
+TRADE_CONDITION_NON_LAST_UPDATE_EQUITY_TRADE = 1
+TRADE_CONDITION_ODD_LOT_EQUITY_TRADE = 2
+MARKET_DATA_UPDATE_TRADE_COMPACT [s_MarketDataUpdateTradeCompact structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client when a trade occurs. This message is a more compact MARKET_DATA_UPDATE_TRADE. For the price it uses a 4 byte float.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[float] Price
+The price of the trade.
+
+[float] Volume
+The volume of the trade.
+
+[t_DateTime4Byte] DateTime
+The timestamp of the trade in UNIX time format. This does not contain the milliseconds for compactness.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[AtBidOrAskEnum] AtBidOrAsk
+Indicator whether the trade occurred at the Bid or Ask price.
+
+MARKET_DATA_UPDATE_LAST_TRADE_SNAPSHOT [s_MarketDataUpdateLastTradeSnapshot structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to update the last trade price, volume and date-time fields under conditions when there is not a trade.
+
+This message type does not signify a trade has occurred. It should never be interpreted by the Client in that way.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] LastTradePrice
+The most recent last trade price.
+
+[double] LastTradeVolume
+The quantity/volume of the most recent last trade.
+
+[t_DateTimeWithMilliseconds] LastTradeDateTime
+The Date-Time of the last trade.
+
+MARKET_DATA_UPDATE_BID_ASK [s_MarketDataUpdateBidAsk structure] Server >> Client
+[Link] - [Top]
+The Server sends this market data feed message to the Client when the best bid or ask price or size changes.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] BidPrice
+The current Bid price. Leave unset if there is no price available.
+
+[float] BidQuantity
+The current number of contracts/shares at the bid price.
+
+[double] AskPrice
+The current ask or offer price. Leave unset if there is no price available.
+
+[float] AskQuantity
+The current number of contracts/shares at the ask price.
+
+[t_DateTime4Byte] DateTime
+The Date-Time of the Bid and Ask update.
+
+MARKET_DATA_UPDATE_BID_ASK_NO_TIMESTAMP [s_MarketDataUpdateBidAskNoTimeStamp structure] Server >> Client
+[Link] - [Top]
+This message is optional.
+
+Sent by the Server to the Client when there is an update to the Bid Ask prices and/or quantities. This message is identical to the MARKET_DATA_UPDATE_BID_ASK message except it does not have a timestamp. It needs to be sent when there is no change with the timestamp for the Bid Ask update as compared to the prior update.
+
+When the Server sends this message to the Client, the Client needs to use the prior received Bid Ask update timestamp to know what the timestamp is for this message.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[float] BidPrice
+The current Bid price. Leave unset if there is no price available.
+
+[unsigned int32] BidQuantity
+The current number of contracts/shares at the Bid price.
+
+[float] AskPrice
+The current Ask or offer price. Leave unset if there is no price available.
+
+[unsigned int32] AskQuantity
+The current number of contracts/shares at the Ask price.
+
+MARKET_DATA_UPDATE_BID_ASK_FLOAT_WITH_MICROSECONDS [s_MarketDataUpdateBidAskFloatWithMicroseconds structure] Server >> Client
+[Link] - [Top]
+This message is optional.
+
+Sent by the Server to the Client when there is an update to the Bid Ask prices and/or quantities. This message is identical to the MARKET_DATA_UPDATE_BID_ASK message except it does not have a timestamp. It needs to be sent when there is no change with the timestamp for the Bid Ask update as compared to the prior update.
+
+When the Server sends this message to the Client, the Client needs to use the prior received Bid Ask update timestamp to know what the timestamp is for this message.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[float] BidPrice
+The current Bid price. Leave unset if there is no price available.
+
+[float] BidQuantity
+The current number of contracts/shares at the bid price.
+
+[float] AskPrice
+The current ask or offer price. Leave unset if there is no price available.
+
+[float] AskQuantity
+The current number of contracts/shares at the ask price.
+
+[t_DateTimeWithMicrosecondsInt] DateTime
+The timestamp of the trade in UNIX microseconds time format.
+
+MARKET_DATA_UPDATE_SESSION_OPEN [s_MarketDataUpdateSessionOpen structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to update the session Open.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] Price
+The session Open price.
+
+MARKET_DATA_UPDATE_SESSION_HIGH [s_MarketDataUpdateSessionHigh structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to update the session High as the High price changes throughout the session.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] Price
+The session High price.
+
+MARKET_DATA_UPDATE_SESSION_LOW [s_MarketDataUpdateSessionLow structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to update the session Low as the Low price changes throughout the session.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] Price
+The session Low price.
+
+MARKET_DATA_UPDATE_SESSION_SETTLEMENT [s_MarketDataUpdateSessionSettlement structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to update the session settlement price when the session settlement price changes.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] Price
+The settlement price.
+
+[t_DateTime4Byte] DateTime
+That trading date the settlement price is for. The time component is not normally considered relevant in this case.
+
+MARKET_DATA_UPDATE_SESSION_VOLUME [s_MarketDataUpdateSessionVolume structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client when the session trade Volume needs to be updated.
+
+The recommended rule for the Server to notify the Client of a change with the session trade volume to maintain bandwidth efficiency, is as follows: When a trade occurs for a symbol subscribed to, the Server will send a MARKET_DATA_UPDATE_TRADE message to the Client. The Client should then increment its session trade volume value for the symbol by the value in the Volume field in this message.
+
+The Server will assume the Client is doing this. Therefore, when a trade occurs and the session trade volume does not equal the prior session trade volume plus the Volume for the most recent trade sent to the Client, then the Server must send out a MARKET_DATA_UPDATE_SESSION_VOLUME message to the client since the client calculation of the session trade volume is no longer correct.
+
+It is assumed that the reason for this inconsistency is due to trades included within the session trade volume which have not been sent out as normal trades.
+
+The Server should also send this message out at the frequency that the Server determines, such as every minute if there also has been a trade at that time.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[double] Volume
+The total Volume for the session.
+
+MARKET_DATA_UPDATE_OPEN_INTEREST [s_MarketDataUpdateOpenInterest structure] Server >> Client
+[Link] - [Top]
+The MARKET_DATA_UPDATE_OPEN_INTEREST message is sent by the Server to the Client to update the OpenInterest field previously sent through the MARKET_DATA_SNAPSHOT message.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[unsigned int32] OpenInterest
+The open interest for the symbol.
+
+MARKET_DATA_UPDATE_SESSION_NUM_TRADES [s_MarketDataUpdateSessionNumTrades structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to update the trading session number of trades.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[int32] NumTrades
+The number of trades which have occurred during the current trading session.
+
+MARKET_DATA_UPDATE_TRADING_SESSION_DATE [s_MarketDataUpdateTradingSessionDate structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to update the trading session Date.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[t_DateTime4Byte] Date
+The date of the current trading session. The time component is not normally considered relevant in this case.
+
+MARKET_DEPTH_REQUEST [s_MarketDepthRequest structure] Client >> Server
+[Link] - [Top]
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[RequestActionEnum] RequestAction
+This needs to be set to SUBSCRIBE to subscribe to market data for the Symbol from the Server. The server will respond with an initial MARKET_DEPTH_SNAPSHOT_LEVEL message and then provide MARKET_DEPTH_UPDATE_LEVEL updates as necessary.
+
+To unsubscribe, use UNSUBSCRIBE.
+
+[unsigned int32] SymbolID
+This is the identifier which will be used in all of the market depth data response messages.
+
+This SymbolID can be the same as the one used in the MARKET_DATA_REQUEST message for the same Symbol and Exchange.
+
+This identifier is used so that the Symbol does not have to be passed back in response messages from the Server. If the Server receives a MARKET_DEPTH_REQUEST for a Symbol and Exchange to subscribe to market depth data for, that is currently subscribed to and this SymbolID is different, then the Server should reject it.
+
+[char] Symbol
+The symbol for the market depth request. Not set when unsubscribing.
+
+[char] Exchange
+The optional exchange for the symbol. Not set when unsubscribing.
+
+[int32] NumLevels
+Number of depth levels requested. Not set when unsubscribing.
+
+MARKET_DEPTH_REJECT [s_MarketDepthReject structure] Server >> Client
+[Link] - [Top]
+The MARKET_DEPTH_REJECT message is sent by the Server to the Client to reject a MARKET_DEPTH_REQUEST message for any reason.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DEPTH_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[char] RejectText
+Free-form text explaining the reason for the reject.
+
+MARKET_DEPTH_SNAPSHOT_LEVEL [s_MarketDepthSnapshotLevel structure] Server >> Client
+[Link] - [Top]
+This is a message sent by Server to provide the initial market depth data entries to the Client after the Client subscribes to market data or separately subscribes to market depth data. The Client will need to separately subscribe to market depth data if the Server requires it.
+
+Each message provides a single entry of depth data. Therefore, the Server will send multiple MARKET_DEPTH_SNAPSHOT_LEVEL messages in a series in order for the Client to build up its initial market depth book.
+
+The first message will be identified by the IsFirstMessageInBatch field being set to 1. The last message will be identified by the IsLastMessageInBatch field being set to 1.
+
+In the case where the market depth book is empty, the Server still needs to send through one single message with the SymbolID set, IsFirstMessageInBatch equal to 1 and IsLastMessageInBatch equal to 1. All other members will be at the default values. The Client will understand this as an empty book.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST/MARKET_DEPTH_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[AtBidOrAskEnum] Side
+Set to AT_BID = 1 if this is a bid side market depth entry. Set to AT_ASK = 2, if this is an ask side market depth entry.
+
+[double] Price
+This is the price of the market depth entry.
+
+[double] Quantity
+This is the quantity of orders at the Price.
+
+[unsigned int16] Level
+This indicates the level of the price within the market depth book. The minimum value is 1. There is no maximum value. A value of 1 is considered the best bid or ask data.
+
+[unsigned int8] IsFirstMessageInBatch
+Set to 1 if this is the first message in the batch of messages.
+
+[unsigned int8] IsLastMessageInBatch
+Set to 1 if this is the last message in a batch of messages. If there is only a single message to be sent, in case the market depth book is empty, then IsFirstMessageInBatch will equal 1 and IsLastMessageInBatch will equal 1.
+
+MARKET_DEPTH_SNAPSHOT_LEVEL_FLOAT [s_MarketDepthSnapshotLevelFloat structure] Server >> Client
+[Link] - [Top]
+This is a message sent by Server to provide the initial market depth data entries to the Client after the Client subscribes to market data or separately subscribes to market depth data. The Client will need to separately subscribe to market depth data if the Server requires it.
+
+Each message provides a single entry of depth data. Therefore, the Server will send multiple MARKET_DEPTH_SNAPSHOT_LEVEL_FLOAT messages in a series in order for the Client to build up its initial market depth book.
+
+The first message will be identified by the IsFirstMessageInBatch field being set to 1. The last message will be identified by the IsLastMessageInBatch field being set to 1.
+
+In the case where the market depth book is empty, the Server still needs to send through one single message with the SymbolID set, IsFirstMessageInBatch equal to 1 and IsLastMessageInBatch equal to 1. All other members will be at the default values. The Client will understand this as an empty book.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST/MARKET_DEPTH_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[AtBidOrAskEnum8] Side
+Set to AT_BID = 1 if this is a bid side market depth entry. Set to AT_ASK = 2, if this is an ask side market depth entry.
+
+[float] Price
+This is the price of the market depth entry.
+
+[float] Quantity
+This is the quantity of orders at the Price.
+
+[FinalUpdateInBatchEnum] FinalUpdateInBatch
+An indicator whether this is the final message or not in a batch of updates.
+
+[uint32_t] NumOrders
+The number of orders at the Price.
+
+[unsigned int16] Level
+This indicates the level of the price within the market depth book. The minimum value is 1. There is no maximum value. A value of 1 is considered the best bid or ask data.
+
+MARKET_DEPTH_UPDATE_LEVEL [s_MarketDepthUpdateLevel structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to Update/Insert or Delete a particular market depth price level in the market depth book maintained by the Client.
+
+Each MARKET_DEPTH_UPDATE_LEVEL message updates one level of market depth on one side. An insert/update/delete model is used for market depth.
+
+The Client will need to determine the based upon the price, what particular market depth level is being updated, inserted or deleted.
+
+It is for this reason, that an insert/update is considered as one update type since it is possible to determine whether it is an insert or update based upon the existence of the price level in the existing market depth book on the Client side.
+
+What this means is that when the UpdateType field is MARKET_DEPTH_INSERT_UPDATE_LEVEL, it is considered an insert if the price level is not found on the particular side of the market depth being updated. It is considered an update, if the price level is found on the particular side of market depth being updated.
+
+This message uses a double datatype for the Price field. There is no level index. It is the responsibility of the Client to determine where in its market depth array it is maintaining where the insert/update/delete operation needs to occur.
+
+Since floating-point comparisons are not always precise, there should be a comparison made only to the number of decimal places the symbol specifies in its security definition. This can be determined through the SECURITY_DEFINITION_RESPONSE::PriceDisplayFormat field.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DEPTH_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[AtBidOrAskEnum] Side
+Specifies whether the side being updated is the Bid (AT_BID) or Ask (AT_ASK).
+
+[double] Price
+The price level to insert, update or delete.
+
+[double] Quantity
+The number of shares/contracts at the Price level. This will be 0 in the case when UpdateType is set to MARKET_DEPTH_DELETE_LEVEL.
+
+[MarketDepthUpdateTypeEnum] UpdateType
+Specifies whether this is a MARKET_DEPTH_INSERT_UPDATE_LEVEL operation or a MARKET_DEPTH_DELETE_LEVEL operation.
+
+MARKET_DEPTH_INSERT_UPDATE_LEVEL: Insert or update in the market depth book on the specified side, the particular Price and Volume specified. It is an insert operation of the price level does not exist. It is an update operation if the price level already exists. In the case of insert, the other levels in the market depth book need to be shifted to make room for the new level.
+
+MARKET_DEPTH_DELETE_LEVEL: Remove from the market depth book on the specified side, the specified Price level. The other levels need to be shifted to fill in the missing level. In this particular case the Quantity is ignored and will be 0.
+
+[t_DateTimeWithMilliseconds] DateTime
+The Date-Time of the market depth update.
+
+[uint32_t] NumOrders
+The number of orders at the Price.
+
+MARKET_DEPTH_UPDATE_LEVEL_FLOAT_WITH_MILLISECONDS [s_MarketDepthUpdateLevelFloatWithMilliseconds structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to Update/Insert or Delete a particular market depth price level in the market depth book maintained by the Client.
+
+This message is a more compact version of the MARKET_DEPTH_UPDATE_LEVEL message. For the Price and Quantity fields, it uses a 4 byte float for compactness. It also supports millisecond precision for the timestamp.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DEPTH_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[t_DateTimeWithMillisecondsInt] DateTime
+The Date-Time of the market depth update with millisecond precision.
+
+This is an integer representing the number of milliseconds since the UNIX Epoch.
+
+[AtBidOrAskEnum] Side
+Specifies whether the side being updated is the Bid (AT_BID) or Ask (AT_ASK).
+
+[float] Price
+The price level to insert, update or delete.
+
+[float] Quantity
+The number of shares/contracts at the Price level. This will be 0 in the case when UpdateType is set to MARKET_DEPTH_DELETE_LEVEL.
+
+[MarketDepthUpdateTypeEnum] UpdateType
+Specifies whether this is a MARKET_DEPTH_INSERT_UPDATE_LEVEL operation or a MARKET_DEPTH_DELETE_LEVEL operation.
+
+MARKET_DEPTH_INSERT_UPDATE_LEVEL: Insert or update in the market depth book on the specified side, the particular Price and Volume specified. It is an insert operation of the price level does not exist. It is an update operation if the price level already exists. In the case of insert, the other levels in the market depth book need to be shifted to make room for the new level.
+
+MARKET_DEPTH_DELETE_LEVEL: Remove from the market depth book on the specified side, the specified Price level. The other levels need to be shifted to fill in the missing level. In this particular case the Quantity is ignored and will be 0.
+
+[uint32_t] NumOrders
+The number of orders at the Price.
+
+[FinalUpdateInBatchEnum] FinalUpdateInBatch
+An indicator whether this is the final message or not in a batch of updates.
+
+MARKET_DEPTH_UPDATE_LEVEL_NO_TIMESTAMP [s_MarketDepthUpdateLevelNoTimestamp structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to Update/Insert or Delete a particular market depth price level in the market depth book maintained by the Client.
+
+This message is identical to the MARKET_DEPTH_UPDATE_LEVEL message except it has no timestamp field. It needs to be sent when there is no change with the timestamp for the market depth update as compared to the prior update.
+
+When the Server sends this message to the Client, the Client needs to use the prior received market depth update timestamp to know what the timestamp is for this message.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DEPTH_REQUEST message which corresponds to the Symbol that the data in this message is for.
+
+[uint8_t] Side
+Specifies whether the side being updated is the Bid (AT_BID) or Ask (AT_ASK).
+
+[float] Price
+The price level to insert, update or delete.
+
+[float] Quantity
+The number of shares/contracts at the Price level. This will be 0 in the case when UpdateType is set to MARKET_DEPTH_DELETE_LEVEL.
+
+[FinalUpdateInBatchEnum] FinalUpdateInBatch
+An indicator whether this is the beginning or final update in a batch of updates.
+
+[unsigned int16] NumOrders
+The number of orders at the Price.
+
+[MarketDepthUpdateTypeEnum] UpdateType
+Specifies whether this is a MARKET_DEPTH_INSERT_UPDATE_LEVEL operation or a MARKET_DEPTH_DELETE_LEVEL operation.
+
+MARKET_DEPTH_INSERT_UPDATE_LEVEL: Insert or update in the market depth book on the specified side, the particular Price and Volume specified. It is an insert operation of the price level does not exist. It is an update operation if the price level already exists. In the case of insert, the other levels in the market depth book need to be shifted to make room for the new level.
+
+MARKET_DEPTH_DELETE_LEVEL: Remove from the market depth book on the specified side, the specified Price level. The other levels need to be shifted to fill in the missing level. In this particular case the Quantity is ignored and will be 0.
+
+TRADING_SYMBOL_STATUS [s_TradingSymbolStatus structure] Server >> Client
+[Link] - [Top]
+Sent by the Server to the Client to indicate the status of the symbol in regards to whether trading is open or closed or some other intermediate state.
+
+Field Name	Field Description
+[unsigned int16] Size
+The standard message size field. Automatically set by constructor.
+
+[unsigned int16] Type
+The standard message type field. Automatically set by constructor.
+
+[unsigned int32] SymbolID
+This is the same SymbolID sent by the Client in the MARKET_DATA_REQUEST message which corresponds to the Symbol that the status in this message is for.
+
+[TradingStatusEnum] Status
+The current trading status for the symbol. Can be one of the following.
+
+TRADING_STATUS_UNKNOWN = 0
+TRADING_STATUS_PRE_OPEN = 1
+TRADING_STATUS_OPEN = 2
+TRADING_STATUS_CLOSE = 3
+TRADING_STATUS_TRADING_HALT = 4
