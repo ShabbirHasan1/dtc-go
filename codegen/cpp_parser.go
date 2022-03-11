@@ -161,6 +161,13 @@ func (schema *Schema) Validate() error {
 			return fmt.Errorf("message '%s' has field count mismatch between Fixed and VLS structs: %d vs %d", msg.Fixed.Name, len(msg.Fixed.Fields), len(msg.VLS.Fields))
 		}
 
+		if msg.Fixed.VLS {
+			return fmt.Errorf("message '%s' was flagged as VLS when expecting fixed", msg.Fixed.Name)
+		}
+		if !msg.VLS.VLS {
+			return fmt.Errorf("message '%s' was not flagged as VLS when expecting VLS", msg.VLS.Name)
+		}
+
 		var (
 			fixedIndex = 2
 			vlsIndex   = 3
@@ -670,6 +677,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 			Namespace:    f.currentNamespace,
 			Name:         name,
 			MaxAlign:     pack,
+			VLS:          strings.Contains(f.currentNamespace.Name, "VLS"),
 			Fields:       nil,
 			FieldsByName: make(map[string]*Field),
 		}
@@ -973,6 +981,50 @@ func (f *File) parseField(s *Struct, line string) (*Field, error) {
 		field.Initial, err = f.parseValue(expression)
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	switch field.Type.Kind {
+	case KindInt8, KindUint8:
+		name := field.Name
+		if strings.HasPrefix(name, "m_") {
+			name = name[2:]
+		}
+		index = strings.Index(name, "Is")
+		if index > -1 {
+			name = name[index+2:]
+			if len(name) > 0 {
+				if name[0] == '_' || strings.ToLower(name[0:1]) != name[0:1] {
+					if field.Initial != nil {
+						switch field.Initial.Type {
+						case ValueTypeBool:
+							field.Type.Kind = KindBool
+						case ValueTypeInt:
+							switch field.Initial.Int {
+							case 0:
+								field.Type.Kind = KindBool
+								field.Initial.Type = ValueTypeBool
+							case 1:
+								field.Type.Kind = KindBool
+								field.Initial.Type = ValueTypeBool
+							}
+						case ValueTypeUint:
+							switch field.Initial.Uint {
+							case 0:
+								field.Type.Kind = KindBool
+								field.Initial.Type = ValueTypeBool
+								field.Initial.Int = 0
+							case 1:
+								field.Type.Kind = KindBool
+								field.Initial.Type = ValueTypeBool
+								field.Initial.Int = 1
+							}
+						}
+					} else {
+						field.Type.Kind = KindBool
+					}
+				}
+			}
 		}
 	}
 

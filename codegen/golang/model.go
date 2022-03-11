@@ -101,9 +101,39 @@ type Package struct {
 }
 
 type Message struct {
-	Fixed       *Struct
-	VLS         *Struct
-	NonStandard bool
+	Fixed           *Struct
+	VLS             *Struct
+	serializeWriter *Writer
+	NonStandard     bool
+}
+
+func (m *Message) HasSerializers() bool {
+	s := m.VLS
+	if s == nil {
+		s = m.Fixed
+	}
+	if s == nil {
+		return false
+	}
+	return true
+}
+
+func (m *Message) HasProtobuf() bool {
+	s := m.VLS
+	if s == nil {
+		s = m.Fixed
+	}
+	if s == nil {
+		return false
+	}
+	return s.Proto != nil
+}
+
+func (m *Message) Name() string {
+	if m.VLS != nil {
+		return m.VLS.Name
+	}
+	return m.Fixed.Name
 }
 
 type Alias struct {
@@ -138,6 +168,14 @@ type Struct struct {
 	Name         string
 	Fields       []*Field
 	FieldsByName map[string]*Field
+}
+
+func (s *Struct) Suffix() string {
+	if s.VLS {
+		return "VLS"
+	} else {
+		return "Fixed"
+	}
 }
 
 type Field struct {

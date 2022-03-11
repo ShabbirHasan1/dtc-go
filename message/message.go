@@ -66,6 +66,22 @@ type Pointer struct {
 	Ptr nogc.Pointer
 }
 
+func (m *Pointer) Free() {
+	if m.Ptr != 0 {
+		m.Ptr.Free()
+		m.Ptr = 0
+	}
+}
+
+func (m *Pointer) Close() error {
+	p := m.Ptr
+	if p != 0 {
+		nogc.Free(p)
+		m.Ptr = 0
+	}
+	return nil
+}
+
 func (m *Pointer) Take() Pointer {
 	p := m.Ptr
 	if p != 0 {

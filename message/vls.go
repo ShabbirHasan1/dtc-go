@@ -82,7 +82,14 @@ func (v VLSPointer) ToBuilder() VLSPointerBuilder {
 	}
 }
 
-func (m VLSPointer) Close() error {
+func (m *VLSPointer) Free() {
+	if m.Pointer.Ptr != 0 {
+		m.Pointer.Ptr.Free()
+		m.Pointer.Ptr = 0
+	}
+}
+
+func (m *VLSPointer) Close() error {
 	if m.Pointer.Ptr != 0 {
 		m.Pointer.Ptr.Free()
 		m.Pointer.Ptr = 0

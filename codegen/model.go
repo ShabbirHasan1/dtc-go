@@ -375,33 +375,33 @@ func (s *Struct) Bind(proto *parser.Message) error {
 				f.ProtoType = pb.VarintType
 				f.ProtoZigzag = true
 				switch kind {
-				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				case KindBool, KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
 				default:
-					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindBool | KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
 				}
 
 			case "fixed32", "sfixed32":
 				f.ProtoType = pb.Fixed32Type
 				switch kind {
-				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				case KindBool, KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
 				default:
-					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindBool | KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
 				}
 
 			case "fixed64", "sfixed64":
 				f.ProtoType = pb.Fixed64Type
 				switch kind {
-				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				case KindBool, KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
 				default:
-					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindBool | KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
 				}
 
 			case "int32", "uint32", "short", "long", "int", "int64", "uint64", "bool":
 				f.ProtoType = pb.VarintType
 				switch kind {
-				case KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
+				case KindBool, KindInt8, KindUint8, KindInt16, KindUint16, KindInt32, KindUint32, KindInt64, KindUint64, KindEnum:
 				default:
-					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
+					return fmt.Errorf("proto: %s.%s type %s does not match field type: KindBool | KindInt8 | KindUint8 | KindInt16 | KindUint16 | KindInt32 | KindUint32 | KindInt64 | KindUint64", proto.MessageName, pf.FieldName, pf.Type)
 				}
 
 			case "float":

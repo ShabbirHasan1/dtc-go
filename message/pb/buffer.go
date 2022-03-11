@@ -577,6 +577,11 @@ func (b *Buffer) ReadUint64ZigZag() uint64 {
 	return uint64((uint64(v) >> 1) ^ uint64((int64(v&1)<<63)>>63))
 }
 
+func (b *Buffer) ReadBool() bool {
+	v := b.ReadInt32()
+	return v != 0
+}
+
 // ReadInt8 reads next int8 value
 func (b *Buffer) ReadInt8() int8 {
 	v := b.ReadInt32()
@@ -589,7 +594,7 @@ func (b *Buffer) ReadUint8() uint8 {
 	return uint8(v)
 }
 
-// DecodeInt16 consumes an encoded unsigned varint from the buffer.
+// ReadInt16 consumes an encoded unsigned varint from the buffer.
 func (b *Buffer) ReadInt16() int16 {
 	v := b.ReadUint32()
 	return int16(v)

@@ -8,6 +8,43 @@ import (
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////
+// Bool
+////////////////////////////////////////////////////////////////////////////////////////////
+
+func BoolFixed(p nogc.Pointer, bounds uint16, offset int) bool {
+	if p == 0 || p.Uint16LE(0) < bounds {
+		return false
+	}
+	return p.Uint8(offset) != 0
+}
+func BoolVLS(p nogc.Pointer, bounds uint16, offset int) bool {
+	if p == 0 || p.Uint16LE(4) < bounds {
+		return false
+	}
+	return p.Uint8(offset) != 0
+}
+func SetBoolFixed(p nogc.Pointer, bounds uint16, offset int, value bool) {
+	if p == 0 || p.Uint16LE(0) < bounds {
+		return
+	}
+	if value {
+		p.SetUint8(offset, 1)
+	} else {
+		p.SetUint8(offset, 0)
+	}
+}
+func SetBoolVLS(p nogc.Pointer, bounds uint16, offset int, value bool) {
+	if p == 0 || p.Uint16LE(4) < bounds {
+		return
+	}
+	if value {
+		p.SetUint8(offset, 1)
+	} else {
+		p.SetUint8(offset, 0)
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
 // Int8
 ////////////////////////////////////////////////////////////////////////////////////////////
 

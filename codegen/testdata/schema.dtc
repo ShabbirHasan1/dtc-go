@@ -1,0 +1,14 @@
+enum TradeOrderEnum uint8 {
+    TradeOrderEnum_UNSET = 0
+}
+
+@pack 8
+message TradeOrder 10035 {
+    IsSupported bool
+    Status TradeOrderEnum
+    Reason string[80]       // supports both fixed and VLS with a single declaration
+    // Reason string        // without [] after string keyword, only VLS supported
+}
+
+extend EncodingRequest {
+}
