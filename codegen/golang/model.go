@@ -3,6 +3,8 @@ package golang
 import (
 	"fmt"
 	"github.com/moontrade/dtc-go/codegen"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -132,6 +134,7 @@ type EnumOption struct {
 
 type Struct struct {
 	*codegen.Struct
+	Message      *Message
 	Name         string
 	Fields       []*Field
 	FieldsByName map[string]*Field
@@ -143,6 +146,32 @@ type Field struct {
 	Name   string
 	Fields []*Field
 }
+
+// FieldsSlice attaches the methods of Interface to []*Field, sorting in increasing order.
+type FieldsSlice []*Field
+
+func (x FieldsSlice) Len() int { return len(x) }
+func (x FieldsSlice) Less(i, j int) bool {
+	if x[i].Proto == nil {
+		return true
+	}
+	if x[j].Proto == nil {
+		return false
+	}
+	in, err := strconv.ParseInt(x[i].Proto.FieldNumber, 10, 64)
+	if err != nil {
+		return true
+	}
+	jn, err := strconv.ParseInt(x[j].Proto.FieldNumber, 10, 64)
+	if err != nil {
+		return false
+	}
+	return in < jn
+}
+func (x FieldsSlice) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
+
+// Sort is a convenience method: x.Sort() calls Sort(x).
+func (x FieldsSlice) Sort() { sort.Sort(x) }
 
 //type Type struct {
 //	Package   *Package

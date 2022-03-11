@@ -51,7 +51,7 @@ type Lexer struct {
 	wantSep      byte // A comma or a colon character, which need to occur before a token.
 
 	UseMultipleErrors bool          // If we want to use multiple errors.
-	fatalError        error         // Fatal error occurred during lexing. It is usually a syntax error.
+	FatalError        error         // Fatal error occurred during lexing. It is usually a syntax error.
 	multipleErrors    []*LexerError // Semantic errors occurred during lexing. Marshalling will be continued after finding this errors.
 }
 
@@ -154,7 +154,7 @@ func (r *Lexer) FetchToken() {
 			return
 		}
 	}
-	r.fatalError = io.EOF
+	r.FatalError = io.EOF
 	return
 }
 
@@ -389,7 +389,7 @@ func (r *Lexer) fetchString() {
 
 // scanToken scans the next token if no token is currently available in the lexer.
 func (r *Lexer) scanToken() {
-	if r.token.kind != tokenUndef || r.fatalError != nil {
+	if r.token.kind != tokenUndef || r.FatalError != nil {
 		return
 	}
 
@@ -405,20 +405,20 @@ func (r *Lexer) consume() {
 
 // Ok returns true if no error (including io.EOF) was encountered during scanning.
 func (r *Lexer) Ok() bool {
-	return r.fatalError == nil
+	return r.FatalError == nil
 }
 
 const maxErrorContextLen = 13
 
 func (r *Lexer) errParse(what string) {
-	if r.fatalError == nil {
+	if r.FatalError == nil {
 		var str string
 		if len(r.Data)-r.pos <= maxErrorContextLen {
 			str = string(r.Data)
 		} else {
 			str = string(r.Data[r.pos:r.pos+maxErrorContextLen-3]) + "..."
 		}
-		r.fatalError = &LexerError{
+		r.FatalError = &LexerError{
 			Reason: what,
 			Offset: r.pos,
 			Data:   str,
@@ -431,7 +431,7 @@ func (r *Lexer) errSyntax() {
 }
 
 func (r *Lexer) errInvalidToken(expected string) {
-	if r.fatalError != nil {
+	if r.FatalError != nil {
 		return
 	}
 	if r.UseMultipleErrors {
@@ -460,7 +460,7 @@ func (r *Lexer) errInvalidToken(expected string) {
 	} else {
 		str = string(r.token.byteValue[:maxErrorContextLen-3]) + "..."
 	}
-	r.fatalError = &LexerError{
+	r.FatalError = &LexerError{
 		Reason: fmt.Sprintf("expected %s", expected),
 		Offset: r.pos,
 		Data:   str,
@@ -555,7 +555,7 @@ func (r *Lexer) SkipRecursive() {
 				r.pos += i + 1
 				if !json.Valid(r.Data[startPos:r.pos]) {
 					r.pos = len(r.Data)
-					r.fatalError = &LexerError{
+					r.FatalError = &LexerError{
 						Reason: "skipped array/object json value is invalid",
 						Offset: r.pos,
 						Data:   string(r.Data[r.pos:]),
@@ -574,7 +574,7 @@ func (r *Lexer) SkipRecursive() {
 		wasEscape = false
 	}
 	r.pos = len(r.Data)
-	r.fatalError = &LexerError{
+	r.FatalError = &LexerError{
 		Reason: "EOF reached while skipping array/object or token",
 		Offset: r.pos,
 		Data:   string(r.Data[r.pos:]),
@@ -717,7 +717,7 @@ func (r *Lexer) Bytes() []byte {
 	ret := make([]byte, base64.StdEncoding.DecodedLen(len(r.token.byteValue)))
 	n, err := base64.StdEncoding.Decode(ret, r.token.byteValue)
 	if err != nil {
-		r.fatalError = &LexerError{
+		r.FatalError = &LexerError{
 			Reason: err.Error(),
 		}
 		return nil
@@ -1113,12 +1113,12 @@ func (r *Lexer) Float64Str() float64 {
 }
 
 func (r *Lexer) Error() error {
-	return r.fatalError
+	return r.FatalError
 }
 
 func (r *Lexer) AddError(e error) {
-	if r.fatalError == nil {
-		r.fatalError = e
+	if r.FatalError == nil {
+		r.FatalError = e
 	}
 }
 
@@ -1139,7 +1139,7 @@ func (r *Lexer) addNonfatalError(err *LexerError) {
 		r.multipleErrors = append(r.multipleErrors, err)
 		return
 	}
-	r.fatalError = err
+	r.FatalError = err
 }
 
 func (r *Lexer) GetNonFatalErrors() []*LexerError {

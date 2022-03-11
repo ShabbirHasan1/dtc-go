@@ -91,7 +91,9 @@ LOOP:
 					// ignore
 					continue LOOP
 				}
-				return errors.New("could not locate struct named: " + v.MessageName)
+				fmt.Printf("WARN: protobuf message named '%s' does not have a match in DTCProtocol.h\n", v.MessageName)
+				//return errors.New("could not locate struct named: " + v.MessageName)
+				continue
 			}
 			if msg.Fixed != nil {
 				if err = msg.Fixed.Bind(v); err != nil {
@@ -145,6 +147,51 @@ func (schema *Schema) Validate() error {
 			_ = st
 		}
 	}
+
+	for _, msg := range schema.Messages {
+		if msg.Fixed == nil || msg.VLS == nil {
+			continue
+		}
+
+		if len(msg.Fixed.Fields) < 3 {
+			continue
+		}
+
+		if len(msg.Fixed.Fields) != len(msg.VLS.Fields)-1 {
+			return fmt.Errorf("message '%s' has field count mismatch between Fixed and VLS structs: %d vs %d", msg.Fixed.Name, len(msg.Fixed.Fields), len(msg.VLS.Fields))
+		}
+
+		var (
+			fixedIndex = 2
+			vlsIndex   = 3
+		)
+
+		for fixedIndex < len(msg.Fixed.Fields) {
+			fixedField := msg.Fixed.Fields[fixedIndex]
+			vlsField := msg.VLS.Fields[vlsIndex]
+
+			if fixedField.Type.Union != nil {
+				fixedIndex++
+				vlsIndex++
+				continue
+			}
+
+			if fixedField.Name != vlsField.Name {
+				return fmt.Errorf("message '%s' has field Name mismatch between Fixed and VLS at index %d and Fixed name '%s' vs VLS name '%s'", msg.Fixed.Name, fixedIndex, fixedField.Name, vlsField.Name)
+			}
+			if fixedField.Type.Kind != vlsField.Type.Kind {
+				if fixedField.Type.Kind == KindStringFixed && vlsField.Type.Kind == KindStringVLS {
+
+				} else {
+					return fmt.Errorf("message '%s' has field type mismatch between Fixed and VLS at index %d named '%s' and Fixed type %d vs VLS type %d", msg.Fixed.Name, fixedIndex, fixedField.Name, fixedField.Type.Kind, vlsField.Type.Kind)
+				}
+			}
+
+			fixedIndex++
+			vlsIndex++
+		}
+	}
+
 	return nil
 }
 
@@ -817,6 +864,37 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 			field.Initial, err = f.parseInitValue(message, field.InitExpression)
 			if err != nil {
 				return nil, err
+			}
+		}
+
+		if field.Type.Union != nil {
+			for _, field := range field.Type.Union.Fields {
+				if message.Doc != nil {
+					field.Doc = message.Doc.FieldNamed(field.Name)
+				}
+				if field.Type.Kind == KindStringVLS {
+					message.VLS = true
+				}
+				if field.Initial == nil && len(field.InitExpression) > 0 {
+					field.Initial, err = f.parseInitValue(message, field.InitExpression)
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+		}
+
+		if strings.ToLower(field.Name) == "type" && field.Initial != nil {
+			if field.Initial.Int > 0 {
+				message.Type = uint16(field.Initial.Int)
+			} else if field.Initial.Uint > 0 {
+				message.Type = uint16(field.Initial.Uint)
+			} else if field.Initial.Const != nil {
+				if field.Initial.Const.Value.Int > 0 {
+					message.Type = uint16(field.Initial.Const.Value.Int)
+				} else if field.Initial.Const.Value.Uint > 0 {
+					message.Type = uint16(field.Initial.Const.Value.Uint)
+				}
 			}
 		}
 	}

@@ -119,8 +119,8 @@ func (r *Reader) WantComma() {
 }
 
 func (r *Reader) FieldName() (string, error) {
-	if r.Lexer.fatalError != nil {
-		return "", r.Lexer.fatalError
+	if r.Lexer.FatalError != nil {
+		return "", r.Lexer.FatalError
 	}
 	if r.Lexer.IsDelim('}') {
 		return "", nil
@@ -131,11 +131,11 @@ func (r *Reader) FieldName() (string, error) {
 }
 
 func (r *Reader) IsError() bool {
-	return r.Lexer.fatalError != nil
+	return r.Lexer.FatalError != nil
 }
 
 func (r *Reader) Error() error {
-	return r.Lexer.fatalError
+	return r.Lexer.FatalError
 }
 
 func (r *Reader) Bool() bool {

@@ -936,8 +936,8 @@ namespace DTC_VLS
 
 		double Quantity;
 
-		int8_t Price1IsSet;
-		int8_t Price2IsSet;
+		uint8_t Price1IsSet;
+		uint8_t Price2IsSet;
 
 		int32_t Unused;
 		DTC::TimeInForceEnum TimeInForce;
@@ -1040,8 +1040,8 @@ namespace DTC_VLS
 		int64_t Price2;
 		float Divisor;
 		int64_t Quantity;
-		int8_t Price1IsSet;
-		int8_t Price2IsSet;
+		uint8_t Price1IsSet;
+		uint8_t Price2IsSet;
 
 		int32_t Unused;
 		DTC::TimeInForceEnum TimeInForce;

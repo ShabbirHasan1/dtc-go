@@ -7,6 +7,7 @@ import (
 	"github.com/moontrade/nogc"
 	"github.com/yoheimuta/go-protoparser/v4/parser"
 	"math"
+	"sort"
 	"strconv"
 	"unsafe"
 )
@@ -39,6 +40,15 @@ func (k Kind) IsPrimitive() bool {
 	case KindBool, KindInt8, KindInt16, KindInt32, KindInt64, KindUint8,
 		KindUint16, KindUint32, KindUint64, KindFloat32, KindFloat64,
 		KindStringFixed, KindStringVLS:
+		return true
+	default:
+		return false
+	}
+}
+
+func (k Kind) IsString() bool {
+	switch k {
+	case KindStringFixed, KindStringVLS:
 		return true
 	default:
 		return false
@@ -132,6 +142,7 @@ type Const struct {
 type Struct struct {
 	Namespace    *Namespace
 	File         *File
+	Type         uint16
 	Name         string
 	NamePretty   string
 	Doc          *MessageDoc
@@ -143,6 +154,32 @@ type Struct struct {
 	Proto        *parser.Message
 	Init         []byte
 }
+
+// FieldsSlice attaches the methods of Interface to []*Field, sorting in increasing order.
+type FieldsSlice []*Field
+
+func (x FieldsSlice) Len() int { return len(x) }
+func (x FieldsSlice) Less(i, j int) bool {
+	if x[i].Proto == nil {
+		return true
+	}
+	if x[j].Proto == nil {
+		return false
+	}
+	in, err := strconv.ParseInt(x[i].Proto.FieldNumber, 10, 64)
+	if err != nil {
+		return true
+	}
+	jn, err := strconv.ParseInt(x[j].Proto.FieldNumber, 10, 64)
+	if err != nil {
+		return false
+	}
+	return in < jn
+}
+func (x FieldsSlice) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
+
+// Sort is a convenience method: x.Sort() calls Sort(x).
+func (x FieldsSlice) Sort() { sort.Sort(x) }
 
 type Field struct {
 	Struct          *Struct
@@ -160,13 +197,9 @@ type Field struct {
 type ValueType int
 
 const (
-	ValueTypeUnknown ValueType = 0
-	ValueTypeInt     ValueType = 1
-	ValueTypeUint    ValueType = 2
-	//ValueTypeInt32Max   ValueType = 2
-	//ValueTypeUint32Max  ValueType = 3
-	//ValueTypeInt64Max   ValueType = 4
-	//ValueTypeUint64Max  ValueType = 5
+	ValueTypeUnknown    ValueType = 0
+	ValueTypeInt        ValueType = 1
+	ValueTypeUint       ValueType = 2
 	ValueTypeBool       ValueType = 9
 	ValueTypeFloat      ValueType = 10
 	ValueTypeFloat32Max ValueType = 11
@@ -490,13 +523,13 @@ func pointerSetInt(kind Kind, p nogc.Pointer, value int64) {
 	case KindInt64:
 		p.SetInt64LE(0, value)
 	case KindUint8:
-		p.SetUInt8(0, uint8(value))
+		p.SetUint8(0, uint8(value))
 	case KindUint16:
-		p.SetUInt16LE(0, uint16(value))
+		p.SetUint16LE(0, uint16(value))
 	case KindUint32:
-		p.SetUInt32LE(0, uint32(value))
+		p.SetUint32LE(0, uint32(value))
 	case KindUint64:
-		p.SetUInt64LE(0, uint64(value))
+		p.SetUint64LE(0, uint64(value))
 	}
 }
 
@@ -511,12 +544,12 @@ func pointerSetUint(kind Kind, p nogc.Pointer, value uint64) {
 	case KindInt64:
 		p.SetInt64LE(0, int64(value))
 	case KindUint8:
-		p.SetUInt8(0, uint8(value))
+		p.SetUint8(0, uint8(value))
 	case KindUint16:
-		p.SetUInt16LE(0, uint16(value))
+		p.SetUint16LE(0, uint16(value))
 	case KindUint32:
-		p.SetUInt32LE(0, uint32(value))
+		p.SetUint32LE(0, uint32(value))
 	case KindUint64:
-		p.SetUInt64LE(0, value)
+		p.SetUint64LE(0, value)
 	}
 }

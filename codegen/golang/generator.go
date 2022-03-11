@@ -3,6 +3,8 @@ package golang
 import (
 	"fmt"
 	"github.com/moontrade/dtc-go/codegen"
+	"github.com/moontrade/dtc-go/message/pb"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -31,24 +33,40 @@ type Generator struct {
 }
 
 type Config struct {
-	Dir                string
-	RootPackage        string
-	FixedPackage       string
-	VLSPackage         string
-	NonStandardPackage string
-	SerializePackage   string
-	FactoryPackage     string
+	Dir            string
+	RootPackage    string
+	FactoryPackage string
+	Json           bool
+	Protobuf       bool
+	GC             bool
+	NoGC           bool
+	TinyGo         bool
+	Debug          bool
 }
 
 func DefaultConfig(dir string) *Config {
 	return &Config{
-		Dir:                dir,
-		RootPackage:        "github.com/moontrade/dtc-go/model",
-		FixedPackage:       "fixed",
-		VLSPackage:         "vls",
-		NonStandardPackage: "ns",
-		SerializePackage:   "serialize",
-		FactoryPackage:     "factory",
+		Dir:            dir,
+		RootPackage:    "github.com/moontrade/dtc-go/model",
+		FactoryPackage: "factory",
+		Json:           true,
+		Protobuf:       true,
+		GC:             true,
+		NoGC:           true,
+		TinyGo:         false,
+	}
+}
+
+func TinyGoConfig(dir string) *Config {
+	return &Config{
+		Dir:            dir,
+		RootPackage:    "github.com/moontrade/dtc-go/model",
+		FactoryPackage: "factory",
+		Json:           false,
+		Protobuf:       false,
+		GC:             true,
+		NoGC:           true,
+		TinyGo:         true,
 	}
 }
 
@@ -199,14 +217,6 @@ func NewGenerator(config *Config, schema *codegen.Schema) (*Generator, error) {
 		config: config,
 		schema: schema,
 		root:   NewPackage(filepath.Base(config.RootPackage), config.RootPackage),
-		fixed: NewPackage(config.FixedPackage,
-			fmt.Sprintf("%s/%s", config.RootPackage, config.FixedPackage)),
-		vls: NewPackage(config.VLSPackage,
-			fmt.Sprintf("%s/%s", config.RootPackage, config.VLSPackage)),
-		nonStandard: NewPackage(config.NonStandardPackage,
-			fmt.Sprintf("%s/%s", config.RootPackage, config.NonStandardPackage)),
-		serialize: NewPackage(config.SerializePackage,
-			fmt.Sprintf("%s/%s", config.RootPackage, config.SerializePackage)),
 		factory: NewPackage(config.FactoryPackage,
 			fmt.Sprintf("%s/%s", config.RootPackage, config.FactoryPackage)),
 		all:             make(map[string]interface{}),
@@ -303,6 +313,9 @@ func NewGenerator(config *Config, schema *codegen.Schema) (*Generator, error) {
 			Name:         cleanName(st.Name),
 			FieldsByName: make(map[string]*Field),
 		}
+		if !s.VLS && schema.MessagesByName[st.Name].VLS != nil {
+			s.Name = fmt.Sprintf("%sFixed", s.Name)
+		}
 		for _, field := range st.Fields {
 			var (
 				f = &Field{
@@ -350,8 +363,11 @@ func NewGenerator(config *Config, schema *codegen.Schema) (*Generator, error) {
 		name := ""
 		if m.Fixed != nil {
 			name = m.Fixed.Name
-		} else if m.VLS != nil {
+			m.Fixed.Message = m
+		}
+		if m.VLS != nil {
 			name = m.VLS.Name
+			m.VLS.Message = m
 		}
 
 		if len(name) == 0 {
@@ -368,6 +384,20 @@ func NewGenerator(config *Config, schema *codegen.Schema) (*Generator, error) {
 }
 
 func (g *Generator) Run() error {
+	_ = os.MkdirAll(g.config.Dir, 0755)
+	files, err := ioutil.ReadDir(g.config.Dir)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		n := file.Name()
+		if err = os.Remove(filepath.Join(g.config.Dir, n)); err != nil {
+			return err
+		}
+	}
 	if err := g.generateAliases(); err != nil {
 		return err
 	}
@@ -377,16 +407,7 @@ func (g *Generator) Run() error {
 	if err := g.generateEnums(); err != nil {
 		return err
 	}
-	if err := g.generateMessages(); err != nil {
-		return err
-	}
-	if err := g.generateSerialize(); err != nil {
-		return err
-	}
-	if err := g.generateFixed(); err != nil {
-		return err
-	}
-	if err := g.generateVLS(); err != nil {
+	if err := g.generateStructs(); err != nil {
 		return err
 	}
 	return nil
@@ -399,7 +420,14 @@ func (g *Generator) generateAliases() error {
 
 	w.Line("type (")
 	for _, alias := range g.aliases {
-		w.IndentLine(1, "%s %s", alias.Name, g.GoTypeName(&alias.Type, nil))
+		if alias.Doc != nil {
+			_ = g.writeComments(w, 1, alias.Name, alias.Doc.Description)
+		}
+		w.IndentLine(1, "%s %s", alias.Name, g.GoTypeName(&alias.Type))
+
+		if alias != g.aliases[len(g.aliases)-1] {
+			w.Line("")
+		}
 	}
 	w.Line(")")
 	w.Line("")
@@ -426,7 +454,7 @@ func (g *Generator) generateConstants() error {
 
 	w.Line("const (")
 	for _, constant := range g.constants {
-		w.IndentLine(1, "%s %s = %s", constant.Name, g.GoTypeName(&constant.Type, nil), valueToGo(constant.Const.Value))
+		w.IndentLine(1, "%s %s = %s", constant.Name, g.GoTypeName(&constant.Type), valueToGo(constant.Const.Value))
 	}
 	w.Line(")")
 	w.Line("")
@@ -440,10 +468,16 @@ func (g *Generator) generateEnums() error {
 	w.Line("")
 
 	for _, enum := range g.enums {
+		if enum.Doc != nil {
+			_ = g.writeComments(w, 0, enum.Name, enum.Doc.Description)
+		}
 		w.Line("type %s %s", enum.Name, primitiveKindName(enum.Type))
 		w.Line("")
 		w.Line("const (")
 		for _, option := range enum.Options {
+			if option.Doc != nil {
+				_ = g.writeComments(w, 1, option.Name, option.Doc.Description)
+			}
 			w.IndentLine(1, "%s %s = %d", option.Name, enum.Name, option.Value)
 		}
 		w.Line(")")
@@ -451,6 +485,10 @@ func (g *Generator) generateEnums() error {
 	}
 
 	return os.WriteFile(filepath.Join(g.config.Dir, "enums.go"), w.b, 0755)
+}
+
+func (g *Generator) generateStructDebug(msg *Struct) error {
+	return nil
 }
 
 func (g *Generator) generateMessages() error {
@@ -483,10 +521,10 @@ func (g *Generator) generateMessages() error {
 
 			if field.Fields != nil {
 				for _, field := range field.Fields {
-					w.IndentLine(1, "%s() %s", field.Name, g.GoTypeName(&field.Type, nil))
+					w.IndentLine(1, "%s() %s", field.Name, g.GoTypeName(&field.Type))
 				}
 			} else {
-				w.IndentLine(1, "%s() %s", field.Name, g.GoTypeName(&field.Type, nil))
+				w.IndentLine(1, "%s() %s", field.Name, g.GoTypeName(&field.Type))
 			}
 
 			if i < len(msg.Fields)-1 {
@@ -501,6 +539,8 @@ func (g *Generator) generateMessages() error {
 		w.Line("")
 		w.IndentLine(1, "%s", msg.Name)
 		w.Line("")
+		w.IndentLine(1, "Finish() %s", msg.Name)
+		w.Line("")
 
 		for i, field := range msg.Fields {
 			if isHeaderField(field) {
@@ -509,10 +549,18 @@ func (g *Generator) generateMessages() error {
 
 			if field.Fields != nil {
 				for _, field := range field.Fields {
-					w.IndentLine(1, "Set%s(value %s)", field.Name, g.GoTypeName(&field.Type, nil))
+					if field.Type.Kind.IsString() {
+						w.IndentLine(1, "Set%s(value %s) %sBuilder", field.Name, g.GoTypeName(&field.Type), msg.Name)
+					} else {
+						w.IndentLine(1, "Set%s(value %s)", field.Name, g.GoTypeName(&field.Type))
+					}
 				}
 			} else {
-				w.IndentLine(1, "Set%s(value %s)", field.Name, g.GoTypeName(&field.Type, nil))
+				if field.Type.Kind.IsString() {
+					w.IndentLine(1, "Set%s(value %s) %sBuilder", field.Name, g.GoTypeName(&field.Type), msg.Name)
+				} else {
+					w.IndentLine(1, "Set%s(value %s)", field.Name, g.GoTypeName(&field.Type))
+				}
 			}
 
 			if i < len(msg.Fields)-1 {
@@ -536,241 +584,1221 @@ func (g *Generator) generateMessages() error {
 	return nil
 }
 
-func (g *Generator) generateFixed() error {
-	for _, model := range g.messages {
-		msg := model.Fixed
-		if msg == nil {
-			continue
+func (g *Generator) writeComments(w *Writer, indent int, name string, comments []string) error {
+	if len(comments) == 0 {
+		return nil
+	}
+	comments = g.normalizeComments(comments)
+	if !strings.HasPrefix(comments[0], name) {
+		comments[0] = fmt.Sprintf("%s %s", name, strings.TrimSpace(comments[0]))
+	}
+	for _, comment := range comments {
+		comment = strings.TrimSpace(comment)
+		if len(comment) == 0 {
+			w.IndentLine(indent, "//")
+		} else {
+			w.IndentLine(indent, "// %s", comment)
 		}
-		//importMath := false
-		//for _, field := range msg.Fields {
-		//	if len(field.Fields) > 0 {
-		//		for _, field := range field.Fields {
-		//			if field.Initial != nil {
-		//				switch field.Initial.Type {
-		//				case codegen.ValueTypeFloat32Max, codegen.ValueTypeFloat64Max:
-		//					importMath = true
-		//				}
-		//			}
-		//		}
-		//	} else if field.Initial != nil {
-		//		switch field.Initial.Type {
-		//		case codegen.ValueTypeFloat32Max, codegen.ValueTypeFloat64Max:
-		//			importMath = true
-		//		}
-		//	}
-		//}
+	}
+	return nil
+}
 
-		w := &Writer{}
-		w.Line("package %s", g.fixed.Name)
+func (g *Generator) normalizeComments(comments []string) []string {
+	to := make([]string, 0, len(comments))
+	for _, comment := range comments {
+		for _, alias := range g.aliases {
+			comment = strings.ReplaceAll(comment, alias.Alias.Name, alias.Name)
+		}
+		for _, enum := range g.enums {
+			comment = strings.ReplaceAll(comment, enum.Enum.Name, enum.Name)
+		}
+		for _, msg := range g.messages {
+			m := msg.VLS
+			if m == nil {
+				m = msg.Fixed
+			}
+			comment = strings.ReplaceAll(comment, m.Struct.Name, m.Name)
+		}
+
+		for len(comment) > 70 {
+			index := 69
+		LOOP:
+			for ; index < len(comment); index++ {
+				c := comment[index]
+				switch c {
+				case ' ', '\r', '\t':
+					break LOOP
+
+				case '.':
+					index += 1
+
+					break LOOP
+				}
+			}
+
+			if index >= len(comment) {
+				comment = strings.TrimSpace(comment)
+				if len(comment) > 0 {
+					to = append(to, comment)
+				}
+				break
+			}
+
+			cutoff := strings.TrimSpace(comment[0:index])
+			to = append(to, cutoff)
+			comment = strings.TrimSpace(comment[index:])
+		}
+
+		to = append(to, comment)
+	}
+	return to
+}
+
+func (g *Generator) generateStructs() error {
+	for _, model := range g.messages {
+		pkg := g.root
+		if model.Fixed != nil {
+			if model.VLS != nil {
+				//pkg = g.fixed
+			}
+			if err := g.generateStruct(model.Fixed, pkg); err != nil {
+				return err
+			}
+		}
+		if model.VLS != nil {
+			if err := g.generateStruct(model.VLS, pkg); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (g *Generator) generateJson(msg *Struct) error {
+	if !g.config.Json {
+		return nil
+	}
+
+	var (
+		gcWriter   *Writer
+		nogcWriter *Writer
+	)
+
+	if g.config.GC {
+		gcWriter = &Writer{}
+	}
+	if g.config.NoGC {
+		nogcWriter = &Writer{}
+	}
+
+	writeImports := func(w *Writer) {
+		w.Line("//go:build !tinygo")
+		w.Line("")
+		w.Line("package %s", g.root.Name)
 		w.Line("")
 		w.Line("import (")
 		w.IndentLine(1, "\"github.com/moontrade/dtc-go/message\"")
-		w.IndentLine(1, "\"%s\"", g.root.Path)
-		//if importMath {
-		//	w.IndentLine(1, "\"math\"")
-		//}
+		w.IndentLine(1, "\"github.com/moontrade/dtc-go/message/json\"")
 		w.Line(")")
 		w.Line("")
+	}
+	if gcWriter != nil {
+		writeImports(gcWriter)
+	}
+	if nogcWriter != nil {
+		writeImports(nogcWriter)
+	}
 
-		w.Line("var (")
-		w.IndentLine(1, "_ model.%s = %s{}", msg.Name, msg.Name)
-		w.IndentLine(1, "_ model.%sBuilder = %sBuilder{}", msg.Name, msg.Name)
-		w.IndentLine(1, "_ model.%s = %sPointer{}", msg.Name, msg.Name)
-		w.IndentLine(1, "_ model.%sBuilder = %sPointerBuilder{}", msg.Name, msg.Name)
-		w.Line(")")
-		w.Line("")
-		w.Write("var _%sDefault = ", msg.Name)
-		w.WriteByteSlice(msg.Init)
-		w.Write("\n\n")
-
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("// Types")
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("")
-		w.Line("type %s struct {", msg.Name)
-		w.IndentLine(1, "message.Fixed")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("type %sBuilder struct {", msg.Name)
-		w.IndentLine(1, "message.Fixed")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("type %sPointer struct {", msg.Name)
-		w.IndentLine(1, "message.FixedPointer")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("type %sPointerBuilder struct {", msg.Name)
-		w.IndentLine(1, "message.FixedPointer")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("// Constructors")
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("")
-
-		w.Line("func New%s() %sBuilder {", msg.Name, msg.Name)
-		w.IndentLine(1, "a := %sBuilder{message.NewFixed(%d)}", msg.Name, msg.Size)
-		w.IndentLine(1, "a.Unsafe().SetBytes(0, _%sDefault)", msg.Name)
-		w.IndentLine(1, "return a")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("func Alloc%s() %sPointerBuilder {", msg.Name, msg.Name)
-		w.IndentLine(1, "a := %sPointerBuilder{message.AllocFixed(%d)}", msg.Name, msg.Size)
-		w.IndentLine(1, "a.Ptr.SetBytes(0, _%sDefault)", msg.Name)
-		w.IndentLine(1, "return a")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("// Clear")
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("")
-
-		w.Line("func (e %sBuilder) Clear() {", msg.Name)
-		w.IndentLine(1, "e.Unsafe().SetBytes(0, _%sDefault)", msg.Name)
-		w.Line("}")
-		w.Line("")
-
-		w.Line("func (e %sPointerBuilder) Clear() {", msg.Name)
-		w.IndentLine(1, "e.Ptr.SetBytes(0, _%sDefault)", msg.Name)
-		w.Line("}")
-		w.Line("")
-
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("// ToBuilder")
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("")
-
-		w.Line("func (e %s) ToBuilder() model.%sBuilder {", msg.Name, msg.Name)
-		w.IndentLine(1, "return %sBuilder{Fixed: e.Fixed}", msg.Name)
-		w.Line("}")
-		w.Line("")
-
-		w.Line("func (e %sBuilder) ToBuilder() model.%sBuilder {", msg.Name, msg.Name)
-		w.IndentLine(1, "return e")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("func (e %sPointer) ToBuilder() model.%sBuilder {", msg.Name, msg.Name)
-		w.IndentLine(1, "return %sPointerBuilder{FixedPointer: e.FixedPointer}", msg.Name)
-		w.Line("}")
-		w.Line("")
-
-		w.Line("func (e %sPointerBuilder) ToBuilder() model.%sBuilder {", msg.Name, msg.Name)
-		w.IndentLine(1, "return e")
-		w.Line("}")
-		w.Line("")
-
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("// Getters")
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("")
-
-		for i, field := range msg.Fields {
+	marshalJSONCompact := func(w *Writer, name string) {
+		w.Line("func (m %s) MarshalJSONCompactTo(b []byte) ([]byte, error) {", name)
+		w.IndentLine(1, "w := json.Writer{Data: b, Compact: true}")
+		w.IndentLine(1, "w.Data = append(w.Data, \"{\\\"Type\\\":%d,\\\"F\\\":[\"...)", msg.Type)
+		first := true
+		for _, field := range msg.Fields {
 			if isHeaderField(field) {
 				continue
 			}
+			if first {
+				first = false
+			} else {
+				w.IndentLine(1, "w.Data = append(w.Data, ',')")
+			}
 
-			g.writeFieldGetters(w, field)
+			if len(field.Fields) > 0 {
+				maxField := field.Fields[0]
+				for _, f := range field.Fields {
+					if f.Type.Size > maxField.Type.Size {
+						maxField = f
+					}
+				}
+				field = maxField
+			}
 
-			if i < len(msg.Fields)-1 {
-				w.Line("")
+			switch field.Type.Kind {
+			case codegen.KindEnum:
+				w.IndentLine(1, "w.%s(%s(m.%s()))", jsonGetterFuncNamePrimitive(field.Type.Enum.Type), primitiveTypeName(field.Type.Enum.Type), field.Name)
+			case codegen.KindAlias:
+				w.IndentLine(1, "w.%s(%s(m.%s()))", jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind), primitiveTypeName(field.Type.Alias.Type.Kind), field.Name)
+			default:
+				w.IndentLine(1, "w.%s(m.%s())", jsonGetterFuncNamePrimitive(field.Type.Kind), field.Name)
 			}
 		}
+		w.IndentLine(1, "return w.Finish(), nil")
+		w.Line("}")
 		w.Line("")
+	}
 
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("// Setters")
-		w.Line("//////////////////////////////////////////////////////////////////////////////////////////")
-		w.Line("")
+	if gcWriter != nil {
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("// JSON Compact Marshal")
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("")
 
-		for i, field := range msg.Fields {
+		marshalJSONCompact(gcWriter, msg.Name)
+		marshalJSONCompact(gcWriter, msg.Name+"Builder")
+	}
+
+	if nogcWriter != nil {
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("// JSON Compact Marshal")
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("")
+
+		marshalJSONCompact(nogcWriter, msg.Name+"Pointer")
+		marshalJSONCompact(nogcWriter, msg.Name+"PointerBuilder")
+	}
+
+	marshalJSON := func(w *Writer, name string) {
+		w.Line("func (m %s) MarshalJSONTo(b []byte) ([]byte, error) {", name)
+		w.IndentLine(1, "w := json.NewWriter(b, %d)", msg.Struct.Type)
+		for _, field := range msg.Fields {
 			if isHeaderField(field) {
 				continue
 			}
-
-			g.writeFieldSetters(w, field)
-
-			if i < len(msg.Fields)-1 {
-				w.Line("")
+			if len(field.Fields) > 0 {
+				for _, field := range field.Fields {
+					switch field.Type.Kind {
+					case codegen.KindEnum:
+						w.IndentLine(1, "w.%sField(\"%s\", %s(m.%s()))", jsonGetterFuncNamePrimitive(field.Type.Enum.Type), field.Field.Name, primitiveTypeName(field.Type.Enum.Type), field.Name)
+					case codegen.KindAlias:
+						w.IndentLine(1, "w.%sField(\"%s\", %s(m.%s()))", jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind), field.Field.Name, primitiveTypeName(field.Type.Alias.Type.Kind), field.Name)
+					default:
+						w.IndentLine(1, "w.%sField(\"%s\", m.%s())", jsonGetterFuncNamePrimitive(field.Type.Kind), field.Field.Name, field.Name)
+					}
+				}
+			} else {
+				switch field.Type.Kind {
+				case codegen.KindEnum:
+					w.IndentLine(1, "w.%sField(\"%s\", %s(m.%s()))", jsonGetterFuncNamePrimitive(field.Type.Enum.Type), field.Field.Name, primitiveTypeName(field.Type.Enum.Type), field.Name)
+				case codegen.KindAlias:
+					w.IndentLine(1, "w.%sField(\"%s\", %s(m.%s()))", jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind), field.Field.Name, primitiveTypeName(field.Type.Alias.Type.Kind), field.Name)
+				default:
+					w.IndentLine(1, "w.%sField(\"%s\", m.%s())", jsonGetterFuncNamePrimitive(field.Type.Kind), field.Field.Name, field.Name)
+				}
 			}
 		}
+		w.IndentLine(1, "return w.Finish(), nil")
+		w.Line("}")
 		w.Line("")
+	}
 
-		if err := os.WriteFile(filepath.Join(g.config.Dir, g.fixed.Name, fmt.Sprintf("%s.go", toSnakeCase(msg.Name))), w.b, 0755); err != nil {
+	if gcWriter != nil {
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("// JSON Marshal")
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("")
+		marshalJSON(gcWriter, msg.Name)
+		marshalJSON(gcWriter, msg.Name+"Builder")
+	}
+	if nogcWriter != nil {
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("// JSON Marshal")
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("")
+		marshalJSON(nogcWriter, msg.Name+"Pointer")
+		marshalJSON(nogcWriter, msg.Name+"PointerBuilder")
+	}
+
+	unmarshalJSONCompact := func(w *Writer, name string) {
+		w.Line("func (m *%s) UnmarshalJSONCompactFrom(r *json.Reader) error {", name)
+		//w.IndentLine(1, "r, err := json.OpenReader(b)")
+		//w.IndentLine(1, "if err != nil {")
+		//w.IndentLine(2, "return err")
+		//w.IndentLine(1, "}")
+		w.IndentLine(1, "if r.Type != %d {", msg.Type)
+		w.IndentLine(2, "return message.ErrWrongType")
+		w.IndentLine(1, "}")
+		for _, field := range msg.Fields {
+			if isHeaderField(field) {
+				continue
+			}
+			if len(field.Fields) > 0 {
+				maxField := field.Fields[0]
+				for _, f := range field.Fields {
+					if f.Type.Size > maxField.Type.Size {
+						maxField = f
+					}
+				}
+				field = maxField
+			}
+			switch field.Type.Kind {
+			case codegen.KindEnum:
+				w.IndentLine(1, "m.Set%s(%s(r.%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Enum.Type))
+			case codegen.KindAlias:
+				w.IndentLine(1, "m.Set%s(%s(r.%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind))
+			default:
+				w.IndentLine(1, "m.Set%s(r.%s())", field.Name, jsonGetterFuncNamePrimitive(field.Type.Kind))
+			}
+			w.IndentLine(1, "if r.IsError() {")
+			w.IndentLine(2, "return r.Error()")
+			w.IndentLine(1, "}")
+		}
+		w.IndentLine(1, "return nil")
+		w.Line("}")
+		w.Line("")
+	}
+
+	if gcWriter != nil {
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("// JSON Compact Unmarshal")
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("")
+		unmarshalJSONCompact(gcWriter, msg.Name+"Builder")
+	}
+	if nogcWriter != nil {
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("// JSON Compact Unmarshal")
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("")
+		unmarshalJSONCompact(nogcWriter, msg.Name+"PointerBuilder")
+	}
+
+	unmarshalJSON := func(w *Writer, name string) {
+		w.Line("func (m *%s) UnmarshalJSONFrom(r *json.Reader) error {", name)
+		w.IndentLine(1, "if r.Type != %d {", msg.Type)
+		w.IndentLine(2, "return message.ErrWrongType")
+		w.IndentLine(1, "}")
+		w.IndentLine(1, "in := &r.Lexer")
+		w.IndentLine(0, "LOOP:")
+		w.IndentLine(1, "for !in.IsDelim('}') {")
+		w.IndentLine(2, "key, err := r.FieldName()")
+		w.IndentLine(3, "if err != nil {")
+		w.IndentLine(2, "return err")
+		w.IndentLine(2, "}")
+		w.IndentLine(2, "switch key {")
+		for _, field := range msg.Fields {
+			if isHeaderField(field) {
+				continue
+			}
+			if len(field.Fields) > 0 {
+				for _, field := range field.Fields {
+					w.IndentLine(2, "case \"%s\":", field.Field.Name)
+					switch field.Type.Kind {
+					case codegen.KindEnum:
+						w.IndentLine(3, "m.Set%s(%s(r.%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Enum.Type))
+					case codegen.KindAlias:
+						w.IndentLine(3, "m.Set%s(%s(r.%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind))
+					default:
+						w.IndentLine(3, "m.Set%s(r.%s())", field.Name, jsonGetterFuncNamePrimitive(field.Type.Kind))
+					}
+				}
+			} else {
+				w.IndentLine(2, "case \"%s\":", field.Field.Name)
+				switch field.Type.Kind {
+				case codegen.KindEnum:
+					w.IndentLine(3, "m.Set%s(%s(r.%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Enum.Type))
+				case codegen.KindAlias:
+					w.IndentLine(3, "m.Set%s(%s(r.%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind))
+				default:
+					w.IndentLine(3, "m.Set%s(r.%s())", field.Name, jsonGetterFuncNamePrimitive(field.Type.Kind))
+				}
+			}
+		}
+		w.IndentLine(2, "case \"f\", \"F\":")
+		w.IndentLine(3, "return message.ErrJSONCompactDetected")
+		w.IndentLine(2, "case \"\":")
+		w.IndentLine(3, "break LOOP")
+		w.IndentLine(2, "default:")
+		w.IndentLine(3, "in.SkipRecursive()")
+		w.IndentLine(2, "}")
+		w.IndentLine(2, "if r.IsError() {")
+		w.IndentLine(3, "return r.Error()")
+		w.IndentLine(2, "}")
+		w.IndentLine(2, "in.WantComma()")
+		w.IndentLine(1, "}")
+		w.IndentLine(1, "return nil")
+		w.Line("}")
+		w.Line("")
+	}
+
+	if gcWriter != nil {
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("// JSON Unmarshal")
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("")
+
+		unmarshalJSON(gcWriter, msg.Name+"Builder")
+	}
+	if nogcWriter != nil {
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("// JSON Unmarshal")
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("")
+
+		unmarshalJSON(nogcWriter, msg.Name+"PointerBuilder")
+	}
+
+	_ = os.MkdirAll(g.config.Dir, 0755)
+	if gcWriter != nil {
+		if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_json.go", toSnakeCase(msg.Name))), gcWriter.b, 0755); err != nil {
+			return err
+		}
+	}
+	if nogcWriter != nil {
+		if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_nogc_json.go", toSnakeCase(msg.Name))), nogcWriter.b, 0755); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (g *Generator) generateVLS() error {
+func (g *Generator) generateProtobuf(msg *Struct) error {
+	if !g.config.Protobuf || msg.Proto == nil {
+		return nil
+	}
+
+	var (
+		gcWriter   *Writer
+		nogcWriter *Writer
+	)
+
+	if g.config.GC {
+		gcWriter = &Writer{}
+	}
+	if g.config.NoGC {
+		nogcWriter = &Writer{}
+	}
+
+	writeImports := func(w *Writer) {
+		w.Line("//go:build !tinygo")
+		w.Line("")
+		w.Line("package %s", g.root.Name)
+		w.Line("")
+		w.Line("import (")
+		//w.IndentLine(1, "\"github.com/moontrade/dtc-go/message\"")
+		w.IndentLine(1, "\"github.com/moontrade/dtc-go/message/pb\"")
+		w.Line(")")
+		w.Line("")
+	}
+	if gcWriter != nil {
+		writeImports(gcWriter)
+	}
+	if nogcWriter != nil {
+		writeImports(nogcWriter)
+	}
+
+	var fields FieldsSlice
+	fields = append(fields, msg.Fields...)
+	fields.Sort()
+
+	unmarshalProtobuf := func(w *Writer, name string) {
+		w.Line("func (m *%s) UnmarshalProtobuf(b []byte) error {", name)
+		w.IndentLine(1, "var (")
+		w.IndentLine(2, "r = pb.NewBuffer(b)")
+		w.IndentLine(2, "f pb.Number")
+		w.IndentLine(2, "err error")
+		w.IndentLine(1, ")")
+		w.IndentLine(1, "for !r.EOF() {")
+		w.IndentLine(2, "f, _, err = r.DecodeTag()")
+		w.IndentLine(2, "if err != nil {")
+		w.IndentLine(3, "break")
+		w.IndentLine(2, "}")
+		w.IndentLine(2, "switch f {")
+
+		for _, field := range fields {
+			if isHeaderField(field) {
+				continue
+			}
+			if field.Field.Proto == nil {
+				continue
+			}
+			zigzag := ""
+			if field.Field.ProtoZigzag {
+				zigzag = "Zigzag"
+			}
+			w.IndentLine(2, "case %s:", field.Field.Proto.FieldNumber)
+			if len(field.Fields) > 0 {
+				for _, field := range field.Fields {
+					switch field.Type.Kind {
+					case codegen.KindEnum:
+						w.IndentLine(3, "m.Set%s(%s(r.Read%s%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Enum.Type), zigzag)
+					case codegen.KindAlias:
+						w.IndentLine(3, "m.Set%s(%s(r.Read%s%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind), zigzag)
+					default:
+						w.IndentLine(3, "m.Set%s(r.Read%s%s())", field.Name, jsonGetterFuncNamePrimitive(field.Type.Kind), zigzag)
+					}
+				}
+			} else {
+				switch field.Type.Kind {
+				case codegen.KindEnum:
+					w.IndentLine(3, "m.Set%s(%s(r.Read%s%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Enum.Type), zigzag)
+				case codegen.KindAlias:
+					w.IndentLine(3, "m.Set%s(%s(r.Read%s%s()))", field.Name, g.GoTypeName(&field.Type), jsonGetterFuncNamePrimitive(field.Type.Alias.Type.Kind), zigzag)
+				default:
+					w.IndentLine(3, "m.Set%s(r.Read%s%s())", field.Name, jsonGetterFuncNamePrimitive(field.Type.Kind), zigzag)
+				}
+			}
+		}
+		w.IndentLine(2, "default:")
+		w.IndentLine(3, "r.Consume()")
+		w.IndentLine(2, "}")
+		w.IndentLine(2, "if err = r.Error(); err != nil {")
+		w.IndentLine(3, "return err")
+		w.IndentLine(2, "}")
+		w.IndentLine(1, "}")
+		w.IndentLine(1, "return err")
+		w.Line("}")
+		w.Line("")
+	}
+
+	if gcWriter != nil {
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("// Protocol Buffers Unmarshal")
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("")
+		unmarshalProtobuf(gcWriter, msg.Name+"Builder")
+	}
+
+	if nogcWriter != nil {
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("// Protocol Buffers Unmarshal")
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("")
+
+		unmarshalProtobuf(nogcWriter, msg.Name+"PointerBuilder")
+	}
+
+	marshalProtobuf := func(w *Writer, name string) {
+		w.Line("func (m %s) MarshalProtobuf(b []byte) ([]byte, error) {", name)
+		w.IndentLine(1, "w := pb.NewWriter(b, %d)", msg.Struct.Type)
+		for _, field := range fields {
+			if isHeaderField(field) {
+				continue
+			}
+
+			if len(field.Fields) > 0 {
+				for _, field := range field.Fields {
+					if field.Proto == nil {
+						continue
+					}
+					w.IndentLine(1, "w.%s", protobufMarshalField(field, fmt.Sprintf("m.%s()", field.Name)))
+				}
+			} else {
+				if field.Proto == nil {
+					continue
+				}
+				w.IndentLine(1, "w.%s", protobufMarshalField(field, fmt.Sprintf("m.%s()", field.Name)))
+			}
+		}
+		w.IndentLine(1, "return w.Finish(), nil")
+		w.Line("}")
+		w.Line("")
+	}
+
+	if gcWriter != nil {
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("// Protocol Buffers Marshal")
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("")
+
+		marshalProtobuf(gcWriter, msg.Name+"Builder")
+	}
+
+	if nogcWriter != nil {
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("// Protocol Buffers Marshal")
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("")
+
+		marshalProtobuf(nogcWriter, msg.Name+"PointerBuilder")
+	}
+
+	if gcWriter != nil {
+		if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_protobuf.go", toSnakeCase(msg.Name))), gcWriter.b, 0755); err != nil {
+			return err
+		}
+	}
+	if nogcWriter != nil {
+		if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_nogc_protobuf.go", toSnakeCase(msg.Name))), nogcWriter.b, 0755); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
-func (g *Generator) generateSerialize() error {
-	for _, model := range g.messages {
-		msg := model.Fixed
-		if msg == nil {
-			msg = model.VLS
+func (g *Generator) generateStruct(msg *Struct, pkg *Package) error {
+	var (
+		suffix = "Fixed"
+	)
+	if msg.VLS {
+		suffix = "VLS"
+		pkg = g.root
+	}
+
+	var (
+		gcWriter   *Writer
+		nogcWriter *Writer
+	)
+
+	if g.config.GC {
+		gcWriter = &Writer{}
+	}
+	if g.config.NoGC {
+		nogcWriter = &Writer{}
+	}
+
+	writeClearComment := func(w *Writer, name string) {
+		if len(name) > 0 {
+			w.Line("// %s", name)
 		}
-		if msg == nil {
-			continue
+		w.Line("// {")
+		maxWidth := 0
+		for _, f := range msg.Fields {
+			if len(f.Fields) > 0 {
+				continue
+			}
+			if maxWidth < len(f.Name) {
+				maxWidth = len(f.Name)
+			}
+		}
+
+		maxWidth++
+		pad := func(s string) string {
+			for len(s) < maxWidth {
+				s = s + " "
+			}
+			return s
+		}
+		for _, f := range msg.Fields {
+			if len(f.Fields) > 0 {
+				continue
+			}
+
+			name := pad(f.Name)
+
+			if f.Initial == nil {
+				switch f.Type.Kind {
+				case codegen.KindStringFixed, codegen.KindStringVLS:
+					w.Line("//     %s= \"\"", name)
+				default:
+					w.Line("//     %s= 0", name)
+				}
+				continue
+			}
+
+			switch f.Initial.Type {
+			case codegen.ValueTypeSizeof:
+				w.Line("//     %s= %sSize  (%d)", name, msg.Name, msg.Size)
+			case codegen.ValueTypeString:
+				w.Line("//     %s= \"%s\"", name, f.Initial.Str)
+			case codegen.ValueTypeBool, codegen.ValueTypeInt:
+				w.Line("//     %s= %d", name, f.Initial.Int)
+			case codegen.ValueTypeUint:
+				w.Line("//     %s= %d", name, f.Initial.Uint)
+			case codegen.ValueTypeFloat:
+				w.Line("//     %s= %f", name, f.Initial.Float64)
+			case codegen.ValueTypeFloat32Max:
+				w.Line("//     %s= math.MaxFloat32", name)
+			case codegen.ValueTypeFloat64Max:
+				w.Line("//     %s= math.MaxFloat64", name)
+			case codegen.ValueTypeConst:
+				w.Line("//     %s= %s  (%d)", name, f.Initial.Const.Name, f.Initial.Int)
+			case codegen.ValueTypeEnumOption:
+				w.Line("//     %s= %s  (%d)", name, f.Initial.EnumOption.Name, f.Initial.Int)
+			}
+		}
+		w.Line("// }")
+	}
+
+	writeImports := func(w *Writer) {
+		w.Line("package %s", pkg.Name)
+		w.Line("")
+		w.Line("import (")
+		w.IndentLine(1, "\"github.com/moontrade/dtc-go/message\"")
+		w.Line(")")
+		w.Line("")
+	}
+
+	if gcWriter != nil {
+		writeImports(gcWriter)
+	}
+	if nogcWriter != nil {
+		writeImports(nogcWriter)
+	}
+
+	writeVars := func(w *Writer) {
+		writeClearComment(w, "")
+		w.Write("var _%sDefault = ", msg.Name)
+		w.WriteByteSlice(msg.Init)
+		w.Write("\n\n")
+		w.Line("const %sSize = %d", msg.Name, msg.Size)
+		w.Line("")
+	}
+
+	if gcWriter != nil {
+		writeVars(gcWriter)
+	} else {
+		writeVars(nogcWriter)
+	}
+
+	writeGetterSetters := func(w *Writer) {
+		for _, f := range msg.Fields {
+			if isHeaderField(f) {
+				continue
+			}
+
+			if f.Fields != nil {
+				for _, field := range f.Fields {
+					if w == gcWriter {
+						if field.Doc != nil {
+							_ = g.writeComments(w, 0, field.Name, field.Doc.Description)
+						} else {
+							w.Line("// %s", field.Name)
+						}
+						g.writeFieldGetter(w, field, pkg, "", "Unsafe()")
+						if field.Doc != nil {
+							_ = g.writeComments(w, 0, field.Name, field.Doc.Description)
+						} else {
+							w.Line("// %s", field.Name)
+						}
+						g.writeFieldGetter(w, field, pkg, "Builder", "Unsafe()")
+					} else {
+						if field.Doc != nil {
+							_ = g.writeComments(w, 0, field.Name, field.Doc.Description)
+						} else {
+							w.Line("// %s", field.Name)
+						}
+						g.writeFieldGetter(w, field, pkg, "Pointer", "Ptr")
+						if field.Doc != nil {
+							_ = g.writeComments(w, 0, field.Name, field.Doc.Description)
+						} else {
+							w.Line("// %s", field.Name)
+						}
+						g.writeFieldGetter(w, field, pkg, "PointerBuilder", "Ptr")
+					}
+				}
+			} else {
+				if w == gcWriter {
+					if f.Doc != nil {
+						_ = g.writeComments(w, 0, f.Name, f.Doc.Description)
+					} else {
+						w.Line("// %s", f.Name)
+					}
+					g.writeFieldGetter(w, f, pkg, "", "Unsafe()")
+					if f.Doc != nil {
+						_ = g.writeComments(w, 0, f.Name, f.Doc.Description)
+					} else {
+						w.Line("// %s", f.Name)
+					}
+					g.writeFieldGetter(w, f, pkg, "Builder", "Unsafe()")
+				} else {
+					if f.Doc != nil {
+						_ = g.writeComments(w, 0, f.Name, f.Doc.Description)
+					} else {
+						w.Line("// %s", f.Name)
+					}
+					g.writeFieldGetter(w, f, pkg, "Pointer", "Ptr")
+					if f.Doc != nil {
+						_ = g.writeComments(w, 0, f.Name, f.Doc.Description)
+					} else {
+						w.Line("// %s", f.Name)
+					}
+					g.writeFieldGetter(w, f, pkg, "PointerBuilder", "Ptr")
+				}
+			}
+		}
+
+		for _, f := range msg.Fields {
+			if isHeaderField(f) {
+				continue
+			}
+
+			if f.Fields != nil {
+				for _, field := range f.Fields {
+					if field.Doc != nil {
+						_ = g.writeComments(w, 0, "Set"+field.Name, field.Doc.Description)
+					} else {
+						w.Line("// Set%s", field.Name)
+					}
+					if field.Field.Type.Kind == codegen.KindStringVLS {
+						if w == gcWriter {
+							g.writeFieldSetter(w, field, "Builder", "VLSBuilder")
+						} else {
+							g.writeFieldSetter(w, field, "PointerBuilder", "VLSPointerBuilder")
+						}
+					} else {
+						if w == gcWriter {
+							g.writeFieldSetter(w, field, "Builder", "Unsafe()")
+						} else {
+							g.writeFieldSetter(w, field, "PointerBuilder", "Ptr")
+						}
+					}
+				}
+			} else {
+				if f.Doc != nil {
+					_ = g.writeComments(w, 0, "Set"+f.Name, f.Doc.Description)
+				} else {
+					w.Line("// Set%s", f.Name)
+				}
+				if f.Field.Type.Kind == codegen.KindStringVLS {
+					if w == gcWriter {
+						g.writeFieldSetter(w, f, "Builder", "VLSBuilder")
+					} else {
+						g.writeFieldSetter(w, f, "PointerBuilder", "VLSPointerBuilder")
+					}
+				} else {
+					if w == gcWriter {
+						g.writeFieldSetter(w, f, "Builder", "Unsafe()")
+					} else {
+						g.writeFieldSetter(w, f, "PointerBuilder", "Ptr")
+					}
+				}
+			}
 		}
 	}
+
+	copyTo := func(w *Writer, fn, name, toName string) {
+		w.Line("// %s", fn)
+		w.Line("func (m %s) %s(to %s) {", name, fn, toName)
+		for _, field := range msg.Fields {
+			if isHeaderField(field) {
+				continue
+			}
+			if len(field.Fields) > 0 {
+				for _, field := range field.Fields {
+					w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
+				}
+			} else {
+				w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
+			}
+		}
+		w.Line("}")
+		w.Line("")
+	}
+
+	if gcWriter != nil {
+		if msg.Doc != nil {
+			_ = g.writeComments(gcWriter, 0, msg.Name, msg.Doc.Description)
+		}
+		gcWriter.Line("type %s struct {", msg.Name)
+		gcWriter.IndentLine(1, "message.%s", suffix)
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		if msg.Doc != nil {
+			_ = g.writeComments(gcWriter, 0, msg.Name+"Builder", msg.Doc.Description)
+		}
+		gcWriter.Line("type %sBuilder struct {", msg.Name)
+		if msg.VLS {
+			gcWriter.IndentLine(1, "message.%sBuilder", suffix)
+		} else {
+			gcWriter.IndentLine(1, "message.%s", suffix)
+		}
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		/*
+			func NewAccountBalanceAdjustmentFrom(b []byte) AccountBalanceAdjustment {
+				return AccountBalanceAdjustment{VLS: message.NewVLSFrom(b)}
+			}
+
+			func AccountBalanceAdjustmentWrap(b []byte) AccountBalanceAdjustment {
+				return AccountBalanceAdjustment{VLS: message.WrapVLS(b)}
+			}
+		*/
+		gcWriter.Line("func New%sFrom(b []byte) %s {", msg.Name, msg.Name)
+		gcWriter.IndentLine(1, "return %s{%s: message.New%sFrom(b)}", msg.Name, suffix, suffix)
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		gcWriter.Line("func Wrap%s(b []byte) %s {", msg.Name, msg.Name)
+		gcWriter.IndentLine(1, "return %s{%s: message.Wrap%s(b)}", msg.Name, suffix, suffix)
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		gcWriter.Line("func New%s() %sBuilder {", msg.Name, msg.Name)
+		if msg.VLS {
+			gcWriter.IndentLine(1, "a := %sBuilder{message.New%sBuilder(%d)}", msg.Name, suffix, msg.Size)
+		} else {
+			gcWriter.IndentLine(1, "a := %sBuilder{message.New%s(%d)}", msg.Name, suffix, msg.Size)
+		}
+		gcWriter.IndentLine(1, "a.Unsafe().SetBytes(0, _%sDefault)", msg.Name)
+		gcWriter.IndentLine(1, "return a")
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		writeClearComment(gcWriter, "Clear")
+		gcWriter.Line("func (m %sBuilder) Clear() {", msg.Name)
+		gcWriter.IndentLine(1, "m.Unsafe().SetBytes(0, _%sDefault)", msg.Name)
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		gcWriter.Line("// ToBuilder")
+		gcWriter.Line("func (m %s) ToBuilder() %sBuilder {", msg.Name, msg.Name)
+		if msg.VLS {
+			gcWriter.IndentLine(1, "return %sBuilder{m.%s.ToBuilder()}", msg.Name, suffix)
+		} else {
+			gcWriter.IndentLine(1, "return %sBuilder{m.%s}", msg.Name, suffix)
+		}
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		gcWriter.Line("// Finish")
+		gcWriter.Line("func (m %sBuilder) Finish() %s {", msg.Name, msg.Name)
+		if msg.VLS {
+			gcWriter.IndentLine(1, "return %s{m.%sBuilder.Finish()}", msg.Name, suffix)
+		} else {
+			gcWriter.IndentLine(1, "return %s{m.%s}", msg.Name, suffix)
+		}
+		gcWriter.Line("}")
+		gcWriter.Line("")
+
+		writeGetterSetters(gcWriter)
+
+		copyTo(gcWriter, "Copy", msg.Name, msg.Name+"Builder")
+		copyTo(gcWriter, "Copy", msg.Name+"Builder", msg.Name+"Builder")
+
+		if nogcWriter != nil {
+			copyTo(gcWriter, "CopyPointer", msg.Name, msg.Name+"PointerBuilder")
+			copyTo(gcWriter, "CopyPointer", msg.Name+"Builder", msg.Name+"PointerBuilder")
+		}
+
+		if msg.Message != nil {
+			to := msg.Message.VLS
+			if msg.VLS {
+				to = msg.Message.Fixed
+			}
+			if to != nil {
+				if nogcWriter != nil {
+					copyTo(gcWriter, "CopyToPointer", msg.Name, to.Name+"PointerBuilder")
+					copyTo(gcWriter, "CopyToPointer", msg.Name+"Builder", to.Name+"PointerBuilder")
+				}
+				copyTo(gcWriter, "CopyTo", msg.Name, to.Name+"Builder")
+				copyTo(gcWriter, "CopyTo", msg.Name+"Builder", to.Name+"Builder")
+			}
+		} else {
+			fmt.Println("message not exist", msg.Name)
+		}
+	}
+
+	if nogcWriter != nil {
+		if msg.Doc != nil {
+			_ = g.writeComments(nogcWriter, 0, msg.Name+"Pointer", msg.Doc.Description)
+		}
+		nogcWriter.Line("type %sPointer struct {", msg.Name)
+		nogcWriter.IndentLine(1, "message.%sPointer", suffix)
+		nogcWriter.Line("}")
+		nogcWriter.Line("")
+
+		if msg.Doc != nil {
+			_ = g.writeComments(nogcWriter, 0, msg.Name+"PointerBuilder", msg.Doc.Description)
+		}
+		nogcWriter.Line("type %sPointerBuilder struct {", msg.Name)
+		if msg.VLS {
+			nogcWriter.IndentLine(1, "message.%sPointerBuilder", suffix)
+		} else {
+			nogcWriter.IndentLine(1, "message.%sPointer", suffix)
+		}
+		nogcWriter.Line("}")
+		nogcWriter.Line("")
+
+		nogcWriter.Line("func Alloc%s() %sPointerBuilder {", msg.Name, msg.Name)
+		if msg.VLS {
+			nogcWriter.IndentLine(1, "a := %sPointerBuilder{message.Alloc%sBuilder(%d)}", msg.Name, suffix, msg.Size)
+		} else {
+			nogcWriter.IndentLine(1, "a := %sPointerBuilder{message.Alloc%s(%d)}", msg.Name, suffix, msg.Size)
+		}
+		nogcWriter.IndentLine(1, "a.Ptr.SetBytes(0, _%sDefault)", msg.Name)
+		nogcWriter.IndentLine(1, "return a")
+		nogcWriter.Line("}")
+		nogcWriter.Line("")
+
+		/*
+			func AllocAccountBalanceAdjustmentFrom(b []byte) AccountBalanceAdjustmentPointer {
+				return AccountBalanceAdjustmentPointer{VLSPointer: message.AllocVLSFrom(b)}
+			}
+		*/
+		nogcWriter.Line("func Alloc%sFrom(b []byte) %sPointer {", msg.Name, msg.Name)
+		nogcWriter.IndentLine(1, "return %sPointer{%sPointer: message.Alloc%sFrom(b)}", msg.Name, suffix, suffix)
+		nogcWriter.Line("}")
+		nogcWriter.Line("")
+
+		writeClearComment(nogcWriter, "Clear")
+		nogcWriter.Line("func (m %sPointerBuilder) Clear() {", msg.Name)
+		nogcWriter.IndentLine(1, "m.Ptr.SetBytes(0, _%sDefault)", msg.Name)
+		nogcWriter.Line("}")
+		nogcWriter.Line("")
+
+		nogcWriter.Line("// ToBuilder")
+		nogcWriter.Line("func (m %sPointer) ToBuilder() %sPointerBuilder {", msg.Name, msg.Name)
+		if msg.VLS {
+			nogcWriter.IndentLine(1, "return %sPointerBuilder{m.%sPointer.ToBuilder()}", msg.Name, suffix)
+		} else {
+			nogcWriter.IndentLine(1, "return %sPointerBuilder{m.%sPointer}", msg.Name, suffix)
+		}
+		nogcWriter.Line("}")
+		nogcWriter.Line("")
+
+		nogcWriter.Line("// Finish")
+		nogcWriter.Line("func (m *%sPointerBuilder) Finish() %sPointer {", msg.Name, msg.Name)
+		if msg.VLS {
+			nogcWriter.IndentLine(1, "return %sPointer{m.%sPointerBuilder.Finish()}", msg.Name, suffix)
+		} else {
+			nogcWriter.IndentLine(1, "return %sPointer{m.%sPointer}", msg.Name, suffix)
+		}
+		nogcWriter.Line("}")
+		nogcWriter.Line("")
+
+		writeGetterSetters(nogcWriter)
+
+		if gcWriter != nil {
+			copyTo(nogcWriter, "Copy", msg.Name+"Pointer", msg.Name+"Builder")
+			copyTo(nogcWriter, "Copy", msg.Name+"PointerBuilder", msg.Name+"Builder")
+		}
+
+		copyTo(nogcWriter, "CopyPointer", msg.Name+"Pointer", msg.Name+"PointerBuilder")
+		copyTo(nogcWriter, "CopyPointer", msg.Name+"PointerBuilder", msg.Name+"PointerBuilder")
+
+		if msg.Message != nil {
+			to := msg.Message.VLS
+			if msg.VLS {
+				to = msg.Message.Fixed
+			}
+			if to != nil {
+				if gcWriter != nil {
+					copyTo(nogcWriter, "CopyTo", msg.Name+"Pointer", to.Name+"Builder")
+					copyTo(nogcWriter, "CopyTo", msg.Name+"PointerBuilder", to.Name+"Builder")
+				}
+				copyTo(nogcWriter, "CopyToPointer", msg.Name+"Pointer", to.Name+"PointerBuilder")
+				copyTo(nogcWriter, "CopyToPointer", msg.Name+"PointerBuilder", to.Name+"PointerBuilder")
+			}
+		} else {
+			fmt.Println("message not exist", msg.Name)
+		}
+	}
+
+	if gcWriter != nil {
+		if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s.go", toSnakeCase(msg.Name))), gcWriter.b, 0755); err != nil {
+			return err
+		}
+	}
+	if nogcWriter != nil {
+		if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_nogc.go", toSnakeCase(msg.Name))), nogcWriter.b, 0755); err != nil {
+			return err
+		}
+	}
+
+	if err := g.generateJson(msg); err != nil {
+		return err
+	}
+	if err := g.generateProtobuf(msg); err != nil {
+		return err
+	}
 	return nil
+}
+
+func protobufMarshalField(f *Field, getterExpression string) string {
+	kind := f.Type.Kind
+	switch kind {
+	case codegen.KindEnum:
+		kind = f.Type.Enum.Type
+		getterExpression = fmt.Sprintf("%s(%s)", primitiveTypeName(kind), getterExpression)
+	case codegen.KindAlias:
+		kind = f.Type.Alias.Type.Kind
+		getterExpression = fmt.Sprintf("%s(%s)", primitiveTypeName(kind), getterExpression)
+	}
+	switch kind {
+	case codegen.KindBool:
+		return fmt.Sprintf("WriteBool(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindInt8:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Int8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Int8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Int8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteVarint8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindInt16:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Int16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Int16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Int16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteVarint16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindInt32:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Int32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Int32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Int32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteVarint32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindInt64:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag64Int64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Int64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Int64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteVarint64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindUint8:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Uint8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Uint8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Uint8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteUvarint8(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindUint16:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Uint16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Uint16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Uint16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteUvarint16(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindUint32:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Uint32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Uint32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Uint32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteUvarint32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindUint64:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Uint64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Uint64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Uint64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteUvarint64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindFloat32:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag32Float32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Float32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Float32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteVarintFloat32(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindFloat64:
+		switch f.ProtoType {
+		case pb.VarintType:
+			if f.ProtoZigzag {
+				return fmt.Sprintf("WriteZigzag64Float64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+			}
+		case pb.Fixed32Type:
+			return fmt.Sprintf("WriteFixed32Float64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		case pb.Fixed64Type:
+			return fmt.Sprintf("WriteFixed64Float64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+		}
+		return fmt.Sprintf("WriteVarintFloat64(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	case codegen.KindStringFixed, codegen.KindStringVLS:
+		return fmt.Sprintf("WriteString(%s, %s)", f.Proto.FieldNumber, getterExpression)
+	default:
+		return "Invalid"
+	}
+}
+
+func jsonGetterFuncNamePrimitive(kind codegen.Kind) string {
+	switch kind {
+	case codegen.KindBool:
+		return "Bool"
+	case codegen.KindInt8:
+		return "Int8"
+	case codegen.KindInt16:
+		return "Int16"
+	case codegen.KindInt32:
+		return "Int32"
+	case codegen.KindInt64:
+		return "Int64"
+	case codegen.KindUint8:
+		return "Uint8"
+	case codegen.KindUint16:
+		return "Uint16"
+	case codegen.KindUint32:
+		return "Uint32"
+	case codegen.KindUint64:
+		return "Uint64"
+	case codegen.KindFloat32:
+		return "Float32"
+	case codegen.KindFloat64:
+		return "Float64"
+	case codegen.KindStringFixed, codegen.KindStringVLS:
+		return "String"
+	default:
+		return "Invalid"
+	}
 }
 
 func (g *Generator) generateFactory() error {
 	return nil
 }
 
-func (g *Generator) writeFieldGetters(w *Writer, f *Field) {
-	if f.Fields != nil {
-		for _, field := range f.Fields {
-			w.Line("///////////////////////////////////////////")
-			w.Line("// %s", field.Name)
-			w.Line("///////////////////////////////////////////")
-			w.Line("")
-			g.writeFieldGetter(w, field, "", "Unsafe()")
-			g.writeFieldGetter(w, field, "Builder", "Unsafe()")
-			g.writeFieldGetter(w, field, "Pointer", "Ptr")
-			g.writeFieldGetter(w, field, "PointerBuilder", "Ptr")
-		}
-	} else {
-		w.Line("///////////////////////////////////////////")
-		w.Line("// %s", f.Name)
-		w.Line("///////////////////////////////////////////")
-		w.Line("")
-		g.writeFieldGetter(w, f, "", "Unsafe()")
-		g.writeFieldGetter(w, f, "Builder", "Unsafe()")
-		g.writeFieldGetter(w, f, "Pointer", "Ptr")
-		g.writeFieldGetter(w, f, "PointerBuilder", "Ptr")
-	}
-}
-
-func (g *Generator) writeFieldGetter(w *Writer, f *Field, suffix, ptrAccessor string) {
-	w.Line("func (m %s%s) %s() %s {", f.Struct.Name, suffix, f.Name, g.GoTypeName(&f.Type, g.fixed))
-	w.IndentLine(1, "return %s", g.fieldGetValue(f, ptrAccessor))
+func (g *Generator) writeFieldGetter(w *Writer, f *Field, pkg *Package, suffix, ptrAccessor string) {
+	w.Line("func (m %s%s) %s() %s {", f.Struct.Name, suffix, f.Name, g.GoTypeName(&f.Type))
+	w.IndentLine(1, "return %s", g.fieldGetValue(pkg, f, ptrAccessor))
 	w.Line("}")
 	w.Line("")
 }
 
-func (g *Generator) fieldGetValue(f *Field, ptrAccessor string) string {
+func (g *Generator) fieldGetValue(pkg *Package, f *Field, ptrAccessor string) string {
 	if f.Field.Type.Alias != nil {
 		return fmt.Sprintf("%s(%s)",
-			fmt.Sprintf("%s.%s", g.root.Name, cleanName(f.Field.Type.Alias.Name)),
-			primitiveGetter(
+			g.GoTypeName(&f.Field.Type),
+			//fmt.Sprintf("%s.%s", g.root.Name, cleanName(f.Field.Type.Alias.Name)),
+			g.primitiveGetter(
 				f.Field.Type.Alias.Type.Kind,
 				f.Field.Type.Offset,
 				f.Field.Type.Size,
-				"message",
 				"m",
 				ptrAccessor,
 				f.Struct.VLS,
@@ -779,12 +1807,11 @@ func (g *Generator) fieldGetValue(f *Field, ptrAccessor string) string {
 	}
 	if f.Field.Type.Enum != nil {
 		return fmt.Sprintf("%s(%s)",
-			fmt.Sprintf("%s.%s", g.root.Name, cleanName(f.Field.Type.Enum.Name)),
-			primitiveGetter(
+			g.GoTypeName(&f.Field.Type),
+			g.primitiveGetter(
 				f.Field.Type.Enum.Type,
 				f.Field.Type.Offset,
 				f.Field.Type.Size,
-				"message",
 				"m",
 				ptrAccessor,
 				f.Struct.VLS,
@@ -792,18 +1819,17 @@ func (g *Generator) fieldGetValue(f *Field, ptrAccessor string) string {
 		)
 	}
 
-	return primitiveGetter(
+	return g.primitiveGetter(
 		f.Field.Type.Kind,
 		f.Field.Type.Offset,
 		f.Field.Type.Size,
-		"message",
 		"m",
 		ptrAccessor,
 		f.Struct.VLS,
 	)
 }
 
-func primitiveGetter(kind codegen.Kind, offset, size int, messagePackage, messageVar, ptrAccessor string, vls bool) string {
+func (g *Generator) primitiveGetter(kind codegen.Kind, offset, size int, messageVar, ptrAccessor string, vls bool) string {
 	var (
 		bounds = offset + size
 		suffix = "Fixed"
@@ -839,44 +1865,19 @@ func primitiveGetter(kind codegen.Kind, offset, size int, messagePackage, messag
 		prefix = "String"
 	}
 
-	if strings.HasSuffix(messagePackage, ".") {
-		messagePackage = messagePackage[0 : len(messagePackage)-1]
-	}
-	return fmt.Sprintf("%s.%s%s(%s.%s, %d, %d)", messagePackage, prefix, suffix, messageVar, ptrAccessor, bounds, offset)
-}
-
-func (g *Generator) writeFieldSetters(w *Writer, f *Field) {
-	if f.Fields != nil {
-		for _, field := range f.Fields {
-			w.Line("///////////////////////////////////////////")
-			w.Line("// Set%s", field.Name)
-			w.Line("///////////////////////////////////////////")
-			w.Line("")
-			if field.Field.Type.Kind == codegen.KindStringVLS {
-				g.writeFieldSetter(w, field, "Builder", "VLSBuilder")
-				g.writeFieldSetter(w, field, "PointerBuilder", "VLSPointerBuilder")
-			} else {
-				g.writeFieldSetter(w, field, "Builder", "Unsafe()")
-				g.writeFieldSetter(w, field, "PointerBuilder", "Ptr")
-			}
-		}
-	} else {
-		w.Line("///////////////////////////////////////////")
-		w.Line("// Set%s", f.Name)
-		w.Line("///////////////////////////////////////////")
-		w.Line("")
-		if f.Field.Type.Kind == codegen.KindStringVLS {
-			g.writeFieldSetter(w, f, "Builder", "VLSBuilder")
-			g.writeFieldSetter(w, f, "PointerBuilder", "VLSPointerBuilder")
-		} else {
-			g.writeFieldSetter(w, f, "Builder", "Unsafe()")
-			g.writeFieldSetter(w, f, "PointerBuilder", "Ptr")
-		}
-	}
+	//messagePackage := ""
+	//if pkg != g.root {
+	//	messagePackage = pkg.Name + "."
+	//}
+	return fmt.Sprintf("message.%s%s(%s.%s, %d, %d)", prefix, suffix, messageVar, ptrAccessor, bounds, offset)
 }
 
 func (g *Generator) writeFieldSetter(w *Writer, f *Field, suffix, ptrAccessor string) {
-	w.Line("func (m %s%s) Set%s(value %s) {", f.Struct.Name, suffix, f.Name, g.GoTypeName(&f.Type, g.fixed))
+	if f.Field.Type.Kind.IsString() && f.Struct.VLS {
+		w.Line("func (m *%s%s) Set%s(value %s) {", f.Struct.Name, suffix, f.Name, g.GoTypeName(&f.Type))
+	} else {
+		w.Line("func (m %s%s) Set%s(value %s) {", f.Struct.Name, suffix, f.Name, g.GoTypeName(&f.Type))
+	}
 	w.IndentLine(1, "%s", g.fieldSetValue(f, ptrAccessor))
 	w.Line("}")
 	w.Line("")
@@ -884,11 +1885,10 @@ func (g *Generator) writeFieldSetter(w *Writer, f *Field, suffix, ptrAccessor st
 
 func (g *Generator) fieldSetValue(f *Field, ptrAccessor string) string {
 	if f.Field.Type.Alias != nil {
-		return primitiveSetter(
+		return g.primitiveSetter(
 			f.Field.Type.Alias.Type.Kind,
 			f.Field.Type.Offset,
 			f.Field.Type.Size,
-			"message",
 			"m",
 			ptrAccessor,
 			fmt.Sprintf("%s(value)", primitiveKindName(f.Field.Type.Alias.Type.Kind)),
@@ -896,22 +1896,20 @@ func (g *Generator) fieldSetValue(f *Field, ptrAccessor string) string {
 		)
 	}
 	if f.Field.Type.Enum != nil {
-		return primitiveSetter(
+		return g.primitiveSetter(
 			f.Field.Type.Enum.Type,
 			f.Field.Type.Offset,
 			f.Field.Type.Size,
-			"message",
 			"m",
 			ptrAccessor,
 			fmt.Sprintf("%s(value)", primitiveKindName(f.Field.Type.Enum.Type)),
 			f.Struct.VLS,
 		)
 	}
-	return primitiveSetter(
+	return g.primitiveSetter(
 		f.Field.Type.Kind,
 		f.Field.Type.Offset,
 		f.Field.Type.Size,
-		"message",
 		"m",
 		ptrAccessor,
 		"value",
@@ -919,7 +1917,7 @@ func (g *Generator) fieldSetValue(f *Field, ptrAccessor string) string {
 	)
 }
 
-func primitiveSetter(kind codegen.Kind, offset, size int, messagePackage, messageVar, ptrAccessor, valueExpr string, vls bool) string {
+func (g *Generator) primitiveSetter(kind codegen.Kind, offset, size int, messageVar, ptrAccessor, valueExpr string, vls bool) string {
 	var (
 		bounds = offset + size
 		suffix = "Fixed"
@@ -955,14 +1953,20 @@ func primitiveSetter(kind codegen.Kind, offset, size int, messagePackage, messag
 		prefix = "SetString"
 	}
 
-	if strings.HasSuffix(messagePackage, ".") {
-		messagePackage = messagePackage[0 : len(messagePackage)-1]
-	}
+	//messagePackage := ""
+	//if pkg != g.root {
+	//	messagePackage = pkg.Name + "."
+	//}
 
 	if kind == codegen.KindStringVLS {
-		return fmt.Sprintf("%s.%s%s(%s.%s, %d, %d, %s)", messagePackage, prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
+		if ptrAccessor == "VLSPointerBuilder" {
+			return fmt.Sprintf("message.%s%sPointer(&%s.%s, %d, %d, %s)", prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
+		} else {
+			return fmt.Sprintf("message.%s%s(&%s.%s, %d, %d, %s)", prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
+		}
+
 	} else {
-		return fmt.Sprintf("%s.%s%s(%s.%s, %d, %d, %s)", messagePackage, prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
+		return fmt.Sprintf("message.%s%s(%s.%s, %d, %d, %s)", prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
 	}
 }
 
@@ -993,6 +1997,9 @@ func toSnakeCase(name string) string {
 		}
 		if i < len(name)-1 {
 			nextIsLower = strings.ToLower(string(name[i+1])) == string(name[i+1])
+		}
+		if name[i] == '_' {
+			continue
 		}
 		if isUpper {
 			if prevIsLower || nextIsLower {
@@ -1069,7 +2076,7 @@ func primitiveTypeName(kind codegen.Kind) string {
 	}
 }
 
-func (g *Generator) GoTypeName(t *codegen.Type, fromPkg *Package) string {
+func (g *Generator) GoTypeName(t *codegen.Type) string {
 	switch t.Kind {
 	case codegen.KindBool:
 		return "bool"
@@ -1096,15 +2103,9 @@ func (g *Generator) GoTypeName(t *codegen.Type, fromPkg *Package) string {
 	case codegen.KindStringFixed, codegen.KindStringVLS:
 		return "string"
 	case codegen.KindEnum:
-		if fromPkg == nil || g.root != fromPkg {
-			return fmt.Sprintf("%s.%s", g.root.Name, cleanName(t.Enum.Name))
-		}
-		return t.Enum.Name
+		return cleanName(t.Enum.Name)
 	case codegen.KindAlias:
-		if fromPkg == nil || g.root != fromPkg {
-			return fmt.Sprintf("%s.%s", g.root.Name, cleanName(t.Alias.Name))
-		}
-		return t.Alias.Name
+		return cleanName(t.Alias.Name)
 	default:
 		return "invalid"
 	}

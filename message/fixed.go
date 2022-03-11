@@ -21,7 +21,7 @@ func NewFixed(size uintptr) Fixed {
 	return Fixed{GCPointer{gcAlloc(size)}}
 }
 
-func WrapFixedFromBytes(b []byte) Fixed {
+func WrapFixed(b []byte) Fixed {
 	if len(b) < 4 {
 		return Fixed{}
 	}
@@ -33,7 +33,7 @@ func WrapFixedFromBytes(b []byte) Fixed {
 	return m
 }
 
-func NewFixedFromBytes(b []byte) Fixed {
+func NewFixedFrom(b []byte) Fixed {
 	if len(b) < 4 {
 		return Fixed{}
 	}

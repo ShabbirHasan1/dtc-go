@@ -166,6 +166,15 @@ func (b *Buffer) Finish() []byte {
 	return b.buf
 }
 
+func (b *Buffer) WriteBool(field Number, v bool) {
+	b.EncodeTag(field, VarintType)
+	if v {
+		b.EncodeVarint(1)
+	} else {
+		b.EncodeVarint(0)
+	}
+}
+
 func (b *Buffer) WriteVarint8(field Number, v int8) {
 	b.EncodeTag(field, VarintType)
 	b.EncodeVarint(uint64(v))
@@ -191,7 +200,7 @@ func (b *Buffer) WriteFixed64Int8(field Number, v int8) {
 	b.EncodeFixed64(uint64(v))
 }
 
-func (b *Buffer) WriteUvarint8(field Number, v int8) {
+func (b *Buffer) WriteUvarint8(field Number, v uint8) {
 	b.EncodeTag(field, VarintType)
 	b.EncodeVarint(uint64(v))
 }
@@ -566,6 +575,18 @@ func (b *Buffer) ReadUint32ZigZag() uint32 {
 func (b *Buffer) ReadUint64ZigZag() uint64 {
 	v := b.ReadUint64()
 	return uint64((uint64(v) >> 1) ^ uint64((int64(v&1)<<63)>>63))
+}
+
+// ReadInt8 reads next int8 value
+func (b *Buffer) ReadInt8() int8 {
+	v := b.ReadInt32()
+	return int8(v)
+}
+
+// ReadUint8 reads next uint8 value
+func (b *Buffer) ReadUint8() uint8 {
+	v := b.ReadUint32()
+	return uint8(v)
 }
 
 // DecodeInt16 consumes an encoded unsigned varint from the buffer.

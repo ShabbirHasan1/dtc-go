@@ -7,7 +7,7 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	schema, err := codegen.LoadSchema("../testdata/DTCProtocol.proto", "../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h", "../testdata/DTCProtocol_NonStandard.h")
+	schema, err := codegen.LoadSchema("../testdata/docs.json", "../testdata/DTCProtocol.proto", "../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h", "../testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}

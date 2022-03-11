@@ -4,6 +4,7 @@ import (
 	"github.com/moontrade/nogc"
 	"math"
 	"strings"
+	"unsafe"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -11,25 +12,25 @@ import (
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Int8Fixed(p nogc.Pointer, bounds uint16, offset int) int8 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
 	return p.Int8(offset)
 }
 func Int8VLS(p nogc.Pointer, bounds uint16, offset int) int8 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
 	return p.Int8(offset)
 }
 func SetInt8Fixed(p nogc.Pointer, bounds uint16, offset int, value int8) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
 	p.SetInt8(offset, value)
 }
 func SetInt8VLS(p nogc.Pointer, bounds uint16, offset int, value int8) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
 	p.SetInt8(offset, value)
@@ -40,28 +41,28 @@ func SetInt8VLS(p nogc.Pointer, bounds uint16, offset int, value int8) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Uint8Fixed(p nogc.Pointer, bounds uint16, offset int) uint8 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
-	return p.UInt8(offset)
+	return p.Uint8(offset)
 }
 func Uint8VLS(p nogc.Pointer, bounds uint16, offset int) uint8 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
-	return p.UInt8(offset)
+	return p.Uint8(offset)
 }
 func SetUint8Fixed(p nogc.Pointer, bounds uint16, offset int, value uint8) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
-	p.SetUInt8(offset, value)
+	p.SetUint8(offset, value)
 }
 func SetUint8VLS(p nogc.Pointer, bounds uint16, offset int, value uint8) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
-	p.SetUInt8(offset, value)
+	p.SetUint8(offset, value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,25 +70,25 @@ func SetUint8VLS(p nogc.Pointer, bounds uint16, offset int, value uint8) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Int16Fixed(p nogc.Pointer, bounds uint16, offset int) int16 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
 	return p.Int16LE(offset)
 }
 func Int16VLS(p nogc.Pointer, bounds uint16, offset int) int16 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
 	return p.Int16LE(offset)
 }
 func SetInt16Fixed(p nogc.Pointer, bounds uint16, offset int, value int16) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
 	p.SetInt16LE(offset, value)
 }
 func SetInt16VLS(p nogc.Pointer, bounds uint16, offset int, value int16) {
-	if p != 0 || p.UInt16LE(4) < bounds {
+	if p != 0 || p.Uint16LE(4) < bounds {
 		return
 	}
 	p.SetInt16LE(offset, value)
@@ -98,28 +99,28 @@ func SetInt16VLS(p nogc.Pointer, bounds uint16, offset int, value int16) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Uint16Fixed(p nogc.Pointer, bounds uint16, offset int) uint16 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
-	return p.UInt16LE(offset)
+	return p.Uint16LE(offset)
 }
 func Uint16VLS(p nogc.Pointer, bounds uint16, offset int) uint16 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
-	return p.UInt16LE(offset)
+	return p.Uint16LE(offset)
 }
 func SetUint16Fixed(p nogc.Pointer, bounds uint16, offset int, value uint16) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
-	p.SetUInt16LE(offset, value)
+	p.SetUint16LE(offset, value)
 }
 func SetUint16VLS(p nogc.Pointer, bounds uint16, offset int, value uint16) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
-	p.SetUInt16LE(offset, value)
+	p.SetUint16LE(offset, value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,25 +128,25 @@ func SetUint16VLS(p nogc.Pointer, bounds uint16, offset int, value uint16) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Int32Fixed(p nogc.Pointer, bounds uint16, offset int) int32 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
 	return p.Int32LE(offset)
 }
 func Int32VLS(p nogc.Pointer, bounds uint16, offset int) int32 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
 	return p.Int32LE(offset)
 }
 func SetInt32Fixed(p nogc.Pointer, bounds uint16, offset int, value int32) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
 	p.SetInt32LE(offset, value)
 }
 func SetInt32VLS(p nogc.Pointer, bounds uint16, offset int, value int32) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
 	p.SetInt32LE(offset, value)
@@ -156,28 +157,28 @@ func SetInt32VLS(p nogc.Pointer, bounds uint16, offset int, value int32) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Uint32Fixed(p nogc.Pointer, bounds uint16, offset int) uint32 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
-	return p.UInt32LE(offset)
+	return p.Uint32LE(offset)
 }
 func Uint32VLS(p nogc.Pointer, bounds uint16, offset int) uint32 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
-	return p.UInt32LE(offset)
+	return p.Uint32LE(offset)
 }
 func SetUint32Fixed(p nogc.Pointer, bounds uint16, offset int, value uint32) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
-	p.SetUInt32LE(offset, value)
+	p.SetUint32LE(offset, value)
 }
 func SetUint32VLS(p nogc.Pointer, bounds uint16, offset int, value uint32) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
-	p.SetUInt32LE(offset, value)
+	p.SetUint32LE(offset, value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,25 +186,25 @@ func SetUint32VLS(p nogc.Pointer, bounds uint16, offset int, value uint32) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Int64Fixed(p nogc.Pointer, bounds uint16, offset int) int64 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
 	return p.Int64LE(offset)
 }
 func Int64VLS(p nogc.Pointer, bounds uint16, offset int) int64 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
 	return p.Int64LE(offset)
 }
 func SetInt64Fixed(p nogc.Pointer, bounds uint16, offset int, value int64) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
 	p.SetInt64LE(offset, value)
 }
 func SetInt64VLS(p nogc.Pointer, bounds uint16, offset int, value int64) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
 	p.SetInt64LE(offset, value)
@@ -214,28 +215,28 @@ func SetInt64VLS(p nogc.Pointer, bounds uint16, offset int, value int64) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Uint64Fixed(p nogc.Pointer, bounds uint16, offset int) uint64 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
-	return p.UInt64LE(offset)
+	return p.Uint64LE(offset)
 }
 func Uint64VLS(p nogc.Pointer, bounds uint16, offset int) uint64 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
-	return p.UInt64LE(offset)
+	return p.Uint64LE(offset)
 }
 func SetUint64Fixed(p nogc.Pointer, bounds uint16, offset int, value uint64) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
-	p.SetUInt64LE(offset, value)
+	p.SetUint64LE(offset, value)
 }
 func SetUint64VLS(p nogc.Pointer, bounds uint16, offset int, value uint64) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
-	p.SetUInt64LE(offset, value)
+	p.SetUint64LE(offset, value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,25 +244,25 @@ func SetUint64VLS(p nogc.Pointer, bounds uint16, offset int, value uint64) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Float32Fixed(p nogc.Pointer, bounds uint16, offset int) float32 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
 	return p.Float32LE(offset)
 }
 func Float32VLS(p nogc.Pointer, bounds uint16, offset int) float32 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
 	return p.Float32LE(offset)
 }
 func SetFloat32Fixed(p nogc.Pointer, bounds uint16, offset int, value float32) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
 	p.SetFloat32LE(offset, value)
 }
 func SetFloat32VLS(p nogc.Pointer, bounds uint16, offset int, value float32) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
 	p.SetFloat32LE(offset, value)
@@ -272,25 +273,25 @@ func SetFloat32VLS(p nogc.Pointer, bounds uint16, offset int, value float32) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 func Float64Fixed(p nogc.Pointer, bounds uint16, offset int) float64 {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return 0
 	}
 	return p.Float64LE(offset)
 }
 func Float64VLS(p nogc.Pointer, bounds uint16, offset int) float64 {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return 0
 	}
 	return p.Float64LE(offset)
 }
 func SetFloat64Fixed(p nogc.Pointer, bounds uint16, offset int, value float64) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
 	p.SetFloat64LE(offset, value)
 }
 func SetFloat64VLS(p nogc.Pointer, bounds uint16, offset int, value float64) {
-	if p == 0 || p.UInt16LE(4) < bounds {
+	if p == 0 || p.Uint16LE(4) < bounds {
 		return
 	}
 	p.SetFloat64LE(offset, value)
@@ -300,7 +301,7 @@ func StringFixed(p nogc.Pointer, bounds uint16, offset int) string {
 	if p == 0 {
 		return ""
 	}
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return ""
 	}
 	s := p.String(offset, int(bounds)-offset)
@@ -312,7 +313,7 @@ func StringFixed(p nogc.Pointer, bounds uint16, offset int) string {
 }
 
 func SetStringFixed(p nogc.Pointer, bounds uint16, offset int, value string) {
-	if p == 0 || p.UInt16LE(0) < bounds {
+	if p == 0 || p.Uint16LE(0) < bounds {
 		return
 	}
 	maxLength := int(bounds) - offset
@@ -321,7 +322,7 @@ func SetStringFixed(p nogc.Pointer, bounds uint16, offset int, value string) {
 	}
 	//nogc.Zero(Ptr.Pointer(offset).Unsafe(), uintptr(maxLength))
 	p.SetString(offset, value)
-	p.SetUInt8(offset+len(value), 0)
+	p.SetUint8(offset+len(value), 0)
 }
 
 //type VLS_t struct {
@@ -335,14 +336,14 @@ func StringVLS(p nogc.Pointer, bounds uint16, offset int) string {
 		return ""
 	}
 	var (
-		size     = p.UInt16LE(0)
-		baseSize = p.UInt16LE(4)
+		size     = p.Uint16LE(0)
+		baseSize = p.Uint16LE(4)
 	)
 	if baseSize < bounds {
 		return ""
 	}
-	vlsOffset := p.UInt16LE(offset)
-	vlsLength := p.UInt16LE(offset + 2)
+	vlsOffset := p.Uint16LE(offset)
+	vlsLength := p.Uint16LE(offset + 2)
 	if vlsLength > 4096 {
 		vlsLength = 4096
 	}
@@ -367,8 +368,8 @@ func SetStringVLSPointer(b *VLSPointerBuilder, bounds uint16, offset int, value 
 		return
 	}
 	p := b.Ptr
-	vlsOffset := int(p.UInt16LE(offset))
-	vlsLength := int(p.UInt16LE(offset + 2))
+	vlsOffset := int(p.Uint16LE(offset))
+	vlsLength := int(p.Uint16LE(offset + 2))
 	if vlsLength > 4096 {
 		vlsLength = 4096
 	}
@@ -379,7 +380,7 @@ func SetStringVLSPointer(b *VLSPointerBuilder, bounds uint16, offset int, value 
 	}
 	if vlsLength >= newLength {
 		// Set new length
-		p.SetUInt16LE(offset+2, uint16(len(value)+1))
+		p.SetUint16LE(offset+2, uint16(len(value)+1))
 		p.SetString(vlsOffset, value)
 		p.SetByte(vlsOffset+len(value), 0)
 		return
@@ -399,17 +400,15 @@ func SetStringVLSPointer(b *VLSPointerBuilder, bounds uint16, offset int, value 
 	}
 
 	// Set new size
-	p.SetUInt16LE(0, uint16(newSize))
+	p.SetUint16LE(0, uint16(newSize))
 	// Set VLS offset
-	p.SetUInt16LE(offset, b.Size())
+	p.SetUint16LE(offset, uint16(vlsOffset))
 	// Set VLS length
-	p.SetUInt16LE(offset+2, uint16(newLength))
+	p.SetUint16LE(offset+2, uint16(newLength))
 	// Set string
-	p.SetString(int(b.Size()), value)
+	p.SetString(vlsOffset, value)
 	// Set null terminator
-	p.SetByte(int(b.Size())+len(value), 0)
-	// Update to new length
-	p.SetUInt16LE(0, uint16(newSize))
+	p.SetByte(vlsOffset+len(value), 0)
 }
 
 // SetStringVLS replaces existing VLS if new one fits, otherwise appends to end possibly growing
@@ -420,8 +419,8 @@ func SetStringVLS(b *VLSBuilder, bounds uint16, offset int, value string) {
 	}
 
 	p := b.Ptr
-	vlsOffset := int(p.UInt16LE(offset))
-	vlsLength := int(p.UInt16LE(offset + 2))
+	vlsOffset := int(p.Uint16LE(offset))
+	vlsLength := int(p.Uint16LE(offset + 2))
 	if vlsLength > 4096 {
 		vlsLength = 4096
 	}
@@ -432,7 +431,7 @@ func SetStringVLS(b *VLSBuilder, bounds uint16, offset int, value string) {
 	}
 	if vlsLength >= newLength {
 		// Set new length
-		p.SetUInt16LE(offset+2, uint16(len(value)+1))
+		p.SetUint16LE(offset+2, uint16(len(value)+1))
 		p.SetString(vlsOffset, value)
 		p.SetByte(vlsOffset+len(value), 0)
 		return
@@ -452,15 +451,102 @@ func SetStringVLS(b *VLSBuilder, bounds uint16, offset int, value string) {
 	}
 
 	// Set new size
-	p.SetUInt16LE(0, uint16(newSize))
+	p.SetUint16LE(0, uint16(newSize))
 	// Set VLS offset
-	p.SetUInt16LE(offset, b.Size())
+	p.SetUint16LE(offset, uint16(vlsOffset))
 	// Set VLS length
-	p.SetUInt16LE(offset+2, uint16(newLength))
+	p.SetUint16LE(offset+2, uint16(newLength))
 	// Set string
-	p.SetString(int(b.Size()), value)
+	p.SetString(vlsOffset, value)
 	// Set null terminator
-	p.SetByte(int(b.Size())+len(value), 0)
-	// Update to new length
-	p.SetUInt16LE(0, uint16(newSize))
+	p.SetByte(vlsOffset+len(value), 0)
+}
+
+// SetStringVLS replaces existing VLS if new one fits, otherwise appends to end possibly growing
+// the existing allocation in order to do so.
+func SetStringVLS0(builder nogc.Pointer, bounds uint16, offset int, value string) {
+	if builder == 0 {
+		return
+	}
+	p := nogc.Pointer(builder.Uintptr(0))
+	if p == 0 {
+		return
+	}
+	var (
+		isAlloc  = builder.Uintptr(int(unsafe.Offsetof(VLSBuilder{}.ref))) == 0
+		c        = builder.Int(int(unsafe.Offsetof(VLSBuilder{}.cap)))
+		size     = p.Uint16LE(0)
+		baseSize = p.Uint16LE(4)
+	)
+	if baseSize < bounds {
+		return
+	}
+
+	var (
+		vlsOffset = p.Uint16LE(offset)
+		vlsLength = p.Uint16LE(offset + 2)
+	)
+	newLength := len(value) + 1
+	if newLength > 4096 {
+		value = value[0:4095]
+		newLength = 4096
+	}
+	if vlsLength >= uint16(newLength) {
+		// Set new length
+		p.SetUint16LE(offset+2, uint16(len(value)+1))
+		p.SetString(int(vlsOffset), value)
+		p.SetByte(int(vlsOffset)+len(value), 0)
+		return
+	}
+	newSize := int(size) + newLength
+	if newSize > math.MaxUint16 {
+		return
+	}
+	vlsOffset = size
+	if c < newSize {
+		if isAlloc {
+			b := (*VLSPointerBuilder)(builder.Unsafe())
+			growBy := b.growBy
+			if growBy < int(vlsLength) {
+				growBy = int(vlsLength)
+			}
+			newPtr, newCap := nogc.ReallocCap(p, uintptr(c+growBy))
+			if newPtr == 0 {
+				return
+			}
+			p = newPtr
+			b.Ptr = newPtr
+			b.cap = int(newCap)
+		} else {
+			b := (*VLSBuilder)(builder.Unsafe())
+			growBy := b.growBy
+			if growBy < int(vlsLength) {
+				growBy = int(vlsLength)
+			}
+			newCap := uintptr(c + growBy)
+
+			old := b.Ptr
+			newRef := gcAlloc(newCap)
+			if newRef == nil {
+				return
+			}
+
+			b.Ptr = nogc.Pointer(newRef)
+			p = b.Ptr
+			b.cap = int(newCap)
+			b.ref = newRef
+			nogc.Copy(newRef, old.Unsafe(), uintptr(size))
+		}
+	}
+
+	// Set new size
+	p.SetUint16LE(0, uint16(newSize))
+	// Set VLS offset
+	p.SetUint16LE(offset, vlsOffset)
+	// Set VLS length
+	p.SetUint16LE(offset+2, uint16(newLength))
+	// Set string
+	p.SetString(int(vlsOffset), value)
+	// Set null terminator
+	p.SetByte(int(vlsOffset)+len(value), 0)
 }

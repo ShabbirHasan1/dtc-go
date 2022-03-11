@@ -545,12 +545,14 @@ namespace DTC
 
 		uint32_t RequestID = 0;
 		int64_t StartDateTimeUTC = 0;
+		uint8_t SendOrderActivityOnly = 0;
 
 		uint16_t GetMessageSize() const;
 		void CopyFrom(void* p_SourceData);
 
 		uint32_t GetRequestID() const;
 		int64_t GetStartDateTimeUTC() const;
+		uint8_t GetSendOrderActivityOnly() const;
 	};
 
 	/*==========================================================================*/
@@ -1593,7 +1595,7 @@ namespace DTC_VLS
 		uint16_t Size = sizeof(*this);
 		uint16_t Type = n_DTCNonStandard::TRADE_POSITION_CONSOLIDATED;
 		uint16_t BaseSize = sizeof(*this);
-	
+
 		//message field variables
 		uint8_t m_IsDeleted = 0;
 		DTC_VLS::vls_t m_Symbol;
@@ -1989,7 +1991,7 @@ namespace DTC_VLS
 		void AddAuditTrail_CountryOfOrigin(uint16_t StringLength)
 		{
 			AddVariableLengthStringField(Size, AuditTrail_CountryOfOrigin, StringLength);
-		}		
+		}
 
 		//-------------------------------------------------------------------
 		const char* GetAuditTrail_OrdRejReason() const
@@ -2118,7 +2120,7 @@ namespace DTC_VLS
 		uint8_t m_UseMasterFirm_MinimumRequiredAccountValue = 0;
 		uint8_t m_UseMasterFirm_MarginTimeSettings = 0;
 		uint8_t m_UseMasterFirm_TradingIsDisabled = 0;
-		
+
 		uint8_t m_IsTradeStatisticsPublicallyShared = 0;
 		uint8_t m_IsReadOnlyFollowingRequestsAllowed = 0;
 		uint8_t m_IsTradeAccountSharingAllowed = 0;
@@ -2131,7 +2133,7 @@ namespace DTC_VLS
 		double m_MarginRequirementFull = 0;
 		double m_MarginRequirementFullPositionsOnly = 0;
 		// End read only
-				
+
 		uint8_t m_UseMasterFirm_TradeFeesFullOverride = 0;
 		uint8_t m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders = 0;
 		uint8_t m_UseMasterFirm_UsePercentOfMarginFullOverride = 0;
@@ -2309,7 +2311,7 @@ namespace DTC_VLS
 		{
 			AddVariableLengthStringField(Size, m_FirmID, StringLength);
 		}
-		
+
 		//-------------------------------------------------------------------
 			const char* GetDescriptiveName() const
 		{
@@ -2449,7 +2451,7 @@ namespace DTC_VLS
 		uint8_t m_UseMasterFirm_MarginTimeSettings = 0;
 		uint8_t m_UseMasterFirm_TradingIsDisabledIsSet = 0;
 		uint8_t m_UseMasterFirm_TradingIsDisabled = 0;
-		
+
 		uint8_t IsTradeStatisticsPublicallySharedIsSet = 0;
 		uint8_t IsTradeStatisticsPublicallyShared = 0;
 		uint8_t IsReadOnlyFollowingRequestsAllowedIsSet = 0;
@@ -2882,7 +2884,7 @@ namespace DTC_VLS
 
 		uint32_t GetRequestID() const;
 		double GetTradeFeePerContract() const;
-		
+
 		//-------------------------------------------------------------------
 		const char* GetTradeAccount() const
 		{
@@ -3244,7 +3246,7 @@ namespace DTC_VLS
 		}
 		//--End of Get Add functions----------------------------------------
 	};
-	
+
 	/*==========================================================================*/
 	struct s_TradeAccountDataResponseTrailer
 	{
@@ -3501,21 +3503,28 @@ namespace DTC_VLS
 
 		//message field variables
 		int32_t RequestID = 0;
+		DTC_VLS::vls_t TradeAccount;
 		DTC_VLS::vls_t ErrorText;
-		double InitialExchangeMargin = 0;
-		double MaintenanceExchangeMargin = 0;
-		double InitialAccountMargin = 0;
-		double MaintenanceAccountMargin = 0;
+		double ExchangeMargin = 0;
+		double AccountMargin = 0;
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 
 		uint32_t GetRequestID() const;
-		double GetInitialExchangeMargin() const;
-		double GetMaintenanceExchangeMargin() const;
-		double GetInitialAccountMargin() const;
-		double GetMaintenanceAccountMargin() const;
+		double GetExchangeMargin() const;
+		double GetAccountMargin() const;
 
+		//-------------------------------------------------------------------
+		const char* GetTradeAccount() const
+		{
+			return GetVariableLengthStringField(Size, BaseSize, TradeAccount, offsetof(s_MarginDataResponse, TradeAccount));
+		}
+
+		void AddTradeAccount(uint16_t StringLength)
+		{
+			AddVariableLengthStringField(Size, TradeAccount, StringLength);
+		}
 		//-------------------------------------------------------------------
 		const char* GetErrorText() const
 		{

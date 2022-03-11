@@ -19,7 +19,7 @@ func NewWriter(b []byte, typ uint16) Writer {
 	return w
 }
 
-func NewCompactWriterI8(b []byte, typ uint16, first int8) Writer {
+func NewCompactWriterInt8(b []byte, typ uint16, first int8) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -28,7 +28,7 @@ func NewCompactWriterI8(b []byte, typ uint16, first int8) Writer {
 	return w
 }
 
-func NewCompactWriterU8(b []byte, typ uint16, first uint8) Writer {
+func NewCompactWriterUint8(b []byte, typ uint16, first uint8) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -37,7 +37,7 @@ func NewCompactWriterU8(b []byte, typ uint16, first uint8) Writer {
 	return w
 }
 
-func NewCompactWriterI16(b []byte, typ uint16, first int16) Writer {
+func NewCompactWriterInt16(b []byte, typ uint16, first int16) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -46,7 +46,7 @@ func NewCompactWriterI16(b []byte, typ uint16, first int16) Writer {
 	return w
 }
 
-func NewCompactWriterU16(b []byte, typ uint16, first uint16) Writer {
+func NewCompactWriterUint16(b []byte, typ uint16, first uint16) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -55,7 +55,7 @@ func NewCompactWriterU16(b []byte, typ uint16, first uint16) Writer {
 	return w
 }
 
-func NewCompactWriterI32(b []byte, typ uint16, first int32) Writer {
+func NewCompactWriterInt32(b []byte, typ uint16, first int32) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -64,7 +64,7 @@ func NewCompactWriterI32(b []byte, typ uint16, first int32) Writer {
 	return w
 }
 
-func NewCompactWriterU32(b []byte, typ uint16, first uint32) Writer {
+func NewCompactWriterUint32(b []byte, typ uint16, first uint32) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -73,7 +73,7 @@ func NewCompactWriterU32(b []byte, typ uint16, first uint32) Writer {
 	return w
 }
 
-func NewCompactWriterI64(b []byte, typ uint16, first int64) Writer {
+func NewCompactWriterInt64(b []byte, typ uint16, first int64) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -82,7 +82,7 @@ func NewCompactWriterI64(b []byte, typ uint16, first int64) Writer {
 	return w
 }
 
-func NewCompactWriterU64(b []byte, typ uint16, first uint64) Writer {
+func NewCompactWriterUint64(b []byte, typ uint16, first uint64) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -91,7 +91,7 @@ func NewCompactWriterU64(b []byte, typ uint16, first uint64) Writer {
 	return w
 }
 
-func NewCompactWriterF32(b []byte, typ uint16, first float32) Writer {
+func NewCompactWriterFloat32(b []byte, typ uint16, first float32) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -100,7 +100,7 @@ func NewCompactWriterF32(b []byte, typ uint16, first float32) Writer {
 	return w
 }
 
-func NewCompactWriterF64(b []byte, typ uint16, first float64) Writer {
+func NewCompactWriterFloat64(b []byte, typ uint16, first float64) Writer {
 	w := Writer{Data: b, Compact: true}
 	w.Data = append(w.Data, "{\"Type\":"...)
 	w.Uint16(typ)
@@ -129,7 +129,7 @@ func (w *Writer) RawString(s string) {
 }
 
 // Raw appends raw binary data to the buffer or sets the error if it is given. Useful for
-// calling with results of MarshalJSON-like functions.
+// calling with results of MarshalJSONTo-like functions.
 func (w *Writer) Raw(data []byte, err error) {
 	switch {
 	case w.Error != nil:

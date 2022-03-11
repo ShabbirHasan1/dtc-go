@@ -1097,6 +1097,14 @@ int64_t DTC::s_InterprocessSynchronizationTradeActivityRequest::GetStartDateTime
 	return StartDateTimeUTC;
 }
 
+/*==========================================================================*/
+uint8_t DTC::s_InterprocessSynchronizationTradeActivityRequest::GetSendOrderActivityOnly() const
+{
+	if (Size < offsetof(s_InterprocessSynchronizationTradeActivityRequest, SendOrderActivityOnly) + sizeof(SendOrderActivityOnly))
+		return 0;
+
+	return SendOrderActivityOnly;
+}
 
 /****************************************************************************/
 // s_SCConfigurationSynchronization
@@ -2607,7 +2615,7 @@ int64_t DTC_VLS::s_TradeOrder::GetExternalLastActionDateTimeUTC() const
 
 /*==========================================================================*/
 uint16_t DTC_VLS::s_IndividualTradePosition::GetMessageSize() const
-{	
+{
 	return Size;
 }
 /*==========================================================================*/
@@ -5220,37 +5228,19 @@ uint32_t DTC_VLS::s_MarginDataResponse::GetRequestID() const
 }
 
 /*==========================================================================*/
-double DTC_VLS::s_MarginDataResponse::GetInitialExchangeMargin() const
+double DTC_VLS::s_MarginDataResponse::GetExchangeMargin() const
 {
-	if (Size < offsetof(s_MarginDataResponse, InitialExchangeMargin) + sizeof(InitialExchangeMargin))
+	if (Size < offsetof(s_MarginDataResponse, ExchangeMargin) + sizeof(ExchangeMargin))
 		return 0;
 
-	return InitialExchangeMargin;
+	return ExchangeMargin;
 }
 
 /*==========================================================================*/
-double DTC_VLS::s_MarginDataResponse::GetMaintenanceExchangeMargin() const
+double DTC_VLS::s_MarginDataResponse::GetAccountMargin() const
 {
-	if (Size < offsetof(s_MarginDataResponse, MaintenanceExchangeMargin) + sizeof(MaintenanceExchangeMargin))
+	if (Size < offsetof(s_MarginDataResponse, AccountMargin) + sizeof(AccountMargin))
 		return 0;
 
-	return MaintenanceExchangeMargin;
-}
-
-/*==========================================================================*/
-double DTC_VLS::s_MarginDataResponse::GetInitialAccountMargin() const
-{
-	if (Size < offsetof(s_MarginDataResponse, InitialAccountMargin) + sizeof(InitialAccountMargin))
-		return 0;
-
-	return InitialAccountMargin;
-}
-
-/*==========================================================================*/
-double DTC_VLS::s_MarginDataResponse::GetMaintenanceAccountMargin() const
-{
-	if (Size < offsetof(s_MarginDataResponse, MaintenanceAccountMargin) + sizeof(MaintenanceAccountMargin))
-		return 0;
-
-	return MaintenanceAccountMargin;
+	return AccountMargin;
 }
