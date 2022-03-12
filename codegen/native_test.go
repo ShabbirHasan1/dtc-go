@@ -1,33 +1,33 @@
 package codegen
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
 
 func TestCPPLayout(t *testing.T) {
-	namespaces := NewSchema()
-	err := namespaces.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
+	schema := NewSchema()
+	err := schema.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	s := namespaces.Namespaces["DTC_VLS"].StructsByName["s_Logoff"]
-	s = namespaces.Namespaces["DTC_VLS"].StructsByName["s_TradeOrder"]
-	fmt.Println(s)
+	if err = schema.Validate(); err != nil {
+		t.Fatal(err)
+	}
 	data, err := os.ReadFile("testdata/DTCLayout.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
-	namespaces.PrintCPPLayoutErrors(data)
+	if err = printCPPLayoutErrors(schema, data); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestPrintCPPLayout(t *testing.T) {
-	namespaces := NewSchema()
-	err := namespaces.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
+	schema := NewSchema()
+	err := schema.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}
-	namespaces.PrintCPPLayoutCode()
+	printCPPLayoutCode(schema)
 }

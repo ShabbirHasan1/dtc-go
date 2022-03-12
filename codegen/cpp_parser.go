@@ -658,9 +658,8 @@ func (f *CHeaderFile) parseStruct(pack int, name string, lines []string) (*Struc
 							case KindInt8, KindUint8:
 								field.Type.Kind = KindBool
 							default:
-								//field.Initial.Type
+								field.Initial.Type = ValueTypeInt
 							}
-							field.Initial.Type = ValueTypeInt
 						}
 					}
 				} else if funcDecl == "union" {
@@ -700,10 +699,6 @@ func (f *CHeaderFile) parseStruct(pack int, name string, lines []string) (*Struc
 			}
 			continue
 		}
-		//if strings.HasPrefix(line, name) {
-		//	// constructor
-		//	continue
-		//}
 
 		if !strings.HasSuffix(line, ";") {
 			index = strings.Index(line, "{")

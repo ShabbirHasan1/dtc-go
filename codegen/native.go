@@ -1,38 +1,31 @@
 package codegen
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-type CPPLayout struct {
-	Structs []CPPStructLayout
+type cppLayout struct {
+	Structs []cppStructLayout
 }
 
-type CPPFieldLayout struct {
+type cppFieldLayout struct {
 	Name   string
 	Offset int
 	Size   int
 }
-type CPPStructLayout struct {
+type cppStructLayout struct {
 	Namespace string
 	Name      string
 	Size      int
-	Fields    []CPPFieldLayout
+	Fields    []cppFieldLayout
 }
 
-func (schema *Schema) PrintCPPLayoutErrors(data []byte) {
+func printCPPLayoutErrors(schema *Schema, data []byte) error {
 	layout := parseCPPLayout(string(data))
 
-	type structCPPSize struct {
-		Namespace *Namespace
-		Struct    *Struct
-		CPPSize   int
-	}
-
-	//goodSizes := make([]CPPStructLayout, 0, len(file.Structs))
-	//badSizes := make([]CPPStructLayout, 0, len(file.Structs))
 	for _, cppStruct := range layout.Structs {
 		namespace := schema.GetNamespace(cppStruct.Namespace)
 		if namespace == nil {
@@ -48,7 +41,7 @@ func (schema *Schema) PrintCPPLayoutErrors(data []byte) {
 		for _, cppField := range cppStruct.Fields {
 			f := s.FieldsByName[cppField.Name]
 			if f == nil {
-				panic(cppStruct.Namespace + "::" + cppStruct.Name + "." + cppField.Name + " not found!!!")
+				return errors.New(cppStruct.Namespace + "::" + cppStruct.Name + "." + cppField.Name + " not found!!!")
 			}
 
 			if f.Type.Offset != cppField.Offset {
@@ -59,13 +52,14 @@ func (schema *Schema) PrintCPPLayoutErrors(data []byte) {
 			}
 		}
 	}
+	return nil
 }
 
-func parseCPPLayout(contents string) CPPLayout {
+func parseCPPLayout(contents string) cppLayout {
 	contents = strings.TrimSpace(contents)
 	lines := strings.Split(contents, "\n")
-	file := CPPLayout{}
-	structLayout := CPPStructLayout{}
+	file := cppLayout{}
+	structLayout := cppStructLayout{}
 
 	for _, line := range lines {
 		if !strings.HasPrefix(line, "\t") {
@@ -87,7 +81,7 @@ func parseCPPLayout(contents string) CPPLayout {
 				name = strings.TrimSpace(name[index+2:])
 			}
 
-			structLayout = CPPStructLayout{
+			structLayout = cppStructLayout{
 				Namespace: namespaceName,
 				Name:      name,
 				Size:      int(sz),
@@ -105,7 +99,7 @@ func parseCPPLayout(contents string) CPPLayout {
 				panic(err)
 			}
 
-			structLayout.Fields = append(structLayout.Fields, CPPFieldLayout{
+			structLayout.Fields = append(structLayout.Fields, cppFieldLayout{
 				Name:   strings.TrimSpace(parts[0]),
 				Offset: int(offset),
 				Size:   int(sz),
@@ -119,18 +113,34 @@ func parseCPPLayout(contents string) CPPLayout {
 	return file
 }
 
-func (schema *Schema) PrintCPPLayoutCode() {
+func getNamespaceCPPName(n *Namespace) string {
+	if n == nil {
+		return ""
+	}
+	switch n.Kind {
+	case NamespaceKindFixed:
+		return "DTC"
+	case NamespaceKindVLS:
+		return "DTC_VLS"
+	case NamespaceKindNonStandard:
+		return "n_DTCNonStandard"
+	default:
+		return "UNKNOWN_NAMESPACE"
+	}
+}
+
+func printCPPLayoutCode(schema *Schema) {
 	namespaces := schema.GetNamespaces()
 	for _, namespace := range namespaces {
 		for _, s := range namespace.Structs {
-			fmt.Println("std::cout << \"" + s.Namespace.Name + "::" + s.Name + "\" << \" = \" << sizeof(" + s.Namespace.Name + "::" + s.Name + ") << std::endl;")
+			fmt.Println("std::cout << \"" + getNamespaceCPPName(namespace) + "::" + s.Name + "\" << \" = \" << sizeof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + ") << std::endl;")
 			for _, field := range s.Fields {
 				if field.Type.Union != nil {
 					for _, f := range field.Type.Union.Fields {
-						fmt.Println("std::cout << \"\t" + f.Name + "\" << \" = \" << offsetof(" + s.Namespace.Name + "::" + s.Name + ", " + f.Name + ") << \",\" << sizeof(" + s.Namespace.Name + "::" + s.Name + "::" + f.Name + ") << std::endl;")
+						fmt.Println("std::cout << \"\t" + f.Name + "\" << \" = \" << offsetof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + ", " + f.Name + ") << \",\" << sizeof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + "::" + f.Name + ") << std::endl;")
 					}
 				} else {
-					fmt.Println("std::cout << \"\t" + field.Name + "\" << \" = \" << offsetof(" + s.Namespace.Name + "::" + s.Name + ", " + field.Name + ") << \",\" << sizeof(" + s.Namespace.Name + "::" + s.Name + "::" + field.Name + ") << std::endl;")
+					fmt.Println("std::cout << \"\t" + field.Name + "\" << \" = \" << offsetof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + ", " + field.Name + ") << \",\" << sizeof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + "::" + field.Name + ") << std::endl;")
 				}
 			}
 		}
