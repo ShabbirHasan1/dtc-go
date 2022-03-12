@@ -6,6 +6,7 @@ import (
 	"github.com/moontrade/dtc-go/message/pb"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -36,6 +37,7 @@ type Config struct {
 	Dir            string
 	RootPackage    string
 	FactoryPackage string
+	GoFmt          bool
 	NonStandard    bool
 	Json           bool
 	Protobuf       bool
@@ -50,6 +52,7 @@ func DefaultConfig(dir string) *Config {
 		Dir:            dir,
 		RootPackage:    "github.com/moontrade/dtc-go/model",
 		FactoryPackage: "factory",
+		GoFmt:          true,
 		NonStandard:    false,
 		Json:           true,
 		Protobuf:       true,
@@ -64,6 +67,7 @@ func TinyGoConfig(dir string) *Config {
 		Dir:            dir,
 		RootPackage:    "github.com/moontrade/dtc-go/model",
 		FactoryPackage: "factory",
+		GoFmt:          true,
 		NonStandard:    false,
 		Json:           false,
 		Protobuf:       false,
@@ -423,6 +427,19 @@ func (g *Generator) Run() error {
 	return nil
 }
 
+func (g *Generator) writeFile(name string, data []byte) error {
+	path := filepath.Join(g.config.Dir, name)
+	if err := os.WriteFile(path, data, 0755); err != nil {
+		return err
+	}
+	if g.config.GoFmt {
+		if err := exec.Command("gofmt", "-w", path).Run(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (g *Generator) generateAliases() error {
 	w := &Writer{}
 	w.Line("package %s", g.root.Name)
@@ -442,7 +459,7 @@ func (g *Generator) generateAliases() error {
 	w.Line(")")
 	w.Line("")
 
-	return os.WriteFile(filepath.Join(g.config.Dir, "alias.go"), w.b, 0755)
+	return g.writeFile("alias.go", w.b)
 }
 
 func (g *Generator) generateConstants() error {
@@ -469,7 +486,7 @@ func (g *Generator) generateConstants() error {
 	w.Line(")")
 	w.Line("")
 
-	return os.WriteFile(filepath.Join(g.config.Dir, "constants.go"), w.b, 0755)
+	return g.writeFile("constants.go", w.b)
 }
 
 func (g *Generator) generateEnums() error {
@@ -494,7 +511,7 @@ func (g *Generator) generateEnums() error {
 		w.Line("")
 	}
 
-	return os.WriteFile(filepath.Join(g.config.Dir, "enums.go"), w.b, 0755)
+	return g.writeFile("enums.go", w.b)
 }
 
 func (g *Generator) generateStructDebug(msg *Struct) error {
@@ -587,7 +604,7 @@ func (g *Generator) generateMessages() error {
 		w.Line("}")
 		w.Line("")
 
-		if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s.go", toSnakeCase(msg.Name))), w.b, 0755); err != nil {
+		if err := g.writeFile(fmt.Sprintf("%s_interfaces.go", toSnakeCase(msg.Name)), w.b); err != nil {
 			return err
 		}
 	}
@@ -1227,17 +1244,19 @@ func (g *Generator) generateStructs() error {
 		}
 
 		if gcWriter == nogcWriter {
-			if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s.go", toSnakeCase(m.Name()))), gcWriter.b, 0755); err != nil {
-				return err
+			if gcWriter != nil {
+				if err := g.writeFile(fmt.Sprintf("%s.go", toSnakeCase(m.Name())), gcWriter.b); err != nil {
+					return err
+				}
 			}
 		} else {
 			if gcWriter != nil {
-				if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s.go", toSnakeCase(m.Name()))), gcWriter.b, 0755); err != nil {
+				if err := g.writeFile(fmt.Sprintf("%s.go", toSnakeCase(m.Name())), gcWriter.b); err != nil {
 					return err
 				}
 			}
 			if nogcWriter != nil {
-				if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_nogc.go", toSnakeCase(m.Name()))), nogcWriter.b, 0755); err != nil {
+				if err := g.writeFile(fmt.Sprintf("%s_nogc.go", toSnakeCase(m.Name())), nogcWriter.b); err != nil {
 					return err
 				}
 			}
@@ -1311,18 +1330,18 @@ func (g *Generator) generateSerializers(msg *Message) error {
 	_ = os.MkdirAll(g.config.Dir, 0755)
 	if gcWriter == nogcWriter {
 		if gcWriter != nil {
-			if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_serializer.go", toSnakeCase(msg.Name()))), gcWriter.b, 0755); err != nil {
+			if err := g.writeFile(fmt.Sprintf("%s_serializer.go", toSnakeCase(msg.Name())), gcWriter.b); err != nil {
 				return err
 			}
 		}
 	} else {
 		if gcWriter != nil {
-			if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_serializer.go", toSnakeCase(msg.Name()))), gcWriter.b, 0755); err != nil {
+			if err := g.writeFile(fmt.Sprintf("%s_serializer.go", toSnakeCase(msg.Name())), gcWriter.b); err != nil {
 				return err
 			}
 		}
 		if nogcWriter != nil {
-			if err := os.WriteFile(filepath.Join(g.config.Dir, fmt.Sprintf("%s_nogc_serializer.go", toSnakeCase(msg.Name()))), nogcWriter.b, 0755); err != nil {
+			if err := g.writeFile(fmt.Sprintf("%s_nogc_serializer.go", toSnakeCase(msg.Name())), nogcWriter.b); err != nil {
 				return err
 			}
 		}

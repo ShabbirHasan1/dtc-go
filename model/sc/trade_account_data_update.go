@@ -21,7 +21,7 @@ const TradeAccountDataUpdateSize = 225
 //     PercentOfCashBalanceForDailyNetLossLimitIsSet                           = false
 //     PercentOfCashBalanceForDailyNetLossLimit                                = 0
 //     UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet               = false
-//     UseTrailingAccountValueToNotAllowIncreaseInPositions                    = 0
+//     UseTrailingAccountValueToNotAllowIncreaseInPositions                    = false
 //     DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet                      = false
 //     DoNotAllowIncreaseInPositionsAtDailyLossLimit                           = 0
 //     FlattenPositionsAtDailyLossLimitIsSet                                   = false
@@ -73,25 +73,25 @@ const TradeAccountDataUpdateSize = 225
 //     DayMarginTimeZoneIsSet                                                  = false
 //     DayMarginTimeZone                                                       = ""
 //     UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet              = false
-//     UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday                   = 0
+//     UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday                   = false
 //     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet            = false
-//     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay                 = 0
+//     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay                 = false
 //     UseMasterFirm_SymbolLimitsArrayIsSet                                    = false
-//     UseMasterFirm_SymbolLimitsArray                                         = 0
+//     UseMasterFirm_SymbolLimitsArray                                         = false
 //     UseMasterFirm_TradeFeesIsSet                                            = false
-//     UseMasterFirm_TradeFees                                                 = 0
+//     UseMasterFirm_TradeFees                                                 = false
 //     UseMasterFirm_TradeFeePerShareIsSet                                     = false
-//     UseMasterFirm_TradeFeePerShare                                          = 0
+//     UseMasterFirm_TradeFeePerShare                                          = false
 //     UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet               = false
-//     UseMasterFirm_RequireSufficientMarginForNewPositions                    = 0
+//     UseMasterFirm_RequireSufficientMarginForNewPositions                    = false
 //     UseMasterFirm_UsePercentOfMarginIsSet                                   = false
-//     UseMasterFirm_UsePercentOfMargin                                        = 0
+//     UseMasterFirm_UsePercentOfMargin                                        = false
 //     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet = false
-//     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage      = 0
+//     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage      = false
 //     UseMasterFirm_MinimumRequiredAccountValueIsSet                          = false
-//     UseMasterFirm_MinimumRequiredAccountValue                               = 0
+//     UseMasterFirm_MinimumRequiredAccountValue                               = false
 //     UseMasterFirm_MarginTimeSettingsIsSet                                   = false
-//     UseMasterFirm_MarginTimeSettings                                        = 0
+//     UseMasterFirm_MarginTimeSettings                                        = false
 //     UseMasterFirm_TradingIsDisabledIsSet                                    = false
 //     UseMasterFirm_TradingIsDisabled                                         = false
 //     IsTradeStatisticsPublicallySharedIsSet                                  = false
@@ -103,21 +103,21 @@ const TradeAccountDataUpdateSize = 225
 //     ReadOnlyShareToAllSCUsernamesIsSet                                      = false
 //     ReadOnlyShareToAllSCUsernames                                           = 0
 //     UseMasterFirm_SymbolCommissionsArrayIsSet                               = false
-//     UseMasterFirm_SymbolCommissionsArray                                    = 0
+//     UseMasterFirm_SymbolCommissionsArray                                    = false
 //     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet        = false
-//     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit             = 0
+//     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit             = false
 //     UseMasterFirm_UsePercentOfMarginForDayTradingIsSet                      = false
-//     UseMasterFirm_UsePercentOfMarginForDayTrading                           = 0
+//     UseMasterFirm_UsePercentOfMarginForDayTrading                           = false
 //     UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet                   = false
-//     UseMasterFirm_SymbolCommissionsArrayFullOverride                        = 0
+//     UseMasterFirm_SymbolCommissionsArrayFullOverride                        = false
 //     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet         = false
-//     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders              = 0
+//     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders              = false
 //     UseMasterFirm_UsePercentOfMarginFullOverrideIsSet                       = false
-//     UseMasterFirm_UsePercentOfMarginFullOverride                            = 0
+//     UseMasterFirm_UsePercentOfMarginFullOverride                            = false
 //     UseMasterFirm_TradeFeesFullOverrideIsSet                                = false
-//     UseMasterFirm_TradeFeesFullOverride                                     = 0
+//     UseMasterFirm_TradeFeesFullOverride                                     = false
 //     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet          = false
-//     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride               = 0
+//     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride               = false
 //     LiquidationOnlyModeIsSet                                                = false
 //     LiquidationOnlyMode                                                     = 0
 //     CustomerOrFirmIsSet                                                     = false
@@ -193,7 +193,7 @@ func AllocTradeAccountDataUpdateFrom(b []byte) TradeAccountDataUpdatePointer {
 //     PercentOfCashBalanceForDailyNetLossLimitIsSet                           = false
 //     PercentOfCashBalanceForDailyNetLossLimit                                = 0
 //     UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet               = false
-//     UseTrailingAccountValueToNotAllowIncreaseInPositions                    = 0
+//     UseTrailingAccountValueToNotAllowIncreaseInPositions                    = false
 //     DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet                      = false
 //     DoNotAllowIncreaseInPositionsAtDailyLossLimit                           = 0
 //     FlattenPositionsAtDailyLossLimitIsSet                                   = false
@@ -245,25 +245,25 @@ func AllocTradeAccountDataUpdateFrom(b []byte) TradeAccountDataUpdatePointer {
 //     DayMarginTimeZoneIsSet                                                  = false
 //     DayMarginTimeZone                                                       = ""
 //     UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet              = false
-//     UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday                   = 0
+//     UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday                   = false
 //     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet            = false
-//     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay                 = 0
+//     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay                 = false
 //     UseMasterFirm_SymbolLimitsArrayIsSet                                    = false
-//     UseMasterFirm_SymbolLimitsArray                                         = 0
+//     UseMasterFirm_SymbolLimitsArray                                         = false
 //     UseMasterFirm_TradeFeesIsSet                                            = false
-//     UseMasterFirm_TradeFees                                                 = 0
+//     UseMasterFirm_TradeFees                                                 = false
 //     UseMasterFirm_TradeFeePerShareIsSet                                     = false
-//     UseMasterFirm_TradeFeePerShare                                          = 0
+//     UseMasterFirm_TradeFeePerShare                                          = false
 //     UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet               = false
-//     UseMasterFirm_RequireSufficientMarginForNewPositions                    = 0
+//     UseMasterFirm_RequireSufficientMarginForNewPositions                    = false
 //     UseMasterFirm_UsePercentOfMarginIsSet                                   = false
-//     UseMasterFirm_UsePercentOfMargin                                        = 0
+//     UseMasterFirm_UsePercentOfMargin                                        = false
 //     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet = false
-//     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage      = 0
+//     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage      = false
 //     UseMasterFirm_MinimumRequiredAccountValueIsSet                          = false
-//     UseMasterFirm_MinimumRequiredAccountValue                               = 0
+//     UseMasterFirm_MinimumRequiredAccountValue                               = false
 //     UseMasterFirm_MarginTimeSettingsIsSet                                   = false
-//     UseMasterFirm_MarginTimeSettings                                        = 0
+//     UseMasterFirm_MarginTimeSettings                                        = false
 //     UseMasterFirm_TradingIsDisabledIsSet                                    = false
 //     UseMasterFirm_TradingIsDisabled                                         = false
 //     IsTradeStatisticsPublicallySharedIsSet                                  = false
@@ -275,21 +275,21 @@ func AllocTradeAccountDataUpdateFrom(b []byte) TradeAccountDataUpdatePointer {
 //     ReadOnlyShareToAllSCUsernamesIsSet                                      = false
 //     ReadOnlyShareToAllSCUsernames                                           = 0
 //     UseMasterFirm_SymbolCommissionsArrayIsSet                               = false
-//     UseMasterFirm_SymbolCommissionsArray                                    = 0
+//     UseMasterFirm_SymbolCommissionsArray                                    = false
 //     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet        = false
-//     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit             = 0
+//     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit             = false
 //     UseMasterFirm_UsePercentOfMarginForDayTradingIsSet                      = false
-//     UseMasterFirm_UsePercentOfMarginForDayTrading                           = 0
+//     UseMasterFirm_UsePercentOfMarginForDayTrading                           = false
 //     UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet                   = false
-//     UseMasterFirm_SymbolCommissionsArrayFullOverride                        = 0
+//     UseMasterFirm_SymbolCommissionsArrayFullOverride                        = false
 //     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet         = false
-//     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders              = 0
+//     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders              = false
 //     UseMasterFirm_UsePercentOfMarginFullOverrideIsSet                       = false
-//     UseMasterFirm_UsePercentOfMarginFullOverride                            = 0
+//     UseMasterFirm_UsePercentOfMarginFullOverride                            = false
 //     UseMasterFirm_TradeFeesFullOverrideIsSet                                = false
-//     UseMasterFirm_TradeFeesFullOverride                                     = 0
+//     UseMasterFirm_TradeFeesFullOverride                                     = false
 //     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet          = false
-//     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride               = 0
+//     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride               = false
 //     LiquidationOnlyModeIsSet                                                = false
 //     LiquidationOnlyMode                                                     = 0
 //     CustomerOrFirmIsSet                                                     = false
@@ -327,7 +327,7 @@ func (m TradeAccountDataUpdateBuilder) Clear() {
 //     PercentOfCashBalanceForDailyNetLossLimitIsSet                           = false
 //     PercentOfCashBalanceForDailyNetLossLimit                                = 0
 //     UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet               = false
-//     UseTrailingAccountValueToNotAllowIncreaseInPositions                    = 0
+//     UseTrailingAccountValueToNotAllowIncreaseInPositions                    = false
 //     DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet                      = false
 //     DoNotAllowIncreaseInPositionsAtDailyLossLimit                           = 0
 //     FlattenPositionsAtDailyLossLimitIsSet                                   = false
@@ -379,25 +379,25 @@ func (m TradeAccountDataUpdateBuilder) Clear() {
 //     DayMarginTimeZoneIsSet                                                  = false
 //     DayMarginTimeZone                                                       = ""
 //     UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet              = false
-//     UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday                   = 0
+//     UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday                   = false
 //     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet            = false
-//     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay                 = 0
+//     UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay                 = false
 //     UseMasterFirm_SymbolLimitsArrayIsSet                                    = false
-//     UseMasterFirm_SymbolLimitsArray                                         = 0
+//     UseMasterFirm_SymbolLimitsArray                                         = false
 //     UseMasterFirm_TradeFeesIsSet                                            = false
-//     UseMasterFirm_TradeFees                                                 = 0
+//     UseMasterFirm_TradeFees                                                 = false
 //     UseMasterFirm_TradeFeePerShareIsSet                                     = false
-//     UseMasterFirm_TradeFeePerShare                                          = 0
+//     UseMasterFirm_TradeFeePerShare                                          = false
 //     UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet               = false
-//     UseMasterFirm_RequireSufficientMarginForNewPositions                    = 0
+//     UseMasterFirm_RequireSufficientMarginForNewPositions                    = false
 //     UseMasterFirm_UsePercentOfMarginIsSet                                   = false
-//     UseMasterFirm_UsePercentOfMargin                                        = 0
+//     UseMasterFirm_UsePercentOfMargin                                        = false
 //     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet = false
-//     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage      = 0
+//     UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage      = false
 //     UseMasterFirm_MinimumRequiredAccountValueIsSet                          = false
-//     UseMasterFirm_MinimumRequiredAccountValue                               = 0
+//     UseMasterFirm_MinimumRequiredAccountValue                               = false
 //     UseMasterFirm_MarginTimeSettingsIsSet                                   = false
-//     UseMasterFirm_MarginTimeSettings                                        = 0
+//     UseMasterFirm_MarginTimeSettings                                        = false
 //     UseMasterFirm_TradingIsDisabledIsSet                                    = false
 //     UseMasterFirm_TradingIsDisabled                                         = false
 //     IsTradeStatisticsPublicallySharedIsSet                                  = false
@@ -409,21 +409,21 @@ func (m TradeAccountDataUpdateBuilder) Clear() {
 //     ReadOnlyShareToAllSCUsernamesIsSet                                      = false
 //     ReadOnlyShareToAllSCUsernames                                           = 0
 //     UseMasterFirm_SymbolCommissionsArrayIsSet                               = false
-//     UseMasterFirm_SymbolCommissionsArray                                    = 0
+//     UseMasterFirm_SymbolCommissionsArray                                    = false
 //     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet        = false
-//     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit             = 0
+//     UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit             = false
 //     UseMasterFirm_UsePercentOfMarginForDayTradingIsSet                      = false
-//     UseMasterFirm_UsePercentOfMarginForDayTrading                           = 0
+//     UseMasterFirm_UsePercentOfMarginForDayTrading                           = false
 //     UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet                   = false
-//     UseMasterFirm_SymbolCommissionsArrayFullOverride                        = 0
+//     UseMasterFirm_SymbolCommissionsArrayFullOverride                        = false
 //     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet         = false
-//     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders              = 0
+//     UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders              = false
 //     UseMasterFirm_UsePercentOfMarginFullOverrideIsSet                       = false
-//     UseMasterFirm_UsePercentOfMarginFullOverride                            = 0
+//     UseMasterFirm_UsePercentOfMarginFullOverride                            = false
 //     UseMasterFirm_TradeFeesFullOverrideIsSet                                = false
-//     UseMasterFirm_TradeFeesFullOverride                                     = 0
+//     UseMasterFirm_TradeFeesFullOverride                                     = false
 //     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet          = false
-//     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride               = 0
+//     UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride               = false
 //     LiquidationOnlyModeIsSet                                                = false
 //     LiquidationOnlyMode                                                     = 0
 //     CustomerOrFirmIsSet                                                     = false
@@ -686,23 +686,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseTrailingAccountValueToNotAllowI
 }
 
 // UseTrailingAccountValueToNotAllowIncreaseInPositions
-func (m TradeAccountDataUpdate) UseTrailingAccountValueToNotAllowIncreaseInPositions() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 36, 35)
+func (m TradeAccountDataUpdate) UseTrailingAccountValueToNotAllowIncreaseInPositions() bool {
+	return message.BoolVLS(m.Unsafe(), 36, 35)
 }
 
 // UseTrailingAccountValueToNotAllowIncreaseInPositions
-func (m TradeAccountDataUpdateBuilder) UseTrailingAccountValueToNotAllowIncreaseInPositions() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 36, 35)
+func (m TradeAccountDataUpdateBuilder) UseTrailingAccountValueToNotAllowIncreaseInPositions() bool {
+	return message.BoolVLS(m.Unsafe(), 36, 35)
 }
 
 // UseTrailingAccountValueToNotAllowIncreaseInPositions
-func (m TradeAccountDataUpdatePointer) UseTrailingAccountValueToNotAllowIncreaseInPositions() uint8 {
-	return message.Uint8VLS(m.Ptr, 36, 35)
+func (m TradeAccountDataUpdatePointer) UseTrailingAccountValueToNotAllowIncreaseInPositions() bool {
+	return message.BoolVLS(m.Ptr, 36, 35)
 }
 
 // UseTrailingAccountValueToNotAllowIncreaseInPositions
-func (m TradeAccountDataUpdatePointerBuilder) UseTrailingAccountValueToNotAllowIncreaseInPositions() uint8 {
-	return message.Uint8VLS(m.Ptr, 36, 35)
+func (m TradeAccountDataUpdatePointerBuilder) UseTrailingAccountValueToNotAllowIncreaseInPositions() bool {
+	return message.BoolVLS(m.Ptr, 36, 35)
 }
 
 // DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet
@@ -1726,23 +1726,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_FlattenPositionsWhen
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday
-func (m TradeAccountDataUpdate) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 156, 155)
+func (m TradeAccountDataUpdate) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() bool {
+	return message.BoolVLS(m.Unsafe(), 156, 155)
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 156, 155)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() bool {
+	return message.BoolVLS(m.Unsafe(), 156, 155)
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() uint8 {
-	return message.Uint8VLS(m.Ptr, 156, 155)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() bool {
+	return message.BoolVLS(m.Ptr, 156, 155)
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() uint8 {
-	return message.Uint8VLS(m.Ptr, 156, 155)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday() bool {
+	return message.BoolVLS(m.Ptr, 156, 155)
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet
@@ -1766,23 +1766,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_FlattenPositionsWhen
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay
-func (m TradeAccountDataUpdate) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 158, 157)
+func (m TradeAccountDataUpdate) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() bool {
+	return message.BoolVLS(m.Unsafe(), 158, 157)
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 158, 157)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() bool {
+	return message.BoolVLS(m.Unsafe(), 158, 157)
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() uint8 {
-	return message.Uint8VLS(m.Ptr, 158, 157)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() bool {
+	return message.BoolVLS(m.Ptr, 158, 157)
 }
 
 // UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() uint8 {
-	return message.Uint8VLS(m.Ptr, 158, 157)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay() bool {
+	return message.BoolVLS(m.Ptr, 158, 157)
 }
 
 // UseMasterFirm_SymbolLimitsArrayIsSet
@@ -1806,23 +1806,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolLimitsArrayIsS
 }
 
 // UseMasterFirm_SymbolLimitsArray
-func (m TradeAccountDataUpdate) UseMasterFirm_SymbolLimitsArray() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 160, 159)
+func (m TradeAccountDataUpdate) UseMasterFirm_SymbolLimitsArray() bool {
+	return message.BoolVLS(m.Unsafe(), 160, 159)
 }
 
 // UseMasterFirm_SymbolLimitsArray
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_SymbolLimitsArray() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 160, 159)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_SymbolLimitsArray() bool {
+	return message.BoolVLS(m.Unsafe(), 160, 159)
 }
 
 // UseMasterFirm_SymbolLimitsArray
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_SymbolLimitsArray() uint8 {
-	return message.Uint8VLS(m.Ptr, 160, 159)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_SymbolLimitsArray() bool {
+	return message.BoolVLS(m.Ptr, 160, 159)
 }
 
 // UseMasterFirm_SymbolLimitsArray
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolLimitsArray() uint8 {
-	return message.Uint8VLS(m.Ptr, 160, 159)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolLimitsArray() bool {
+	return message.BoolVLS(m.Ptr, 160, 159)
 }
 
 // UseMasterFirm_TradeFeesIsSet
@@ -1846,23 +1846,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFeesIsSet() boo
 }
 
 // UseMasterFirm_TradeFees
-func (m TradeAccountDataUpdate) UseMasterFirm_TradeFees() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 162, 161)
+func (m TradeAccountDataUpdate) UseMasterFirm_TradeFees() bool {
+	return message.BoolVLS(m.Unsafe(), 162, 161)
 }
 
 // UseMasterFirm_TradeFees
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_TradeFees() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 162, 161)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_TradeFees() bool {
+	return message.BoolVLS(m.Unsafe(), 162, 161)
 }
 
 // UseMasterFirm_TradeFees
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_TradeFees() uint8 {
-	return message.Uint8VLS(m.Ptr, 162, 161)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_TradeFees() bool {
+	return message.BoolVLS(m.Ptr, 162, 161)
 }
 
 // UseMasterFirm_TradeFees
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFees() uint8 {
-	return message.Uint8VLS(m.Ptr, 162, 161)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFees() bool {
+	return message.BoolVLS(m.Ptr, 162, 161)
 }
 
 // UseMasterFirm_TradeFeePerShareIsSet
@@ -1886,23 +1886,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFeePerShareIsSe
 }
 
 // UseMasterFirm_TradeFeePerShare
-func (m TradeAccountDataUpdate) UseMasterFirm_TradeFeePerShare() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 164, 163)
+func (m TradeAccountDataUpdate) UseMasterFirm_TradeFeePerShare() bool {
+	return message.BoolVLS(m.Unsafe(), 164, 163)
 }
 
 // UseMasterFirm_TradeFeePerShare
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_TradeFeePerShare() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 164, 163)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_TradeFeePerShare() bool {
+	return message.BoolVLS(m.Unsafe(), 164, 163)
 }
 
 // UseMasterFirm_TradeFeePerShare
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_TradeFeePerShare() uint8 {
-	return message.Uint8VLS(m.Ptr, 164, 163)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_TradeFeePerShare() bool {
+	return message.BoolVLS(m.Ptr, 164, 163)
 }
 
 // UseMasterFirm_TradeFeePerShare
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFeePerShare() uint8 {
-	return message.Uint8VLS(m.Ptr, 164, 163)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFeePerShare() bool {
+	return message.BoolVLS(m.Ptr, 164, 163)
 }
 
 // UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet
@@ -1926,23 +1926,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_RequireSufficientMar
 }
 
 // UseMasterFirm_RequireSufficientMarginForNewPositions
-func (m TradeAccountDataUpdate) UseMasterFirm_RequireSufficientMarginForNewPositions() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 166, 165)
+func (m TradeAccountDataUpdate) UseMasterFirm_RequireSufficientMarginForNewPositions() bool {
+	return message.BoolVLS(m.Unsafe(), 166, 165)
 }
 
 // UseMasterFirm_RequireSufficientMarginForNewPositions
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_RequireSufficientMarginForNewPositions() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 166, 165)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_RequireSufficientMarginForNewPositions() bool {
+	return message.BoolVLS(m.Unsafe(), 166, 165)
 }
 
 // UseMasterFirm_RequireSufficientMarginForNewPositions
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_RequireSufficientMarginForNewPositions() uint8 {
-	return message.Uint8VLS(m.Ptr, 166, 165)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_RequireSufficientMarginForNewPositions() bool {
+	return message.BoolVLS(m.Ptr, 166, 165)
 }
 
 // UseMasterFirm_RequireSufficientMarginForNewPositions
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_RequireSufficientMarginForNewPositions() uint8 {
-	return message.Uint8VLS(m.Ptr, 166, 165)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_RequireSufficientMarginForNewPositions() bool {
+	return message.BoolVLS(m.Ptr, 166, 165)
 }
 
 // UseMasterFirm_UsePercentOfMarginIsSet
@@ -1966,23 +1966,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginIs
 }
 
 // UseMasterFirm_UsePercentOfMargin
-func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMargin() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 168, 167)
+func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMargin() bool {
+	return message.BoolVLS(m.Unsafe(), 168, 167)
 }
 
 // UseMasterFirm_UsePercentOfMargin
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMargin() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 168, 167)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMargin() bool {
+	return message.BoolVLS(m.Unsafe(), 168, 167)
 }
 
 // UseMasterFirm_UsePercentOfMargin
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMargin() uint8 {
-	return message.Uint8VLS(m.Ptr, 168, 167)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMargin() bool {
+	return message.BoolVLS(m.Ptr, 168, 167)
 }
 
 // UseMasterFirm_UsePercentOfMargin
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMargin() uint8 {
-	return message.Uint8VLS(m.Ptr, 168, 167)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMargin() bool {
+	return message.BoolVLS(m.Ptr, 168, 167)
 }
 
 // UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet
@@ -2006,23 +2006,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MaximumAllowedAccoun
 }
 
 // UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage
-func (m TradeAccountDataUpdate) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 170, 169)
+func (m TradeAccountDataUpdate) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() bool {
+	return message.BoolVLS(m.Unsafe(), 170, 169)
 }
 
 // UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 170, 169)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() bool {
+	return message.BoolVLS(m.Unsafe(), 170, 169)
 }
 
 // UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() uint8 {
-	return message.Uint8VLS(m.Ptr, 170, 169)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() bool {
+	return message.BoolVLS(m.Ptr, 170, 169)
 }
 
 // UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() uint8 {
-	return message.Uint8VLS(m.Ptr, 170, 169)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage() bool {
+	return message.BoolVLS(m.Ptr, 170, 169)
 }
 
 // UseMasterFirm_MinimumRequiredAccountValueIsSet
@@ -2046,23 +2046,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MinimumRequiredAccou
 }
 
 // UseMasterFirm_MinimumRequiredAccountValue
-func (m TradeAccountDataUpdate) UseMasterFirm_MinimumRequiredAccountValue() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 172, 171)
+func (m TradeAccountDataUpdate) UseMasterFirm_MinimumRequiredAccountValue() bool {
+	return message.BoolVLS(m.Unsafe(), 172, 171)
 }
 
 // UseMasterFirm_MinimumRequiredAccountValue
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_MinimumRequiredAccountValue() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 172, 171)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_MinimumRequiredAccountValue() bool {
+	return message.BoolVLS(m.Unsafe(), 172, 171)
 }
 
 // UseMasterFirm_MinimumRequiredAccountValue
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_MinimumRequiredAccountValue() uint8 {
-	return message.Uint8VLS(m.Ptr, 172, 171)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_MinimumRequiredAccountValue() bool {
+	return message.BoolVLS(m.Ptr, 172, 171)
 }
 
 // UseMasterFirm_MinimumRequiredAccountValue
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MinimumRequiredAccountValue() uint8 {
-	return message.Uint8VLS(m.Ptr, 172, 171)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MinimumRequiredAccountValue() bool {
+	return message.BoolVLS(m.Ptr, 172, 171)
 }
 
 // UseMasterFirm_MarginTimeSettingsIsSet
@@ -2086,23 +2086,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MarginTimeSettingsIs
 }
 
 // UseMasterFirm_MarginTimeSettings
-func (m TradeAccountDataUpdate) UseMasterFirm_MarginTimeSettings() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 174, 173)
+func (m TradeAccountDataUpdate) UseMasterFirm_MarginTimeSettings() bool {
+	return message.BoolVLS(m.Unsafe(), 174, 173)
 }
 
 // UseMasterFirm_MarginTimeSettings
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_MarginTimeSettings() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 174, 173)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_MarginTimeSettings() bool {
+	return message.BoolVLS(m.Unsafe(), 174, 173)
 }
 
 // UseMasterFirm_MarginTimeSettings
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_MarginTimeSettings() uint8 {
-	return message.Uint8VLS(m.Ptr, 174, 173)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_MarginTimeSettings() bool {
+	return message.BoolVLS(m.Ptr, 174, 173)
 }
 
 // UseMasterFirm_MarginTimeSettings
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MarginTimeSettings() uint8 {
-	return message.Uint8VLS(m.Ptr, 174, 173)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_MarginTimeSettings() bool {
+	return message.BoolVLS(m.Ptr, 174, 173)
 }
 
 // UseMasterFirm_TradingIsDisabledIsSet
@@ -2326,23 +2326,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolCommissionsArr
 }
 
 // UseMasterFirm_SymbolCommissionsArray
-func (m TradeAccountDataUpdate) UseMasterFirm_SymbolCommissionsArray() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 186, 185)
+func (m TradeAccountDataUpdate) UseMasterFirm_SymbolCommissionsArray() bool {
+	return message.BoolVLS(m.Unsafe(), 186, 185)
 }
 
 // UseMasterFirm_SymbolCommissionsArray
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_SymbolCommissionsArray() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 186, 185)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_SymbolCommissionsArray() bool {
+	return message.BoolVLS(m.Unsafe(), 186, 185)
 }
 
 // UseMasterFirm_SymbolCommissionsArray
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_SymbolCommissionsArray() uint8 {
-	return message.Uint8VLS(m.Ptr, 186, 185)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_SymbolCommissionsArray() bool {
+	return message.BoolVLS(m.Ptr, 186, 185)
 }
 
 // UseMasterFirm_SymbolCommissionsArray
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolCommissionsArray() uint8 {
-	return message.Uint8VLS(m.Ptr, 186, 185)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolCommissionsArray() bool {
+	return message.BoolVLS(m.Ptr, 186, 185)
 }
 
 // UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet
@@ -2366,23 +2366,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_DoNotAllowIncreaseIn
 }
 
 // UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit
-func (m TradeAccountDataUpdate) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 188, 187)
+func (m TradeAccountDataUpdate) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() bool {
+	return message.BoolVLS(m.Unsafe(), 188, 187)
 }
 
 // UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 188, 187)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() bool {
+	return message.BoolVLS(m.Unsafe(), 188, 187)
 }
 
 // UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() uint8 {
-	return message.Uint8VLS(m.Ptr, 188, 187)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() bool {
+	return message.BoolVLS(m.Ptr, 188, 187)
 }
 
 // UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() uint8 {
-	return message.Uint8VLS(m.Ptr, 188, 187)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit() bool {
+	return message.BoolVLS(m.Ptr, 188, 187)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTradingIsSet
@@ -2406,23 +2406,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginFo
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTrading
-func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMarginForDayTrading() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 190, 189)
+func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMarginForDayTrading() bool {
+	return message.BoolVLS(m.Unsafe(), 190, 189)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTrading
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMarginForDayTrading() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 190, 189)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMarginForDayTrading() bool {
+	return message.BoolVLS(m.Unsafe(), 190, 189)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTrading
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMarginForDayTrading() uint8 {
-	return message.Uint8VLS(m.Ptr, 190, 189)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMarginForDayTrading() bool {
+	return message.BoolVLS(m.Ptr, 190, 189)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTrading
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginForDayTrading() uint8 {
-	return message.Uint8VLS(m.Ptr, 190, 189)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginForDayTrading() bool {
+	return message.BoolVLS(m.Ptr, 190, 189)
 }
 
 // UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet
@@ -2446,23 +2446,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolCommissionsArr
 }
 
 // UseMasterFirm_SymbolCommissionsArrayFullOverride
-func (m TradeAccountDataUpdate) UseMasterFirm_SymbolCommissionsArrayFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 192, 191)
+func (m TradeAccountDataUpdate) UseMasterFirm_SymbolCommissionsArrayFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 192, 191)
 }
 
 // UseMasterFirm_SymbolCommissionsArrayFullOverride
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_SymbolCommissionsArrayFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 192, 191)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_SymbolCommissionsArrayFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 192, 191)
 }
 
 // UseMasterFirm_SymbolCommissionsArrayFullOverride
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_SymbolCommissionsArrayFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 192, 191)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_SymbolCommissionsArrayFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 192, 191)
 }
 
 // UseMasterFirm_SymbolCommissionsArrayFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolCommissionsArrayFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 192, 191)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_SymbolCommissionsArrayFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 192, 191)
 }
 
 // UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet
@@ -2486,23 +2486,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_NumDaysBeforeLastTra
 }
 
 // UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders
-func (m TradeAccountDataUpdate) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 194, 193)
+func (m TradeAccountDataUpdate) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() bool {
+	return message.BoolVLS(m.Unsafe(), 194, 193)
 }
 
 // UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 194, 193)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() bool {
+	return message.BoolVLS(m.Unsafe(), 194, 193)
 }
 
 // UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() uint8 {
-	return message.Uint8VLS(m.Ptr, 194, 193)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() bool {
+	return message.BoolVLS(m.Ptr, 194, 193)
 }
 
 // UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() uint8 {
-	return message.Uint8VLS(m.Ptr, 194, 193)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders() bool {
+	return message.BoolVLS(m.Ptr, 194, 193)
 }
 
 // UseMasterFirm_UsePercentOfMarginFullOverrideIsSet
@@ -2526,23 +2526,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginFu
 }
 
 // UseMasterFirm_UsePercentOfMarginFullOverride
-func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMarginFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 196, 195)
+func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMarginFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 196, 195)
 }
 
 // UseMasterFirm_UsePercentOfMarginFullOverride
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMarginFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 196, 195)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMarginFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 196, 195)
 }
 
 // UseMasterFirm_UsePercentOfMarginFullOverride
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMarginFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 196, 195)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMarginFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 196, 195)
 }
 
 // UseMasterFirm_UsePercentOfMarginFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 196, 195)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 196, 195)
 }
 
 // UseMasterFirm_TradeFeesFullOverrideIsSet
@@ -2566,23 +2566,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFeesFullOverrid
 }
 
 // UseMasterFirm_TradeFeesFullOverride
-func (m TradeAccountDataUpdate) UseMasterFirm_TradeFeesFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 198, 197)
+func (m TradeAccountDataUpdate) UseMasterFirm_TradeFeesFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 198, 197)
 }
 
 // UseMasterFirm_TradeFeesFullOverride
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_TradeFeesFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 198, 197)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_TradeFeesFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 198, 197)
 }
 
 // UseMasterFirm_TradeFeesFullOverride
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_TradeFeesFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 198, 197)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_TradeFeesFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 198, 197)
 }
 
 // UseMasterFirm_TradeFeesFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFeesFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 198, 197)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_TradeFeesFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 198, 197)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet
@@ -2606,23 +2606,23 @@ func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginFo
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride
-func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 200, 199)
+func (m TradeAccountDataUpdate) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 200, 199)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride
-func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 200, 199)
+func (m TradeAccountDataUpdateBuilder) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() bool {
+	return message.BoolVLS(m.Unsafe(), 200, 199)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride
-func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 200, 199)
+func (m TradeAccountDataUpdatePointer) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 200, 199)
 }
 
 // UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() uint8 {
-	return message.Uint8VLS(m.Ptr, 200, 199)
+func (m TradeAccountDataUpdatePointerBuilder) UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride() bool {
+	return message.BoolVLS(m.Ptr, 200, 199)
 }
 
 // LiquidationOnlyModeIsSet
@@ -3056,13 +3056,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseTrailingAccountValueToNotAll
 }
 
 // SetUseTrailingAccountValueToNotAllowIncreaseInPositions
-func (m TradeAccountDataUpdateBuilder) SetUseTrailingAccountValueToNotAllowIncreaseInPositions(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 36, 35, value)
+func (m TradeAccountDataUpdateBuilder) SetUseTrailingAccountValueToNotAllowIncreaseInPositions(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 36, 35, value)
 }
 
 // SetUseTrailingAccountValueToNotAllowIncreaseInPositions
-func (m TradeAccountDataUpdatePointerBuilder) SetUseTrailingAccountValueToNotAllowIncreaseInPositions(value uint8) {
-	message.SetUint8VLS(m.Ptr, 36, 35, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseTrailingAccountValueToNotAllowIncreaseInPositions(value bool) {
+	message.SetBoolVLS(m.Ptr, 36, 35, value)
 }
 
 // SetDoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet
@@ -3576,13 +3576,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_FlattenPositionsW
 }
 
 // SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 156, 155, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 156, 155, value)
 }
 
 // SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(value uint8) {
-	message.SetUint8VLS(m.Ptr, 156, 155, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(value bool) {
+	message.SetBoolVLS(m.Ptr, 156, 155, value)
 }
 
 // SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet
@@ -3596,13 +3596,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_FlattenPositionsW
 }
 
 // SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 158, 157, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 158, 157, value)
 }
 
 // SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(value uint8) {
-	message.SetUint8VLS(m.Ptr, 158, 157, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(value bool) {
+	message.SetBoolVLS(m.Ptr, 158, 157, value)
 }
 
 // SetUseMasterFirm_SymbolLimitsArrayIsSet
@@ -3616,13 +3616,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolLimitsArray
 }
 
 // SetUseMasterFirm_SymbolLimitsArray
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_SymbolLimitsArray(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 160, 159, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_SymbolLimitsArray(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 160, 159, value)
 }
 
 // SetUseMasterFirm_SymbolLimitsArray
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolLimitsArray(value uint8) {
-	message.SetUint8VLS(m.Ptr, 160, 159, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolLimitsArray(value bool) {
+	message.SetBoolVLS(m.Ptr, 160, 159, value)
 }
 
 // SetUseMasterFirm_TradeFeesIsSet
@@ -3636,13 +3636,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFeesIsSet(va
 }
 
 // SetUseMasterFirm_TradeFees
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_TradeFees(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 162, 161, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_TradeFees(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 162, 161, value)
 }
 
 // SetUseMasterFirm_TradeFees
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFees(value uint8) {
-	message.SetUint8VLS(m.Ptr, 162, 161, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFees(value bool) {
+	message.SetBoolVLS(m.Ptr, 162, 161, value)
 }
 
 // SetUseMasterFirm_TradeFeePerShareIsSet
@@ -3656,13 +3656,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFeePerShareI
 }
 
 // SetUseMasterFirm_TradeFeePerShare
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_TradeFeePerShare(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 164, 163, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_TradeFeePerShare(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 164, 163, value)
 }
 
 // SetUseMasterFirm_TradeFeePerShare
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFeePerShare(value uint8) {
-	message.SetUint8VLS(m.Ptr, 164, 163, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFeePerShare(value bool) {
+	message.SetBoolVLS(m.Ptr, 164, 163, value)
 }
 
 // SetUseMasterFirm_RequireSufficientMarginForNewPositionsIsSet
@@ -3676,13 +3676,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_RequireSufficient
 }
 
 // SetUseMasterFirm_RequireSufficientMarginForNewPositions
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_RequireSufficientMarginForNewPositions(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 166, 165, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_RequireSufficientMarginForNewPositions(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 166, 165, value)
 }
 
 // SetUseMasterFirm_RequireSufficientMarginForNewPositions
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_RequireSufficientMarginForNewPositions(value uint8) {
-	message.SetUint8VLS(m.Ptr, 166, 165, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_RequireSufficientMarginForNewPositions(value bool) {
+	message.SetBoolVLS(m.Ptr, 166, 165, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMarginIsSet
@@ -3696,13 +3696,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMargi
 }
 
 // SetUseMasterFirm_UsePercentOfMargin
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMargin(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 168, 167, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMargin(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 168, 167, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMargin
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMargin(value uint8) {
-	message.SetUint8VLS(m.Ptr, 168, 167, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMargin(value bool) {
+	message.SetBoolVLS(m.Ptr, 168, 167, value)
 }
 
 // SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet
@@ -3716,13 +3716,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MaximumAllowedAcc
 }
 
 // SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 170, 169, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 170, 169, value)
 }
 
 // SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(value uint8) {
-	message.SetUint8VLS(m.Ptr, 170, 169, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(value bool) {
+	message.SetBoolVLS(m.Ptr, 170, 169, value)
 }
 
 // SetUseMasterFirm_MinimumRequiredAccountValueIsSet
@@ -3736,13 +3736,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MinimumRequiredAc
 }
 
 // SetUseMasterFirm_MinimumRequiredAccountValue
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_MinimumRequiredAccountValue(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 172, 171, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_MinimumRequiredAccountValue(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 172, 171, value)
 }
 
 // SetUseMasterFirm_MinimumRequiredAccountValue
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MinimumRequiredAccountValue(value uint8) {
-	message.SetUint8VLS(m.Ptr, 172, 171, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MinimumRequiredAccountValue(value bool) {
+	message.SetBoolVLS(m.Ptr, 172, 171, value)
 }
 
 // SetUseMasterFirm_MarginTimeSettingsIsSet
@@ -3756,13 +3756,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MarginTimeSetting
 }
 
 // SetUseMasterFirm_MarginTimeSettings
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_MarginTimeSettings(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 174, 173, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_MarginTimeSettings(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 174, 173, value)
 }
 
 // SetUseMasterFirm_MarginTimeSettings
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MarginTimeSettings(value uint8) {
-	message.SetUint8VLS(m.Ptr, 174, 173, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_MarginTimeSettings(value bool) {
+	message.SetBoolVLS(m.Ptr, 174, 173, value)
 }
 
 // SetUseMasterFirm_TradingIsDisabledIsSet
@@ -3876,13 +3876,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolCommissions
 }
 
 // SetUseMasterFirm_SymbolCommissionsArray
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_SymbolCommissionsArray(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 186, 185, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_SymbolCommissionsArray(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 186, 185, value)
 }
 
 // SetUseMasterFirm_SymbolCommissionsArray
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolCommissionsArray(value uint8) {
-	message.SetUint8VLS(m.Ptr, 186, 185, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolCommissionsArray(value bool) {
+	message.SetBoolVLS(m.Ptr, 186, 185, value)
 }
 
 // SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet
@@ -3896,13 +3896,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_DoNotAllowIncreas
 }
 
 // SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 188, 187, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 188, 187, value)
 }
 
 // SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(value uint8) {
-	message.SetUint8VLS(m.Ptr, 188, 187, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(value bool) {
+	message.SetBoolVLS(m.Ptr, 188, 187, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMarginForDayTradingIsSet
@@ -3916,13 +3916,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMargi
 }
 
 // SetUseMasterFirm_UsePercentOfMarginForDayTrading
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTrading(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 190, 189, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTrading(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 190, 189, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMarginForDayTrading
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTrading(value uint8) {
-	message.SetUint8VLS(m.Ptr, 190, 189, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTrading(value bool) {
+	message.SetBoolVLS(m.Ptr, 190, 189, value)
 }
 
 // SetUseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet
@@ -3936,13 +3936,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolCommissions
 }
 
 // SetUseMasterFirm_SymbolCommissionsArrayFullOverride
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_SymbolCommissionsArrayFullOverride(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 192, 191, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_SymbolCommissionsArrayFullOverride(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 192, 191, value)
 }
 
 // SetUseMasterFirm_SymbolCommissionsArrayFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolCommissionsArrayFullOverride(value uint8) {
-	message.SetUint8VLS(m.Ptr, 192, 191, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_SymbolCommissionsArrayFullOverride(value bool) {
+	message.SetBoolVLS(m.Ptr, 192, 191, value)
 }
 
 // SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet
@@ -3956,13 +3956,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_NumDaysBeforeLast
 }
 
 // SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 194, 193, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 194, 193, value)
 }
 
 // SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(value uint8) {
-	message.SetUint8VLS(m.Ptr, 194, 193, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(value bool) {
+	message.SetBoolVLS(m.Ptr, 194, 193, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMarginFullOverrideIsSet
@@ -3976,13 +3976,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMargi
 }
 
 // SetUseMasterFirm_UsePercentOfMarginFullOverride
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMarginFullOverride(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 196, 195, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMarginFullOverride(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 196, 195, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMarginFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMarginFullOverride(value uint8) {
-	message.SetUint8VLS(m.Ptr, 196, 195, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMarginFullOverride(value bool) {
+	message.SetBoolVLS(m.Ptr, 196, 195, value)
 }
 
 // SetUseMasterFirm_TradeFeesFullOverrideIsSet
@@ -3996,13 +3996,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFeesFullOver
 }
 
 // SetUseMasterFirm_TradeFeesFullOverride
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_TradeFeesFullOverride(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 198, 197, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_TradeFeesFullOverride(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 198, 197, value)
 }
 
 // SetUseMasterFirm_TradeFeesFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFeesFullOverride(value uint8) {
-	message.SetUint8VLS(m.Ptr, 198, 197, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_TradeFeesFullOverride(value bool) {
+	message.SetBoolVLS(m.Ptr, 198, 197, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet
@@ -4016,13 +4016,13 @@ func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMargi
 }
 
 // SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride
-func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 200, 199, value)
+func (m TradeAccountDataUpdateBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 200, 199, value)
 }
 
 // SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride
-func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(value uint8) {
-	message.SetUint8VLS(m.Ptr, 200, 199, value)
+func (m TradeAccountDataUpdatePointerBuilder) SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(value bool) {
+	message.SetBoolVLS(m.Ptr, 200, 199, value)
 }
 
 // SetLiquidationOnlyModeIsSet

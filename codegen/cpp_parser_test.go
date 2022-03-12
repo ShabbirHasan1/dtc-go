@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	schema, err := LoadSchema(
+	schema, err := LoadSchemaFromCHeaders(
 		"testdata/docs.json",
 		"testdata/DTCProtocol.proto",
 		"testdata/DTCProtocol.h",
@@ -22,7 +22,7 @@ func TestLoad(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	schema := NewSchema()
-	file, err := schema.AddHeader("testdata/DTCProtocol.h")
+	file, err := schema.AddCHeader("testdata/DTCProtocol.h")
 	if err != nil {
 		t.Fatal(err)
 	}

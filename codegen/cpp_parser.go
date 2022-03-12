@@ -15,19 +15,22 @@ func parseError(lineIndex int, line, message string) error {
 	return fmt.Errorf("line: %d, '%s' -> %s", lineIndex+1, line, message)
 }
 
-func NewSchema() *Schema {
-	return &Schema{
-		Files:             make(map[string]*File),
-		AliasesByMame:     make(map[string]*Alias),
-		Namespaces:        make(map[string]*Namespace),
-		ConstantsByName:   make(map[string]*Const),
-		EnumsByName:       make(map[string]*Enum),
-		EnumOptionsByName: make(map[string]*EnumOption),
-		MessagesByName:    make(map[string]*Message),
-	}
+type CHeaderFile struct {
+	Path             string
+	Schema           *Schema
+	currentNamespace *Namespace
+	Alias            []*Alias
+	AliasByName      map[string]*Alias
+	Constants        []*Const
+	ConstantsByName  map[string]*Const
+	Enums            []*Enum
+	EnumsByName      map[string]*Enum
+	EnumOptions      map[string]*EnumOption
+	Structs          []*Struct
+	StructsByName    map[string]*Struct
 }
 
-func LoadSchema(docsPath, protoPath string, headerPaths ...string) (*Schema, error) {
+func LoadSchemaFromCHeaders(docsPath, protoPath string, headerPaths ...string) (*Schema, error) {
 	schema := NewSchema()
 	if len(docsPath) > 0 {
 		docsJson, err := os.ReadFile(docsPath)
@@ -42,7 +45,7 @@ func LoadSchema(docsPath, protoPath string, headerPaths ...string) (*Schema, err
 			return nil, err
 		}
 	}
-	err := schema.AddHeaders(headerPaths...)
+	err := schema.AddCHeaders(headerPaths...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,116 +115,23 @@ LOOP:
 	return nil
 }
 
-func (schema *Schema) Validate() error {
-	var (
-		constants = make(map[string]*Const)
-		enums     = make(map[string]*Enum)
-	)
-	for _, namespace := range schema.Namespaces {
-		//fmt.Println("Namespace:", namespace.Name)
-		//fmt.Println("\tConstants")
-		for _, constant := range namespace.Constants {
-			//fmt.Println("\t\t", constant.Name)
-			if constants[constant.Name] != nil {
-				dup := constants[constant.Name]
-				if dup.File.Path != constant.File.Path {
-					return errors.New(fmt.Sprintln("duplicate constant named: "+constant.Name, " in file:", constant.File.Path, " and file:", constants[constant.Name].File.Path))
-				}
-			}
-			constants[constant.Name] = constant
-		}
-		//fmt.Println("\tEnums")
-		for _, enum := range namespace.Enums {
-			//fmt.Println("\t\t", enum.Name)
-			if enums[enum.Name] != nil {
-				dup := enums[enum.Name]
-				if enum.File.Path != dup.File.Path {
-					return errors.New(fmt.Sprintln("duplicate constant named: "+enum.Name, " in file:", enum.File.Path, " and file:", enums[enum.Name].File.Path))
-				}
-			}
-			enums[enum.Name] = enum
-		}
-		//fmt.Println("\tStructs")
-		for _, st := range namespace.Structs {
-			//fmt.Println("\t\t", st.Name)
-			_ = st
-		}
-	}
-
-	for _, msg := range schema.Messages {
-		if msg.Fixed == nil || msg.VLS == nil {
-			continue
-		}
-
-		if len(msg.Fixed.Fields) < 3 {
-			continue
-		}
-
-		if len(msg.Fixed.Fields) != len(msg.VLS.Fields)-1 {
-			return fmt.Errorf("message '%s' has field count mismatch between Fixed and VLS structs: %d vs %d", msg.Fixed.Name, len(msg.Fixed.Fields), len(msg.VLS.Fields))
-		}
-
-		if msg.Fixed.VLS {
-			return fmt.Errorf("message '%s' was flagged as VLS when expecting fixed", msg.Fixed.Name)
-		}
-		if !msg.VLS.VLS {
-			return fmt.Errorf("message '%s' was not flagged as VLS when expecting VLS", msg.VLS.Name)
-		}
-
-		var (
-			fixedIndex = 2
-			vlsIndex   = 3
-		)
-
-		for fixedIndex < len(msg.Fixed.Fields) {
-			fixedField := msg.Fixed.Fields[fixedIndex]
-			vlsField := msg.VLS.Fields[vlsIndex]
-
-			if fixedField.Type.Union != nil {
-				fixedIndex++
-				vlsIndex++
-				continue
-			}
-
-			if fixedField.Name != vlsField.Name {
-				return fmt.Errorf("message '%s' has field Name mismatch between Fixed and VLS at index %d and Fixed name '%s' vs VLS name '%s'", msg.Fixed.Name, fixedIndex, fixedField.Name, vlsField.Name)
-			}
-			if fixedField.Type.Kind != vlsField.Type.Kind {
-				if fixedField.Type.Kind == KindStringFixed && vlsField.Type.Kind == KindStringVLS {
-
-				} else {
-					return fmt.Errorf("message '%s' has field type mismatch between Fixed and VLS at index %d named '%s' and Fixed type %d vs VLS type %d", msg.Fixed.Name, fixedIndex, fixedField.Name, fixedField.Type.Kind, vlsField.Type.Kind)
-				}
-			}
-
-			fixedIndex++
-			vlsIndex++
-		}
-	}
-
-	return nil
-}
-
-func (schema *Schema) AddHeaders(paths ...string) error {
+func (schema *Schema) AddCHeaders(paths ...string) error {
 	for _, path := range paths {
-		if _, err := schema.AddHeader(path); err != nil {
+		if _, err := schema.AddCHeader(path); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (schema *Schema) AddHeader(path string) (*File, error) {
-	if schema.Files[path] != nil {
-		return schema.Files[path], nil
-	}
+func (schema *Schema) AddCHeader(path string) (*CHeaderFile, error) {
 	contents_, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	contents := string(contents_)
 	var (
-		file = &File{
+		file = &CHeaderFile{
 			Path:             path,
 			Schema:           schema,
 			currentNamespace: schema.GetNamespace(""), // Global namespace
@@ -288,13 +198,13 @@ func (schema *Schema) AddHeader(path string) (*File, error) {
 						schema.MessagesByName[s.Name] = message
 						schema.Messages = append(schema.Messages, message)
 					}
-					switch s.Namespace.Name {
-					case "DTC":
+					switch s.Namespace.Kind {
+					case NamespaceKindFixed:
 						if message.Fixed != nil {
 							return nil, parseError(lineIndex, line, "duplicated fixed struct named: "+s.Name)
 						}
 						message.Fixed = s
-					case "DTC_VLS":
+					case NamespaceKindVLS:
 						if message.VLS != nil {
 							return nil, parseError(lineIndex, line, "duplicated vls struct named: "+s.Name)
 						}
@@ -428,7 +338,6 @@ func (schema *Schema) AddHeader(path string) (*File, error) {
 				continue
 			}
 			alias := &Alias{
-				File:      file,
 				Namespace: file.currentNamespace,
 				Name:      name,
 				Type:      file.typeOf(base),
@@ -451,32 +360,13 @@ func (schema *Schema) AddHeader(path string) (*File, error) {
 		s.Layout()
 	}
 
-	schema.Files[path] = file
 	return file, nil
 }
 
-func (schema *Schema) GetNamespace(name string) *Namespace {
-	namespace := schema.Namespaces[name]
-	if namespace == nil {
-		namespace = &Namespace{
-			Schema:          schema,
-			Name:            name,
-			AliasByName:     make(map[string]*Alias),
-			ConstantsByName: make(map[string]*Const),
-			EnumsByName:     make(map[string]*Enum),
-			EnumOptions:     make(map[string]*EnumOption),
-			StructsByName:   make(map[string]*Struct),
-		}
-		schema.Namespaces[name] = namespace
-	}
-	return namespace
-}
-
-func (f *File) parseConst(line string) (*Const, error) {
+func (f *CHeaderFile) parseConst(line string) (*Const, error) {
 	line = strings.TrimSpace(line)
 	var (
 		constant = &Const{
-			File:      f,
 			Namespace: f.currentNamespace,
 		}
 		index = strings.Index(line, "//")
@@ -570,18 +460,23 @@ func setLengthAndAlign(t *Type) {
 	case KindEnum:
 		// impossible
 	case KindStruct:
-		if t.Message != nil {
-			t.Align = t.Message.Size
+		if t.Struct != nil {
+			t.Align = t.Struct.Size
 		}
 	}
 }
 
-func (f *File) typeOf(value string) Type {
+func (f *CHeaderFile) typeOf(value string) Type {
+	if strings.HasPrefix(value, "std::") {
+		value = value[len("std::"):]
+	}
 	value = strings.TrimSpace(value)
 	switch value {
 	case "char":
 		return Type{Kind: KindStringFixed}
-	case "int8_t":
+	case "bool":
+		return Type{Kind: KindBool, Align: 1, Size: 1}
+	case "int8_t", "schar":
 		return Type{Kind: KindInt8, Align: 1, Size: 1}
 	case "uint8_t", "unsigned char":
 		return Type{Kind: KindUint8, Align: 1, Size: 1}
@@ -616,7 +511,6 @@ func (f *File) typeOf(value string) Type {
 	enum := namespace.EnumsByName[value]
 	if enum != nil {
 		t := Type{
-			File:      enum.File,
 			Namespace: enum.Namespace,
 			Kind:      KindEnum,
 			Enum:      enum,
@@ -628,10 +522,9 @@ func (f *File) typeOf(value string) Type {
 	message := namespace.StructsByName[value]
 	if message != nil {
 		t := Type{
-			File:      message.File,
 			Namespace: message.Namespace,
 			Kind:      KindStruct,
-			Message:   message,
+			Struct:    message,
 		}
 		setLengthAndAlign(&t)
 		return t
@@ -640,7 +533,6 @@ func (f *File) typeOf(value string) Type {
 	alias := namespace.AliasByName[value]
 	if alias != nil {
 		t := Type{
-			File:      alias.File,
 			Namespace: alias.Namespace,
 			Kind:      KindAlias,
 			Alias:     alias,
@@ -670,7 +562,7 @@ func isFunc(name, value string) bool {
 	return name == value
 }
 
-func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, error) {
+func (f *CHeaderFile) parseStruct(pack int, name string, lines []string) (*Struct, error) {
 	var (
 		message = &Struct{
 			File:         f,
@@ -915,7 +807,7 @@ func (f *File) parseStruct(pack int, name string, lines []string) (*Struct, erro
 	return message, nil
 }
 
-func (f *File) parseField(s *Struct, line string) (*Field, error) {
+func (f *CHeaderFile) parseField(s *Struct, line string) (*Field, error) {
 	line = strings.TrimSpace(line)
 	index := strings.Index(line, "//")
 	comment := ""
@@ -986,44 +878,34 @@ func (f *File) parseField(s *Struct, line string) (*Field, error) {
 
 	switch field.Type.Kind {
 	case KindInt8, KindUint8:
-		name := field.Name
-		if strings.HasPrefix(name, "m_") {
-			name = name[2:]
-		}
-		index = strings.Index(name, "Is")
-		if index > -1 {
-			name = name[index+2:]
-			if len(name) > 0 {
-				if name[0] == '_' || strings.ToLower(name[0:1]) != name[0:1] {
-					if field.Initial != nil {
-						switch field.Initial.Type {
-						case ValueTypeBool:
-							field.Type.Kind = KindBool
-						case ValueTypeInt:
-							switch field.Initial.Int {
-							case 0:
-								field.Type.Kind = KindBool
-								field.Initial.Type = ValueTypeBool
-							case 1:
-								field.Type.Kind = KindBool
-								field.Initial.Type = ValueTypeBool
-							}
-						case ValueTypeUint:
-							switch field.Initial.Uint {
-							case 0:
-								field.Type.Kind = KindBool
-								field.Initial.Type = ValueTypeBool
-								field.Initial.Int = 0
-							case 1:
-								field.Type.Kind = KindBool
-								field.Initial.Type = ValueTypeBool
-								field.Initial.Int = 1
-							}
-						}
-					} else {
+		if nameIsBool(field.Name) {
+			if field.Initial != nil {
+				switch field.Initial.Type {
+				case ValueTypeBool:
+					field.Type.Kind = KindBool
+				case ValueTypeInt:
+					switch field.Initial.Int {
+					case 0:
 						field.Type.Kind = KindBool
+						field.Initial.Type = ValueTypeBool
+					case 1:
+						field.Type.Kind = KindBool
+						field.Initial.Type = ValueTypeBool
+					}
+				case ValueTypeUint:
+					switch field.Initial.Uint {
+					case 0:
+						field.Type.Kind = KindBool
+						field.Initial.Type = ValueTypeBool
+						field.Initial.Int = 0
+					case 1:
+						field.Type.Kind = KindBool
+						field.Initial.Type = ValueTypeBool
+						field.Initial.Int = 1
 					}
 				}
+			} else {
+				field.Type.Kind = KindBool
 			}
 		}
 	}
@@ -1031,7 +913,29 @@ func (f *File) parseField(s *Struct, line string) (*Field, error) {
 	return field, nil
 }
 
-func (f *File) findConstValue(str string) *Value {
+func nameIsBool(name string) bool {
+	strings.TrimSpace(name)
+	if strings.HasPrefix(name, "m_") {
+		name = strings.TrimSpace(name[2:])
+	}
+	return isCamelCaseWord("Is", name) ||
+		isCamelCaseWord("Supported", name) ||
+		isCamelCaseWord("Use", name)
+}
+
+func isCamelCaseWord(word, in string) bool {
+	index := strings.Index(in, word)
+	if index == -1 {
+		return false
+	}
+	in = in[index+len(word):]
+	if len(in) == 0 {
+		return true
+	}
+	return in[0:1] == "_" || strings.ToLower(in[0:1]) != in[0:1]
+}
+
+func (f *CHeaderFile) findConstValue(str string) *Value {
 	index := strings.Index(str, "::")
 	namespace := f.currentNamespace
 	if index > -1 {
@@ -1039,10 +943,8 @@ func (f *File) findConstValue(str string) *Value {
 		str = strings.TrimSpace(str[index+2:])
 	}
 	constant := f.currentNamespace.Schema.ConstantsByName[str]
-	//constant := namespace.ConstantsByName[str]
 	if constant != nil {
 		return &Value{
-			File:      constant.File,
 			Namespace: namespace,
 			Type:      ValueTypeConst,
 			Int:       constant.Value.Int,
@@ -1054,8 +956,6 @@ func (f *File) findConstValue(str string) *Value {
 	option := f.currentNamespace.Schema.EnumOptionsByName[str]
 	if option != nil {
 		return &Value{
-			File:       option.File,
-			Namespace:  option.Namespace,
 			Int:        option.Value,
 			Type:       ValueTypeEnumOption,
 			EnumOption: option,
@@ -1065,7 +965,7 @@ func (f *File) findConstValue(str string) *Value {
 	return nil
 }
 
-func (f *File) parseInitValue(s *Struct, str string) (*Value, error) {
+func (f *CHeaderFile) parseInitValue(s *Struct, str string) (*Value, error) {
 	if strings.HasSuffix(str, ";") {
 		str = strings.TrimSpace(str[0 : len(str)-1])
 	}
@@ -1083,7 +983,7 @@ func (f *File) parseInitValue(s *Struct, str string) (*Value, error) {
 	return v, nil
 }
 
-func (f *File) parseValue(str string) (*Value, error) {
+func (f *CHeaderFile) parseValue(str string) (*Value, error) {
 	str = strings.TrimSpace(str)
 	if len(str) > 1 && strings.HasSuffix(str, ";") {
 		str = strings.TrimSpace(str[0 : len(str)-1])
@@ -1096,7 +996,6 @@ func (f *File) parseValue(str string) (*Value, error) {
 
 	if str == "{}" {
 		return &Value{
-			File: f,
 			Type: ValueTypeString,
 			Str:  "",
 		}, nil
@@ -1110,7 +1009,6 @@ func (f *File) parseValue(str string) (*Value, error) {
 			str = strings.TrimSpace(str[0:index])
 		}
 		return &Value{
-			File:   f,
 			Type:   ValueTypeSizeof,
 			Sizeof: str,
 		}, nil
@@ -1118,14 +1016,12 @@ func (f *File) parseValue(str string) (*Value, error) {
 
 	if str == "FLT_MAX" {
 		return &Value{
-			File:    f,
 			Type:    ValueTypeFloat32Max,
 			Float64: math.MaxFloat32,
 		}, nil
 	}
 	if str == "DBL_MAX" {
 		return &Value{
-			File:    f,
 			Type:    ValueTypeFloat64Max,
 			Float64: math.MaxFloat64,
 		}, nil
@@ -1155,118 +1051,98 @@ func (f *File) parseValue(str string) (*Value, error) {
 	switch str {
 	case "true":
 		return &Value{
-			File: f,
 			Type: ValueTypeBool,
 			Int:  1,
 		}, nil
 	case "false":
 		return &Value{
-			File: f,
 			Type: ValueTypeBool,
 			Int:  0,
 		}, nil
 	case "SCHAR_MIN":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MinInt8,
 		}, nil
 	case "SCHAR_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MaxInt8,
 		}, nil
 	case "UCHAR_MAX", "CHAR_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeUint,
 			Uint: math.MaxUint8,
 		}, nil
 	case "CHAR_MIN":
 		return &Value{
-			File: f,
 			Type: ValueTypeUint,
 			Uint: 0,
 		}, nil
 	case "SHRT_MIN", "INT_MIN":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MinInt16,
 		}, nil
 	case "SHRT_MAX", "INT_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MaxInt16,
 		}, nil
 	case "USHRT_MAX", "UINT_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeUint,
 			Uint: math.MaxUint16,
 		}, nil
 	case "LONG_MIN":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MinInt32,
 		}, nil
 	case "LONG_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MaxInt32,
 		}, nil
 	case "ULONG_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeUint,
 			Uint: math.MaxUint32,
 		}, nil
 	case "LLONG_MIN":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MinInt64,
 		}, nil
 	case "LLONG_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  math.MaxInt64,
 		}, nil
 	case "ULLONG_MAX":
 		return &Value{
-			File: f,
 			Type: ValueTypeUint,
 			Uint: math.MaxUint64,
 		}, nil
 	case "FLT_MAX":
 		return &Value{
-			File:    f,
 			Type:    ValueTypeFloat32Max,
 			Float32: math.MaxFloat32,
 		}, nil
 	case "DBL_MAX":
 		return &Value{
-			File:    f,
 			Type:    ValueTypeFloat64Max,
 			Float64: math.MaxFloat64,
 		}, nil
 	}
 
-	if strings.Contains(str, "_MIN") {
-		fmt.Println("")
-	}
-	if strings.Contains(str, "_MAX") {
-		fmt.Println("HI")
-	}
+	//if strings.Contains(str, "_MIN") {
+	//}
+	//if strings.Contains(str, "_MAX") {
+	//}
 
 	if strings.Index(str, "\"") > -1 {
 		return &Value{
-			File: f,
 			Type: ValueTypeString,
 			Str:  strings.ReplaceAll(str, "\"", ""),
 		}, nil
@@ -1278,7 +1154,6 @@ func (f *File) parseValue(str string) (*Value, error) {
 		number, err := strconv.ParseFloat(str, 64)
 		if err == nil {
 			return &Value{
-				File:    f,
 				Type:    ValueTypeFloat,
 				Float64: number,
 			}, nil
@@ -1287,7 +1162,6 @@ func (f *File) parseValue(str string) (*Value, error) {
 	number, err := strconv.ParseInt(str, 10, 64)
 	if err == nil {
 		return &Value{
-			File: f,
 			Type: ValueTypeInt,
 			Int:  number,
 		}, nil
@@ -1296,10 +1170,9 @@ func (f *File) parseValue(str string) (*Value, error) {
 	return f.findConstValue(str), nil
 }
 
-func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) {
+func (f *CHeaderFile) parseEnum(name string, kind Kind, lines []string) (*Enum, error) {
 	var (
 		enum = &Enum{
-			File:          f,
 			Namespace:     f.currentNamespace,
 			Name:          name,
 			Type:          kind,
@@ -1316,7 +1189,7 @@ func (f *File) parseEnum(name string, kind Kind, lines []string) (*Enum, error) 
 		option = strings.TrimSpace(option)
 		var (
 			err   error
-			opt   = &EnumOption{File: f, Namespace: f.currentNamespace, Enum: enum}
+			opt   = &EnumOption{Enum: enum}
 			index = strings.Index(option, "//")
 		)
 		if index == -1 {

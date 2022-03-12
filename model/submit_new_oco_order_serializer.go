@@ -59,7 +59,7 @@ func (m SubmitNewOCOOrder) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -124,7 +124,7 @@ func (m SubmitNewOCOOrderBuilder) MarshalJSONCompactTo(b []byte) ([]byte, error)
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -193,7 +193,7 @@ func (m SubmitNewOCOOrderPointer) MarshalJSONCompactTo(b []byte) ([]byte, error)
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -258,7 +258,7 @@ func (m SubmitNewOCOOrderPointerBuilder) MarshalJSONCompactTo(b []byte) ([]byte,
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -304,7 +304,7 @@ func (m SubmitNewOCOOrder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -339,7 +339,7 @@ func (m SubmitNewOCOOrderBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -378,7 +378,7 @@ func (m SubmitNewOCOOrderPointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -413,7 +413,7 @@ func (m SubmitNewOCOOrderPointerBuilder) MarshalJSONTo(b []byte) ([]byte, error)
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -520,7 +520,7 @@ func (m *SubmitNewOCOOrderBuilder) UnmarshalJSONCompactFrom(r *json.Reader) erro
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseOffsets(r.Uint8())
+	m.SetUseOffsets(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -651,7 +651,7 @@ func (m *SubmitNewOCOOrderPointerBuilder) UnmarshalJSONCompactFrom(r *json.Reade
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseOffsets(r.Uint8())
+	m.SetUseOffsets(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -747,7 +747,7 @@ LOOP:
 		case "PartialFillHandling":
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.Int8()))
 		case "UseOffsets":
-			m.SetUseOffsets(r.Uint8())
+			m.SetUseOffsets(r.Bool())
 		case "OffsetFromParent1":
 			m.SetOffsetFromParent1(r.Float64())
 		case "OffsetFromParent2":
@@ -838,7 +838,7 @@ LOOP:
 		case "PartialFillHandling":
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.Int8()))
 		case "UseOffsets":
-			m.SetUseOffsets(r.Uint8())
+			m.SetUseOffsets(r.Bool())
 		case "OffsetFromParent1":
 			m.SetOffsetFromParent1(r.Float64())
 		case "OffsetFromParent2":
@@ -919,7 +919,7 @@ func (m SubmitNewOCOOrderFixed) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -984,7 +984,7 @@ func (m SubmitNewOCOOrderFixedBuilder) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -1053,7 +1053,7 @@ func (m SubmitNewOCOOrderFixedPointer) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -1118,7 +1118,7 @@ func (m SubmitNewOCOOrderFixedPointerBuilder) MarshalJSONCompactTo(b []byte) ([]
 	w.Data = append(w.Data, ',')
 	w.Int8(int8(m.PartialFillHandling()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseOffsets())
+	w.Bool(m.UseOffsets())
 	w.Data = append(w.Data, ',')
 	w.Float64(m.OffsetFromParent1())
 	w.Data = append(w.Data, ',')
@@ -1164,7 +1164,7 @@ func (m SubmitNewOCOOrderFixed) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -1199,7 +1199,7 @@ func (m SubmitNewOCOOrderFixedBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -1238,7 +1238,7 @@ func (m SubmitNewOCOOrderFixedPointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -1273,7 +1273,7 @@ func (m SubmitNewOCOOrderFixedPointerBuilder) MarshalJSONTo(b []byte) ([]byte, e
 	w.StringField("FreeFormText", m.FreeFormText())
 	w.Int32Field("OpenOrClose", int32(m.OpenOrClose()))
 	w.Int8Field("PartialFillHandling", int8(m.PartialFillHandling()))
-	w.Uint8Field("UseOffsets", m.UseOffsets())
+	w.BoolField("UseOffsets", m.UseOffsets())
 	w.Float64Field("OffsetFromParent1", m.OffsetFromParent1())
 	w.Float64Field("OffsetFromParent2", m.OffsetFromParent2())
 	w.Uint8Field("MaintainSamePricesOnParentFill", m.MaintainSamePricesOnParentFill())
@@ -1380,7 +1380,7 @@ func (m *SubmitNewOCOOrderFixedBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseOffsets(r.Uint8())
+	m.SetUseOffsets(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1511,7 +1511,7 @@ func (m *SubmitNewOCOOrderFixedPointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseOffsets(r.Uint8())
+	m.SetUseOffsets(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1607,7 +1607,7 @@ LOOP:
 		case "PartialFillHandling":
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.Int8()))
 		case "UseOffsets":
-			m.SetUseOffsets(r.Uint8())
+			m.SetUseOffsets(r.Bool())
 		case "OffsetFromParent1":
 			m.SetOffsetFromParent1(r.Float64())
 		case "OffsetFromParent2":
@@ -1698,7 +1698,7 @@ LOOP:
 		case "PartialFillHandling":
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.Int8()))
 		case "UseOffsets":
-			m.SetUseOffsets(r.Uint8())
+			m.SetUseOffsets(r.Bool())
 		case "OffsetFromParent1":
 			m.SetOffsetFromParent1(r.Float64())
 		case "OffsetFromParent2":
@@ -1789,7 +1789,7 @@ func (m *SubmitNewOCOOrderBuilder) UnmarshalProtobuf(b []byte) error {
 		case 22:
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.ReadInt8()))
 		case 23:
-			m.SetUseOffsets(r.ReadUint8())
+			m.SetUseOffsets(r.ReadBool())
 		case 24:
 			m.SetOffsetFromParent1(r.ReadFloat64())
 		case 25:
@@ -1875,7 +1875,7 @@ func (m *SubmitNewOCOOrderPointerBuilder) UnmarshalProtobuf(b []byte) error {
 		case 22:
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.ReadInt8()))
 		case 23:
-			m.SetUseOffsets(r.ReadUint8())
+			m.SetUseOffsets(r.ReadBool())
 		case 24:
 			m.SetOffsetFromParent1(r.ReadFloat64())
 		case 25:
@@ -1928,7 +1928,7 @@ func (m SubmitNewOCOOrderBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
 	w.WriteString(20, m.FreeFormText())
 	w.WriteVarint32(21, int32(m.OpenOrClose()))
 	w.WriteVarint8(22, int8(m.PartialFillHandling()))
-	w.WriteUvarint8(23, m.UseOffsets())
+	w.WriteBool(23, m.UseOffsets())
 	w.WriteFixed64Float64(24, m.OffsetFromParent1())
 	w.WriteFixed64Float64(25, m.OffsetFromParent2())
 	w.WriteUvarint8(26, m.MaintainSamePricesOnParentFill())
@@ -1967,7 +1967,7 @@ func (m SubmitNewOCOOrderPointerBuilder) MarshalProtobuf(b []byte) ([]byte, erro
 	w.WriteString(20, m.FreeFormText())
 	w.WriteVarint32(21, int32(m.OpenOrClose()))
 	w.WriteVarint8(22, int8(m.PartialFillHandling()))
-	w.WriteUvarint8(23, m.UseOffsets())
+	w.WriteBool(23, m.UseOffsets())
 	w.WriteFixed64Float64(24, m.OffsetFromParent1())
 	w.WriteFixed64Float64(25, m.OffsetFromParent2())
 	w.WriteUvarint8(26, m.MaintainSamePricesOnParentFill())
@@ -2039,7 +2039,7 @@ func (m *SubmitNewOCOOrderFixedBuilder) UnmarshalProtobuf(b []byte) error {
 		case 22:
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.ReadInt8()))
 		case 23:
-			m.SetUseOffsets(r.ReadUint8())
+			m.SetUseOffsets(r.ReadBool())
 		case 24:
 			m.SetOffsetFromParent1(r.ReadFloat64())
 		case 25:
@@ -2125,7 +2125,7 @@ func (m *SubmitNewOCOOrderFixedPointerBuilder) UnmarshalProtobuf(b []byte) error
 		case 22:
 			m.SetPartialFillHandling(PartialFillHandlingEnum(r.ReadInt8()))
 		case 23:
-			m.SetUseOffsets(r.ReadUint8())
+			m.SetUseOffsets(r.ReadBool())
 		case 24:
 			m.SetOffsetFromParent1(r.ReadFloat64())
 		case 25:
@@ -2178,7 +2178,7 @@ func (m SubmitNewOCOOrderFixedBuilder) MarshalProtobuf(b []byte) ([]byte, error)
 	w.WriteString(20, m.FreeFormText())
 	w.WriteVarint32(21, int32(m.OpenOrClose()))
 	w.WriteVarint8(22, int8(m.PartialFillHandling()))
-	w.WriteUvarint8(23, m.UseOffsets())
+	w.WriteBool(23, m.UseOffsets())
 	w.WriteFixed64Float64(24, m.OffsetFromParent1())
 	w.WriteFixed64Float64(25, m.OffsetFromParent2())
 	w.WriteUvarint8(26, m.MaintainSamePricesOnParentFill())
@@ -2217,7 +2217,7 @@ func (m SubmitNewOCOOrderFixedPointerBuilder) MarshalProtobuf(b []byte) ([]byte,
 	w.WriteString(20, m.FreeFormText())
 	w.WriteVarint32(21, int32(m.OpenOrClose()))
 	w.WriteVarint8(22, int8(m.PartialFillHandling()))
-	w.WriteUvarint8(23, m.UseOffsets())
+	w.WriteBool(23, m.UseOffsets())
 	w.WriteFixed64Float64(24, m.OffsetFromParent1())
 	w.WriteFixed64Float64(25, m.OffsetFromParent2())
 	w.WriteUvarint8(26, m.MaintainSamePricesOnParentFill())

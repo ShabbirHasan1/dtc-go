@@ -29,7 +29,7 @@ func (m HistoricalPriceDataRequest) MarshalJSONCompactTo(b []byte) ([]byte, erro
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -54,7 +54,7 @@ func (m HistoricalPriceDataRequestBuilder) MarshalJSONCompactTo(b []byte) ([]byt
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -83,7 +83,7 @@ func (m HistoricalPriceDataRequestPointer) MarshalJSONCompactTo(b []byte) ([]byt
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -108,7 +108,7 @@ func (m HistoricalPriceDataRequestPointerBuilder) MarshalJSONCompactTo(b []byte)
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -129,7 +129,7 @@ func (m HistoricalPriceDataRequest) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -144,7 +144,7 @@ func (m HistoricalPriceDataRequestBuilder) MarshalJSONTo(b []byte) ([]byte, erro
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -163,7 +163,7 @@ func (m HistoricalPriceDataRequestPointer) MarshalJSONTo(b []byte) ([]byte, erro
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -178,7 +178,7 @@ func (m HistoricalPriceDataRequestPointerBuilder) MarshalJSONTo(b []byte) ([]byt
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -220,7 +220,7 @@ func (m *HistoricalPriceDataRequestBuilder) UnmarshalJSONCompactFrom(r *json.Rea
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -271,7 +271,7 @@ func (m *HistoricalPriceDataRequestPointerBuilder) UnmarshalJSONCompactFrom(r *j
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -317,7 +317,7 @@ LOOP:
 		case "MaxDaysToReturn":
 			m.SetMaxDaysToReturn(r.Uint32())
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "RequestDividendAdjustedStockData":
 			m.SetRequestDividendAdjustedStockData(r.Uint8())
 		case "Integer_1":
@@ -368,7 +368,7 @@ LOOP:
 		case "MaxDaysToReturn":
 			m.SetMaxDaysToReturn(r.Uint32())
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "RequestDividendAdjustedStockData":
 			m.SetRequestDividendAdjustedStockData(r.Uint8())
 		case "Integer_1":
@@ -409,7 +409,7 @@ func (m HistoricalPriceDataRequestFixed) MarshalJSONCompactTo(b []byte) ([]byte,
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -434,7 +434,7 @@ func (m HistoricalPriceDataRequestFixedBuilder) MarshalJSONCompactTo(b []byte) (
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -463,7 +463,7 @@ func (m HistoricalPriceDataRequestFixedPointer) MarshalJSONCompactTo(b []byte) (
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -488,7 +488,7 @@ func (m HistoricalPriceDataRequestFixedPointerBuilder) MarshalJSONCompactTo(b []
 	w.Data = append(w.Data, ',')
 	w.Uint32(m.MaxDaysToReturn())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.RequestDividendAdjustedStockData())
 	w.Data = append(w.Data, ',')
@@ -509,7 +509,7 @@ func (m HistoricalPriceDataRequestFixed) MarshalJSONTo(b []byte) ([]byte, error)
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -524,7 +524,7 @@ func (m HistoricalPriceDataRequestFixedBuilder) MarshalJSONTo(b []byte) ([]byte,
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -543,7 +543,7 @@ func (m HistoricalPriceDataRequestFixedPointer) MarshalJSONTo(b []byte) ([]byte,
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -558,7 +558,7 @@ func (m HistoricalPriceDataRequestFixedPointerBuilder) MarshalJSONTo(b []byte) (
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
 	w.Uint32Field("MaxDaysToReturn", m.MaxDaysToReturn())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("RequestDividendAdjustedStockData", m.RequestDividendAdjustedStockData())
 	w.Uint16Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
@@ -600,7 +600,7 @@ func (m *HistoricalPriceDataRequestFixedBuilder) UnmarshalJSONCompactFrom(r *jso
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -651,7 +651,7 @@ func (m *HistoricalPriceDataRequestFixedPointerBuilder) UnmarshalJSONCompactFrom
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -697,7 +697,7 @@ LOOP:
 		case "MaxDaysToReturn":
 			m.SetMaxDaysToReturn(r.Uint32())
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "RequestDividendAdjustedStockData":
 			m.SetRequestDividendAdjustedStockData(r.Uint8())
 		case "Integer_1":
@@ -748,7 +748,7 @@ LOOP:
 		case "MaxDaysToReturn":
 			m.SetMaxDaysToReturn(r.Uint32())
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "RequestDividendAdjustedStockData":
 			m.SetRequestDividendAdjustedStockData(r.Uint8())
 		case "Integer_1":
@@ -799,7 +799,7 @@ func (m *HistoricalPriceDataRequestBuilder) UnmarshalProtobuf(b []byte) error {
 		case 7:
 			m.SetMaxDaysToReturn(r.ReadUint32())
 		case 8:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 9:
 			m.SetRequestDividendAdjustedStockData(r.ReadUint8())
 		case 10:
@@ -845,7 +845,7 @@ func (m *HistoricalPriceDataRequestPointerBuilder) UnmarshalProtobuf(b []byte) e
 		case 7:
 			m.SetMaxDaysToReturn(r.ReadUint32())
 		case 8:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 9:
 			m.SetRequestDividendAdjustedStockData(r.ReadUint8())
 		case 10:
@@ -873,7 +873,7 @@ func (m HistoricalPriceDataRequestBuilder) MarshalProtobuf(b []byte) ([]byte, er
 	w.WriteFixed64Int64(5, int64(m.StartDateTime()))
 	w.WriteFixed64Int64(6, int64(m.EndDateTime()))
 	w.WriteUvarint32(7, m.MaxDaysToReturn())
-	w.WriteUvarint8(8, m.UseZLibCompression())
+	w.WriteBool(8, m.UseZLibCompression())
 	w.WriteUvarint8(9, m.RequestDividendAdjustedStockData())
 	w.WriteUvarint16(10, m.Integer_1())
 	return w.Finish(), nil
@@ -892,7 +892,7 @@ func (m HistoricalPriceDataRequestPointerBuilder) MarshalProtobuf(b []byte) ([]b
 	w.WriteFixed64Int64(5, int64(m.StartDateTime()))
 	w.WriteFixed64Int64(6, int64(m.EndDateTime()))
 	w.WriteUvarint32(7, m.MaxDaysToReturn())
-	w.WriteUvarint8(8, m.UseZLibCompression())
+	w.WriteBool(8, m.UseZLibCompression())
 	w.WriteUvarint8(9, m.RequestDividendAdjustedStockData())
 	w.WriteUvarint16(10, m.Integer_1())
 	return w.Finish(), nil
@@ -929,7 +929,7 @@ func (m *HistoricalPriceDataRequestFixedBuilder) UnmarshalProtobuf(b []byte) err
 		case 7:
 			m.SetMaxDaysToReturn(r.ReadUint32())
 		case 8:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 9:
 			m.SetRequestDividendAdjustedStockData(r.ReadUint8())
 		case 10:
@@ -975,7 +975,7 @@ func (m *HistoricalPriceDataRequestFixedPointerBuilder) UnmarshalProtobuf(b []by
 		case 7:
 			m.SetMaxDaysToReturn(r.ReadUint32())
 		case 8:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 9:
 			m.SetRequestDividendAdjustedStockData(r.ReadUint8())
 		case 10:
@@ -1003,7 +1003,7 @@ func (m HistoricalPriceDataRequestFixedBuilder) MarshalProtobuf(b []byte) ([]byt
 	w.WriteFixed64Int64(5, int64(m.StartDateTime()))
 	w.WriteFixed64Int64(6, int64(m.EndDateTime()))
 	w.WriteUvarint32(7, m.MaxDaysToReturn())
-	w.WriteUvarint8(8, m.UseZLibCompression())
+	w.WriteBool(8, m.UseZLibCompression())
 	w.WriteUvarint8(9, m.RequestDividendAdjustedStockData())
 	w.WriteUvarint16(10, m.Integer_1())
 	return w.Finish(), nil
@@ -1022,7 +1022,7 @@ func (m HistoricalPriceDataRequestFixedPointerBuilder) MarshalProtobuf(b []byte)
 	w.WriteFixed64Int64(5, int64(m.StartDateTime()))
 	w.WriteFixed64Int64(6, int64(m.EndDateTime()))
 	w.WriteUvarint32(7, m.MaxDaysToReturn())
-	w.WriteUvarint8(8, m.UseZLibCompression())
+	w.WriteBool(8, m.UseZLibCompression())
 	w.WriteUvarint8(9, m.RequestDividendAdjustedStockData())
 	w.WriteUvarint16(10, m.Integer_1())
 	return w.Finish(), nil

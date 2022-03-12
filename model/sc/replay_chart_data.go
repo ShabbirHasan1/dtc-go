@@ -24,7 +24,7 @@ const ReplayChartDataFixedSize = 426
 //     ReplaySpeed                                           = 1.000000
 //     BarTimeInSeconds                                      = 0
 //     PauseReplayAfterInitialDataSent                       = 0
-//     UseSavedPriorState                                    = 0
+//     UseSavedPriorState                                    = false
 //     SymbolVolatility                                      = 0
 //     InterestRate                                          = 0
 //     NumberOfOrdersToTriggerFinishToStopDateTime           = 0
@@ -50,7 +50,7 @@ var _ReplayChartDataDefault = []byte{88, 0, 120, 39, 88, 0, 0, 0, 0, 0, 0, 0, 0,
 //     ReplaySpeed                                           = 1.000000
 //     BarTimeInSeconds                                      = 0
 //     PauseReplayAfterInitialDataSent                       = 0
-//     UseSavedPriorState                                    = 0
+//     UseSavedPriorState                                    = false
 //     SymbolVolatility                                      = 0
 //     InterestRate                                          = 0
 //     NumberOfOrdersToTriggerFinishToStopDateTime           = 0
@@ -158,7 +158,7 @@ func AllocReplayChartDataFixedFrom(b []byte) ReplayChartDataFixedPointer {
 //     ReplaySpeed                                           = 1.000000
 //     BarTimeInSeconds                                      = 0
 //     PauseReplayAfterInitialDataSent                       = 0
-//     UseSavedPriorState                                    = 0
+//     UseSavedPriorState                                    = false
 //     SymbolVolatility                                      = 0
 //     InterestRate                                          = 0
 //     NumberOfOrdersToTriggerFinishToStopDateTime           = 0
@@ -187,7 +187,7 @@ func (m ReplayChartDataBuilder) Clear() {
 //     ReplaySpeed                                           = 1.000000
 //     BarTimeInSeconds                                      = 0
 //     PauseReplayAfterInitialDataSent                       = 0
-//     UseSavedPriorState                                    = 0
+//     UseSavedPriorState                                    = false
 //     SymbolVolatility                                      = 0
 //     InterestRate                                          = 0
 //     NumberOfOrdersToTriggerFinishToStopDateTime           = 0
@@ -217,7 +217,7 @@ func (m ReplayChartDataFixedBuilder) Clear() {
 //     ReplaySpeed                                           = 1.000000
 //     BarTimeInSeconds                                      = 0
 //     PauseReplayAfterInitialDataSent                       = 0
-//     UseSavedPriorState                                    = 0
+//     UseSavedPriorState                                    = false
 //     SymbolVolatility                                      = 0
 //     InterestRate                                          = 0
 //     NumberOfOrdersToTriggerFinishToStopDateTime           = 0
@@ -246,7 +246,7 @@ func (m ReplayChartDataPointerBuilder) Clear() {
 //     ReplaySpeed                                           = 1.000000
 //     BarTimeInSeconds                                      = 0
 //     PauseReplayAfterInitialDataSent                       = 0
-//     UseSavedPriorState                                    = 0
+//     UseSavedPriorState                                    = false
 //     SymbolVolatility                                      = 0
 //     InterestRate                                          = 0
 //     NumberOfOrdersToTriggerFinishToStopDateTime           = 0
@@ -540,23 +540,23 @@ func (m ReplayChartDataPointerBuilder) PauseReplayAfterInitialDataSent() uint8 {
 }
 
 // UseSavedPriorState
-func (m ReplayChartData) UseSavedPriorState() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 60, 59)
+func (m ReplayChartData) UseSavedPriorState() bool {
+	return message.BoolVLS(m.Unsafe(), 60, 59)
 }
 
 // UseSavedPriorState
-func (m ReplayChartDataBuilder) UseSavedPriorState() uint8 {
-	return message.Uint8VLS(m.Unsafe(), 60, 59)
+func (m ReplayChartDataBuilder) UseSavedPriorState() bool {
+	return message.BoolVLS(m.Unsafe(), 60, 59)
 }
 
 // UseSavedPriorState
-func (m ReplayChartDataPointer) UseSavedPriorState() uint8 {
-	return message.Uint8VLS(m.Ptr, 60, 59)
+func (m ReplayChartDataPointer) UseSavedPriorState() bool {
+	return message.BoolVLS(m.Ptr, 60, 59)
 }
 
 // UseSavedPriorState
-func (m ReplayChartDataPointerBuilder) UseSavedPriorState() uint8 {
-	return message.Uint8VLS(m.Ptr, 60, 59)
+func (m ReplayChartDataPointerBuilder) UseSavedPriorState() bool {
+	return message.BoolVLS(m.Ptr, 60, 59)
 }
 
 // SymbolVolatility
@@ -940,23 +940,23 @@ func (m ReplayChartDataFixedPointerBuilder) PauseReplayAfterInitialDataSent() ui
 }
 
 // UseSavedPriorState
-func (m ReplayChartDataFixed) UseSavedPriorState() uint8 {
-	return message.Uint8Fixed(m.Unsafe(), 398, 397)
+func (m ReplayChartDataFixed) UseSavedPriorState() bool {
+	return message.BoolFixed(m.Unsafe(), 398, 397)
 }
 
 // UseSavedPriorState
-func (m ReplayChartDataFixedBuilder) UseSavedPriorState() uint8 {
-	return message.Uint8Fixed(m.Unsafe(), 398, 397)
+func (m ReplayChartDataFixedBuilder) UseSavedPriorState() bool {
+	return message.BoolFixed(m.Unsafe(), 398, 397)
 }
 
 // UseSavedPriorState
-func (m ReplayChartDataFixedPointer) UseSavedPriorState() uint8 {
-	return message.Uint8Fixed(m.Ptr, 398, 397)
+func (m ReplayChartDataFixedPointer) UseSavedPriorState() bool {
+	return message.BoolFixed(m.Ptr, 398, 397)
 }
 
 // UseSavedPriorState
-func (m ReplayChartDataFixedPointerBuilder) UseSavedPriorState() uint8 {
-	return message.Uint8Fixed(m.Ptr, 398, 397)
+func (m ReplayChartDataFixedPointerBuilder) UseSavedPriorState() bool {
+	return message.BoolFixed(m.Ptr, 398, 397)
 }
 
 // SymbolVolatility
@@ -1220,13 +1220,13 @@ func (m ReplayChartDataPointerBuilder) SetPauseReplayAfterInitialDataSent(value 
 }
 
 // SetUseSavedPriorState
-func (m ReplayChartDataBuilder) SetUseSavedPriorState(value uint8) {
-	message.SetUint8VLS(m.Unsafe(), 60, 59, value)
+func (m ReplayChartDataBuilder) SetUseSavedPriorState(value bool) {
+	message.SetBoolVLS(m.Unsafe(), 60, 59, value)
 }
 
 // SetUseSavedPriorState
-func (m ReplayChartDataPointerBuilder) SetUseSavedPriorState(value uint8) {
-	message.SetUint8VLS(m.Ptr, 60, 59, value)
+func (m ReplayChartDataPointerBuilder) SetUseSavedPriorState(value bool) {
+	message.SetBoolVLS(m.Ptr, 60, 59, value)
 }
 
 // SetSymbolVolatility
@@ -1420,13 +1420,13 @@ func (m ReplayChartDataFixedPointerBuilder) SetPauseReplayAfterInitialDataSent(v
 }
 
 // SetUseSavedPriorState
-func (m ReplayChartDataFixedBuilder) SetUseSavedPriorState(value uint8) {
-	message.SetUint8Fixed(m.Unsafe(), 398, 397, value)
+func (m ReplayChartDataFixedBuilder) SetUseSavedPriorState(value bool) {
+	message.SetBoolFixed(m.Unsafe(), 398, 397, value)
 }
 
 // SetUseSavedPriorState
-func (m ReplayChartDataFixedPointerBuilder) SetUseSavedPriorState(value uint8) {
-	message.SetUint8Fixed(m.Ptr, 398, 397, value)
+func (m ReplayChartDataFixedPointerBuilder) SetUseSavedPriorState(value bool) {
+	message.SetBoolFixed(m.Ptr, 398, 397, value)
 }
 
 // SetSymbolVolatility

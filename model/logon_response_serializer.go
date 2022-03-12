@@ -31,15 +31,15 @@ func (m LogonResponse) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -47,13 +47,13 @@ func (m LogonResponse) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -76,15 +76,15 @@ func (m LogonResponseBuilder) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -92,13 +92,13 @@ func (m LogonResponseBuilder) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -125,15 +125,15 @@ func (m LogonResponsePointer) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -141,13 +141,13 @@ func (m LogonResponsePointer) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -170,15 +170,15 @@ func (m LogonResponsePointerBuilder) MarshalJSONCompactTo(b []byte) ([]byte, err
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -186,13 +186,13 @@ func (m LogonResponsePointerBuilder) MarshalJSONCompactTo(b []byte) ([]byte, err
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -210,18 +210,18 @@ func (m LogonResponse) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -235,18 +235,18 @@ func (m LogonResponseBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -264,18 +264,18 @@ func (m LogonResponsePointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -289,18 +289,18 @@ func (m LogonResponsePointerBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -344,11 +344,11 @@ func (m *LogonResponseBuilder) UnmarshalJSONCompactFrom(r *json.Reader) error {
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOCOOrdersSupported(r.Uint8())
+	m.SetOCOOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOrderCancelReplaceSupported(r.Uint8())
+	m.SetOrderCancelReplaceSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -356,11 +356,11 @@ func (m *LogonResponseBuilder) UnmarshalJSONCompactFrom(r *json.Reader) error {
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetSecurityDefinitionsSupported(r.Uint8())
+	m.SetSecurityDefinitionsSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetHistoricalPriceDataSupported(r.Uint8())
+	m.SetHistoricalPriceDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -376,11 +376,11 @@ func (m *LogonResponseBuilder) UnmarshalJSONCompactFrom(r *json.Reader) error {
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetBracketOrdersSupported(r.Uint8())
+	m.SetBracketOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseIntegerPriceOrderMessages(r.Uint8())
+	m.SetUseIntegerPriceOrderMessages(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -388,7 +388,7 @@ func (m *LogonResponseBuilder) UnmarshalJSONCompactFrom(r *json.Reader) error {
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetMarketDataSupported(r.Uint8())
+	m.SetMarketDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -435,11 +435,11 @@ func (m *LogonResponsePointerBuilder) UnmarshalJSONCompactFrom(r *json.Reader) e
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOCOOrdersSupported(r.Uint8())
+	m.SetOCOOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOrderCancelReplaceSupported(r.Uint8())
+	m.SetOrderCancelReplaceSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -447,11 +447,11 @@ func (m *LogonResponsePointerBuilder) UnmarshalJSONCompactFrom(r *json.Reader) e
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetSecurityDefinitionsSupported(r.Uint8())
+	m.SetSecurityDefinitionsSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetHistoricalPriceDataSupported(r.Uint8())
+	m.SetHistoricalPriceDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -467,11 +467,11 @@ func (m *LogonResponsePointerBuilder) UnmarshalJSONCompactFrom(r *json.Reader) e
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetBracketOrdersSupported(r.Uint8())
+	m.SetBracketOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseIntegerPriceOrderMessages(r.Uint8())
+	m.SetUseIntegerPriceOrderMessages(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -479,7 +479,7 @@ func (m *LogonResponsePointerBuilder) UnmarshalJSONCompactFrom(r *json.Reader) e
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetMarketDataSupported(r.Uint8())
+	m.SetMarketDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -519,15 +519,15 @@ LOOP:
 		case "TradingIsSupported":
 			m.SetTradingIsSupported(r.Bool())
 		case "OCOOrdersSupported":
-			m.SetOCOOrdersSupported(r.Uint8())
+			m.SetOCOOrdersSupported(r.Bool())
 		case "OrderCancelReplaceSupported":
-			m.SetOrderCancelReplaceSupported(r.Uint8())
+			m.SetOrderCancelReplaceSupported(r.Bool())
 		case "SymbolExchangeDelimiter":
 			m.SetSymbolExchangeDelimiter(r.String())
 		case "SecurityDefinitionsSupported":
-			m.SetSecurityDefinitionsSupported(r.Uint8())
+			m.SetSecurityDefinitionsSupported(r.Bool())
 		case "HistoricalPriceDataSupported":
-			m.SetHistoricalPriceDataSupported(r.Uint8())
+			m.SetHistoricalPriceDataSupported(r.Bool())
 		case "ResubscribeWhenMarketDataFeedAvailable":
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.Uint8())
 		case "MarketDepthIsSupported":
@@ -535,13 +535,13 @@ LOOP:
 		case "OneHistoricalPriceDataRequestPerConnection":
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.Uint8())
 		case "BracketOrdersSupported":
-			m.SetBracketOrdersSupported(r.Uint8())
+			m.SetBracketOrdersSupported(r.Bool())
 		case "UseIntegerPriceOrderMessages":
-			m.SetUseIntegerPriceOrderMessages(r.Uint8())
+			m.SetUseIntegerPriceOrderMessages(r.Bool())
 		case "UsesMultiplePositionsPerSymbolAndTradeAccount":
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.Uint8())
 		case "MarketDataSupported":
-			m.SetMarketDataSupported(r.Uint8())
+			m.SetMarketDataSupported(r.Bool())
 		case "f", "F":
 			return message.ErrJSONCompactDetected
 		case "":
@@ -590,15 +590,15 @@ LOOP:
 		case "TradingIsSupported":
 			m.SetTradingIsSupported(r.Bool())
 		case "OCOOrdersSupported":
-			m.SetOCOOrdersSupported(r.Uint8())
+			m.SetOCOOrdersSupported(r.Bool())
 		case "OrderCancelReplaceSupported":
-			m.SetOrderCancelReplaceSupported(r.Uint8())
+			m.SetOrderCancelReplaceSupported(r.Bool())
 		case "SymbolExchangeDelimiter":
 			m.SetSymbolExchangeDelimiter(r.String())
 		case "SecurityDefinitionsSupported":
-			m.SetSecurityDefinitionsSupported(r.Uint8())
+			m.SetSecurityDefinitionsSupported(r.Bool())
 		case "HistoricalPriceDataSupported":
-			m.SetHistoricalPriceDataSupported(r.Uint8())
+			m.SetHistoricalPriceDataSupported(r.Bool())
 		case "ResubscribeWhenMarketDataFeedAvailable":
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.Uint8())
 		case "MarketDepthIsSupported":
@@ -606,13 +606,13 @@ LOOP:
 		case "OneHistoricalPriceDataRequestPerConnection":
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.Uint8())
 		case "BracketOrdersSupported":
-			m.SetBracketOrdersSupported(r.Uint8())
+			m.SetBracketOrdersSupported(r.Bool())
 		case "UseIntegerPriceOrderMessages":
-			m.SetUseIntegerPriceOrderMessages(r.Uint8())
+			m.SetUseIntegerPriceOrderMessages(r.Bool())
 		case "UsesMultiplePositionsPerSymbolAndTradeAccount":
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.Uint8())
 		case "MarketDataSupported":
-			m.SetMarketDataSupported(r.Uint8())
+			m.SetMarketDataSupported(r.Bool())
 		case "f", "F":
 			return message.ErrJSONCompactDetected
 		case "":
@@ -651,15 +651,15 @@ func (m LogonResponseFixed) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -667,13 +667,13 @@ func (m LogonResponseFixed) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -696,15 +696,15 @@ func (m LogonResponseFixedBuilder) MarshalJSONCompactTo(b []byte) ([]byte, error
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -712,13 +712,13 @@ func (m LogonResponseFixedBuilder) MarshalJSONCompactTo(b []byte) ([]byte, error
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -745,15 +745,15 @@ func (m LogonResponseFixedPointer) MarshalJSONCompactTo(b []byte) ([]byte, error
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -761,13 +761,13 @@ func (m LogonResponseFixedPointer) MarshalJSONCompactTo(b []byte) ([]byte, error
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -790,15 +790,15 @@ func (m LogonResponseFixedPointerBuilder) MarshalJSONCompactTo(b []byte) ([]byte
 	w.Data = append(w.Data, ',')
 	w.Bool(m.TradingIsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OCOOrdersSupported())
+	w.Bool(m.OCOOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.OrderCancelReplaceSupported())
+	w.Bool(m.OrderCancelReplaceSupported())
 	w.Data = append(w.Data, ',')
 	w.String(m.SymbolExchangeDelimiter())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.SecurityDefinitionsSupported())
+	w.Bool(m.SecurityDefinitionsSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.HistoricalPriceDataSupported())
+	w.Bool(m.HistoricalPriceDataSupported())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.ResubscribeWhenMarketDataFeedAvailable())
 	w.Data = append(w.Data, ',')
@@ -806,13 +806,13 @@ func (m LogonResponseFixedPointerBuilder) MarshalJSONCompactTo(b []byte) ([]byte
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.OneHistoricalPriceDataRequestPerConnection())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.BracketOrdersSupported())
+	w.Bool(m.BracketOrdersSupported())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseIntegerPriceOrderMessages())
+	w.Bool(m.UseIntegerPriceOrderMessages())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.UsesMultiplePositionsPerSymbolAndTradeAccount())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.MarketDataSupported())
+	w.Bool(m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -830,18 +830,18 @@ func (m LogonResponseFixed) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -855,18 +855,18 @@ func (m LogonResponseFixedBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -884,18 +884,18 @@ func (m LogonResponseFixedPointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -909,18 +909,18 @@ func (m LogonResponseFixedPointerBuilder) MarshalJSONTo(b []byte) ([]byte, error
 	w.StringField("ServerName", m.ServerName())
 	w.Uint8Field("MarketDepthUpdatesBestBidAndAsk", m.MarketDepthUpdatesBestBidAndAsk())
 	w.BoolField("TradingIsSupported", m.TradingIsSupported())
-	w.Uint8Field("OCOOrdersSupported", m.OCOOrdersSupported())
-	w.Uint8Field("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
+	w.BoolField("OCOOrdersSupported", m.OCOOrdersSupported())
+	w.BoolField("OrderCancelReplaceSupported", m.OrderCancelReplaceSupported())
 	w.StringField("SymbolExchangeDelimiter", m.SymbolExchangeDelimiter())
-	w.Uint8Field("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
-	w.Uint8Field("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
+	w.BoolField("SecurityDefinitionsSupported", m.SecurityDefinitionsSupported())
+	w.BoolField("HistoricalPriceDataSupported", m.HistoricalPriceDataSupported())
 	w.Uint8Field("ResubscribeWhenMarketDataFeedAvailable", m.ResubscribeWhenMarketDataFeedAvailable())
 	w.BoolField("MarketDepthIsSupported", m.MarketDepthIsSupported())
 	w.Uint8Field("OneHistoricalPriceDataRequestPerConnection", m.OneHistoricalPriceDataRequestPerConnection())
-	w.Uint8Field("BracketOrdersSupported", m.BracketOrdersSupported())
-	w.Uint8Field("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
+	w.BoolField("BracketOrdersSupported", m.BracketOrdersSupported())
+	w.BoolField("UseIntegerPriceOrderMessages", m.UseIntegerPriceOrderMessages())
 	w.Uint8Field("UsesMultiplePositionsPerSymbolAndTradeAccount", m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.Uint8Field("MarketDataSupported", m.MarketDataSupported())
+	w.BoolField("MarketDataSupported", m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -964,11 +964,11 @@ func (m *LogonResponseFixedBuilder) UnmarshalJSONCompactFrom(r *json.Reader) err
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOCOOrdersSupported(r.Uint8())
+	m.SetOCOOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOrderCancelReplaceSupported(r.Uint8())
+	m.SetOrderCancelReplaceSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -976,11 +976,11 @@ func (m *LogonResponseFixedBuilder) UnmarshalJSONCompactFrom(r *json.Reader) err
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetSecurityDefinitionsSupported(r.Uint8())
+	m.SetSecurityDefinitionsSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetHistoricalPriceDataSupported(r.Uint8())
+	m.SetHistoricalPriceDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -996,11 +996,11 @@ func (m *LogonResponseFixedBuilder) UnmarshalJSONCompactFrom(r *json.Reader) err
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetBracketOrdersSupported(r.Uint8())
+	m.SetBracketOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseIntegerPriceOrderMessages(r.Uint8())
+	m.SetUseIntegerPriceOrderMessages(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1008,7 +1008,7 @@ func (m *LogonResponseFixedBuilder) UnmarshalJSONCompactFrom(r *json.Reader) err
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetMarketDataSupported(r.Uint8())
+	m.SetMarketDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1055,11 +1055,11 @@ func (m *LogonResponseFixedPointerBuilder) UnmarshalJSONCompactFrom(r *json.Read
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOCOOrdersSupported(r.Uint8())
+	m.SetOCOOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetOrderCancelReplaceSupported(r.Uint8())
+	m.SetOrderCancelReplaceSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1067,11 +1067,11 @@ func (m *LogonResponseFixedPointerBuilder) UnmarshalJSONCompactFrom(r *json.Read
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetSecurityDefinitionsSupported(r.Uint8())
+	m.SetSecurityDefinitionsSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetHistoricalPriceDataSupported(r.Uint8())
+	m.SetHistoricalPriceDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1087,11 +1087,11 @@ func (m *LogonResponseFixedPointerBuilder) UnmarshalJSONCompactFrom(r *json.Read
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetBracketOrdersSupported(r.Uint8())
+	m.SetBracketOrdersSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseIntegerPriceOrderMessages(r.Uint8())
+	m.SetUseIntegerPriceOrderMessages(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1099,7 +1099,7 @@ func (m *LogonResponseFixedPointerBuilder) UnmarshalJSONCompactFrom(r *json.Read
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetMarketDataSupported(r.Uint8())
+	m.SetMarketDataSupported(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1139,15 +1139,15 @@ LOOP:
 		case "TradingIsSupported":
 			m.SetTradingIsSupported(r.Bool())
 		case "OCOOrdersSupported":
-			m.SetOCOOrdersSupported(r.Uint8())
+			m.SetOCOOrdersSupported(r.Bool())
 		case "OrderCancelReplaceSupported":
-			m.SetOrderCancelReplaceSupported(r.Uint8())
+			m.SetOrderCancelReplaceSupported(r.Bool())
 		case "SymbolExchangeDelimiter":
 			m.SetSymbolExchangeDelimiter(r.String())
 		case "SecurityDefinitionsSupported":
-			m.SetSecurityDefinitionsSupported(r.Uint8())
+			m.SetSecurityDefinitionsSupported(r.Bool())
 		case "HistoricalPriceDataSupported":
-			m.SetHistoricalPriceDataSupported(r.Uint8())
+			m.SetHistoricalPriceDataSupported(r.Bool())
 		case "ResubscribeWhenMarketDataFeedAvailable":
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.Uint8())
 		case "MarketDepthIsSupported":
@@ -1155,13 +1155,13 @@ LOOP:
 		case "OneHistoricalPriceDataRequestPerConnection":
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.Uint8())
 		case "BracketOrdersSupported":
-			m.SetBracketOrdersSupported(r.Uint8())
+			m.SetBracketOrdersSupported(r.Bool())
 		case "UseIntegerPriceOrderMessages":
-			m.SetUseIntegerPriceOrderMessages(r.Uint8())
+			m.SetUseIntegerPriceOrderMessages(r.Bool())
 		case "UsesMultiplePositionsPerSymbolAndTradeAccount":
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.Uint8())
 		case "MarketDataSupported":
-			m.SetMarketDataSupported(r.Uint8())
+			m.SetMarketDataSupported(r.Bool())
 		case "f", "F":
 			return message.ErrJSONCompactDetected
 		case "":
@@ -1210,15 +1210,15 @@ LOOP:
 		case "TradingIsSupported":
 			m.SetTradingIsSupported(r.Bool())
 		case "OCOOrdersSupported":
-			m.SetOCOOrdersSupported(r.Uint8())
+			m.SetOCOOrdersSupported(r.Bool())
 		case "OrderCancelReplaceSupported":
-			m.SetOrderCancelReplaceSupported(r.Uint8())
+			m.SetOrderCancelReplaceSupported(r.Bool())
 		case "SymbolExchangeDelimiter":
 			m.SetSymbolExchangeDelimiter(r.String())
 		case "SecurityDefinitionsSupported":
-			m.SetSecurityDefinitionsSupported(r.Uint8())
+			m.SetSecurityDefinitionsSupported(r.Bool())
 		case "HistoricalPriceDataSupported":
-			m.SetHistoricalPriceDataSupported(r.Uint8())
+			m.SetHistoricalPriceDataSupported(r.Bool())
 		case "ResubscribeWhenMarketDataFeedAvailable":
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.Uint8())
 		case "MarketDepthIsSupported":
@@ -1226,13 +1226,13 @@ LOOP:
 		case "OneHistoricalPriceDataRequestPerConnection":
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.Uint8())
 		case "BracketOrdersSupported":
-			m.SetBracketOrdersSupported(r.Uint8())
+			m.SetBracketOrdersSupported(r.Bool())
 		case "UseIntegerPriceOrderMessages":
-			m.SetUseIntegerPriceOrderMessages(r.Uint8())
+			m.SetUseIntegerPriceOrderMessages(r.Bool())
 		case "UsesMultiplePositionsPerSymbolAndTradeAccount":
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.Uint8())
 		case "MarketDataSupported":
-			m.SetMarketDataSupported(r.Uint8())
+			m.SetMarketDataSupported(r.Bool())
 		case "f", "F":
 			return message.ErrJSONCompactDetected
 		case "":
@@ -1281,15 +1281,15 @@ func (m *LogonResponseBuilder) UnmarshalProtobuf(b []byte) error {
 		case 8:
 			m.SetTradingIsSupported(r.ReadBool())
 		case 9:
-			m.SetOCOOrdersSupported(r.ReadUint8())
+			m.SetOCOOrdersSupported(r.ReadBool())
 		case 10:
-			m.SetOrderCancelReplaceSupported(r.ReadUint8())
+			m.SetOrderCancelReplaceSupported(r.ReadBool())
 		case 11:
 			m.SetSymbolExchangeDelimiter(r.ReadString())
 		case 12:
-			m.SetSecurityDefinitionsSupported(r.ReadUint8())
+			m.SetSecurityDefinitionsSupported(r.ReadBool())
 		case 13:
-			m.SetHistoricalPriceDataSupported(r.ReadUint8())
+			m.SetHistoricalPriceDataSupported(r.ReadBool())
 		case 14:
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.ReadUint8())
 		case 15:
@@ -1297,13 +1297,13 @@ func (m *LogonResponseBuilder) UnmarshalProtobuf(b []byte) error {
 		case 16:
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.ReadUint8())
 		case 17:
-			m.SetBracketOrdersSupported(r.ReadUint8())
+			m.SetBracketOrdersSupported(r.ReadBool())
 		case 18:
-			m.SetUseIntegerPriceOrderMessages(r.ReadUint8())
+			m.SetUseIntegerPriceOrderMessages(r.ReadBool())
 		case 19:
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.ReadUint8())
 		case 20:
-			m.SetMarketDataSupported(r.ReadUint8())
+			m.SetMarketDataSupported(r.ReadBool())
 		default:
 			r.Consume()
 		}
@@ -1347,15 +1347,15 @@ func (m *LogonResponsePointerBuilder) UnmarshalProtobuf(b []byte) error {
 		case 8:
 			m.SetTradingIsSupported(r.ReadBool())
 		case 9:
-			m.SetOCOOrdersSupported(r.ReadUint8())
+			m.SetOCOOrdersSupported(r.ReadBool())
 		case 10:
-			m.SetOrderCancelReplaceSupported(r.ReadUint8())
+			m.SetOrderCancelReplaceSupported(r.ReadBool())
 		case 11:
 			m.SetSymbolExchangeDelimiter(r.ReadString())
 		case 12:
-			m.SetSecurityDefinitionsSupported(r.ReadUint8())
+			m.SetSecurityDefinitionsSupported(r.ReadBool())
 		case 13:
-			m.SetHistoricalPriceDataSupported(r.ReadUint8())
+			m.SetHistoricalPriceDataSupported(r.ReadBool())
 		case 14:
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.ReadUint8())
 		case 15:
@@ -1363,13 +1363,13 @@ func (m *LogonResponsePointerBuilder) UnmarshalProtobuf(b []byte) error {
 		case 16:
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.ReadUint8())
 		case 17:
-			m.SetBracketOrdersSupported(r.ReadUint8())
+			m.SetBracketOrdersSupported(r.ReadBool())
 		case 18:
-			m.SetUseIntegerPriceOrderMessages(r.ReadUint8())
+			m.SetUseIntegerPriceOrderMessages(r.ReadBool())
 		case 19:
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.ReadUint8())
 		case 20:
-			m.SetMarketDataSupported(r.ReadUint8())
+			m.SetMarketDataSupported(r.ReadBool())
 		default:
 			r.Consume()
 		}
@@ -1394,18 +1394,18 @@ func (m LogonResponseBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
 	w.WriteString(6, m.ServerName())
 	w.WriteUvarint8(7, m.MarketDepthUpdatesBestBidAndAsk())
 	w.WriteBool(8, m.TradingIsSupported())
-	w.WriteUvarint8(9, m.OCOOrdersSupported())
-	w.WriteUvarint8(10, m.OrderCancelReplaceSupported())
+	w.WriteBool(9, m.OCOOrdersSupported())
+	w.WriteBool(10, m.OrderCancelReplaceSupported())
 	w.WriteString(11, m.SymbolExchangeDelimiter())
-	w.WriteUvarint8(12, m.SecurityDefinitionsSupported())
-	w.WriteUvarint8(13, m.HistoricalPriceDataSupported())
+	w.WriteBool(12, m.SecurityDefinitionsSupported())
+	w.WriteBool(13, m.HistoricalPriceDataSupported())
 	w.WriteUvarint8(14, m.ResubscribeWhenMarketDataFeedAvailable())
 	w.WriteBool(15, m.MarketDepthIsSupported())
 	w.WriteUvarint8(16, m.OneHistoricalPriceDataRequestPerConnection())
-	w.WriteUvarint8(17, m.BracketOrdersSupported())
-	w.WriteUvarint8(18, m.UseIntegerPriceOrderMessages())
+	w.WriteBool(17, m.BracketOrdersSupported())
+	w.WriteBool(18, m.UseIntegerPriceOrderMessages())
 	w.WriteUvarint8(19, m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.WriteUvarint8(20, m.MarketDataSupported())
+	w.WriteBool(20, m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -1423,18 +1423,18 @@ func (m LogonResponsePointerBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
 	w.WriteString(6, m.ServerName())
 	w.WriteUvarint8(7, m.MarketDepthUpdatesBestBidAndAsk())
 	w.WriteBool(8, m.TradingIsSupported())
-	w.WriteUvarint8(9, m.OCOOrdersSupported())
-	w.WriteUvarint8(10, m.OrderCancelReplaceSupported())
+	w.WriteBool(9, m.OCOOrdersSupported())
+	w.WriteBool(10, m.OrderCancelReplaceSupported())
 	w.WriteString(11, m.SymbolExchangeDelimiter())
-	w.WriteUvarint8(12, m.SecurityDefinitionsSupported())
-	w.WriteUvarint8(13, m.HistoricalPriceDataSupported())
+	w.WriteBool(12, m.SecurityDefinitionsSupported())
+	w.WriteBool(13, m.HistoricalPriceDataSupported())
 	w.WriteUvarint8(14, m.ResubscribeWhenMarketDataFeedAvailable())
 	w.WriteBool(15, m.MarketDepthIsSupported())
 	w.WriteUvarint8(16, m.OneHistoricalPriceDataRequestPerConnection())
-	w.WriteUvarint8(17, m.BracketOrdersSupported())
-	w.WriteUvarint8(18, m.UseIntegerPriceOrderMessages())
+	w.WriteBool(17, m.BracketOrdersSupported())
+	w.WriteBool(18, m.UseIntegerPriceOrderMessages())
 	w.WriteUvarint8(19, m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.WriteUvarint8(20, m.MarketDataSupported())
+	w.WriteBool(20, m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -1471,15 +1471,15 @@ func (m *LogonResponseFixedBuilder) UnmarshalProtobuf(b []byte) error {
 		case 8:
 			m.SetTradingIsSupported(r.ReadBool())
 		case 9:
-			m.SetOCOOrdersSupported(r.ReadUint8())
+			m.SetOCOOrdersSupported(r.ReadBool())
 		case 10:
-			m.SetOrderCancelReplaceSupported(r.ReadUint8())
+			m.SetOrderCancelReplaceSupported(r.ReadBool())
 		case 11:
 			m.SetSymbolExchangeDelimiter(r.ReadString())
 		case 12:
-			m.SetSecurityDefinitionsSupported(r.ReadUint8())
+			m.SetSecurityDefinitionsSupported(r.ReadBool())
 		case 13:
-			m.SetHistoricalPriceDataSupported(r.ReadUint8())
+			m.SetHistoricalPriceDataSupported(r.ReadBool())
 		case 14:
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.ReadUint8())
 		case 15:
@@ -1487,13 +1487,13 @@ func (m *LogonResponseFixedBuilder) UnmarshalProtobuf(b []byte) error {
 		case 16:
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.ReadUint8())
 		case 17:
-			m.SetBracketOrdersSupported(r.ReadUint8())
+			m.SetBracketOrdersSupported(r.ReadBool())
 		case 18:
-			m.SetUseIntegerPriceOrderMessages(r.ReadUint8())
+			m.SetUseIntegerPriceOrderMessages(r.ReadBool())
 		case 19:
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.ReadUint8())
 		case 20:
-			m.SetMarketDataSupported(r.ReadUint8())
+			m.SetMarketDataSupported(r.ReadBool())
 		default:
 			r.Consume()
 		}
@@ -1537,15 +1537,15 @@ func (m *LogonResponseFixedPointerBuilder) UnmarshalProtobuf(b []byte) error {
 		case 8:
 			m.SetTradingIsSupported(r.ReadBool())
 		case 9:
-			m.SetOCOOrdersSupported(r.ReadUint8())
+			m.SetOCOOrdersSupported(r.ReadBool())
 		case 10:
-			m.SetOrderCancelReplaceSupported(r.ReadUint8())
+			m.SetOrderCancelReplaceSupported(r.ReadBool())
 		case 11:
 			m.SetSymbolExchangeDelimiter(r.ReadString())
 		case 12:
-			m.SetSecurityDefinitionsSupported(r.ReadUint8())
+			m.SetSecurityDefinitionsSupported(r.ReadBool())
 		case 13:
-			m.SetHistoricalPriceDataSupported(r.ReadUint8())
+			m.SetHistoricalPriceDataSupported(r.ReadBool())
 		case 14:
 			m.SetResubscribeWhenMarketDataFeedAvailable(r.ReadUint8())
 		case 15:
@@ -1553,13 +1553,13 @@ func (m *LogonResponseFixedPointerBuilder) UnmarshalProtobuf(b []byte) error {
 		case 16:
 			m.SetOneHistoricalPriceDataRequestPerConnection(r.ReadUint8())
 		case 17:
-			m.SetBracketOrdersSupported(r.ReadUint8())
+			m.SetBracketOrdersSupported(r.ReadBool())
 		case 18:
-			m.SetUseIntegerPriceOrderMessages(r.ReadUint8())
+			m.SetUseIntegerPriceOrderMessages(r.ReadBool())
 		case 19:
 			m.SetUsesMultiplePositionsPerSymbolAndTradeAccount(r.ReadUint8())
 		case 20:
-			m.SetMarketDataSupported(r.ReadUint8())
+			m.SetMarketDataSupported(r.ReadBool())
 		default:
 			r.Consume()
 		}
@@ -1584,18 +1584,18 @@ func (m LogonResponseFixedBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
 	w.WriteString(6, m.ServerName())
 	w.WriteUvarint8(7, m.MarketDepthUpdatesBestBidAndAsk())
 	w.WriteBool(8, m.TradingIsSupported())
-	w.WriteUvarint8(9, m.OCOOrdersSupported())
-	w.WriteUvarint8(10, m.OrderCancelReplaceSupported())
+	w.WriteBool(9, m.OCOOrdersSupported())
+	w.WriteBool(10, m.OrderCancelReplaceSupported())
 	w.WriteString(11, m.SymbolExchangeDelimiter())
-	w.WriteUvarint8(12, m.SecurityDefinitionsSupported())
-	w.WriteUvarint8(13, m.HistoricalPriceDataSupported())
+	w.WriteBool(12, m.SecurityDefinitionsSupported())
+	w.WriteBool(13, m.HistoricalPriceDataSupported())
 	w.WriteUvarint8(14, m.ResubscribeWhenMarketDataFeedAvailable())
 	w.WriteBool(15, m.MarketDepthIsSupported())
 	w.WriteUvarint8(16, m.OneHistoricalPriceDataRequestPerConnection())
-	w.WriteUvarint8(17, m.BracketOrdersSupported())
-	w.WriteUvarint8(18, m.UseIntegerPriceOrderMessages())
+	w.WriteBool(17, m.BracketOrdersSupported())
+	w.WriteBool(18, m.UseIntegerPriceOrderMessages())
 	w.WriteUvarint8(19, m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.WriteUvarint8(20, m.MarketDataSupported())
+	w.WriteBool(20, m.MarketDataSupported())
 	return w.Finish(), nil
 }
 
@@ -1613,17 +1613,17 @@ func (m LogonResponseFixedPointerBuilder) MarshalProtobuf(b []byte) ([]byte, err
 	w.WriteString(6, m.ServerName())
 	w.WriteUvarint8(7, m.MarketDepthUpdatesBestBidAndAsk())
 	w.WriteBool(8, m.TradingIsSupported())
-	w.WriteUvarint8(9, m.OCOOrdersSupported())
-	w.WriteUvarint8(10, m.OrderCancelReplaceSupported())
+	w.WriteBool(9, m.OCOOrdersSupported())
+	w.WriteBool(10, m.OrderCancelReplaceSupported())
 	w.WriteString(11, m.SymbolExchangeDelimiter())
-	w.WriteUvarint8(12, m.SecurityDefinitionsSupported())
-	w.WriteUvarint8(13, m.HistoricalPriceDataSupported())
+	w.WriteBool(12, m.SecurityDefinitionsSupported())
+	w.WriteBool(13, m.HistoricalPriceDataSupported())
 	w.WriteUvarint8(14, m.ResubscribeWhenMarketDataFeedAvailable())
 	w.WriteBool(15, m.MarketDepthIsSupported())
 	w.WriteUvarint8(16, m.OneHistoricalPriceDataRequestPerConnection())
-	w.WriteUvarint8(17, m.BracketOrdersSupported())
-	w.WriteUvarint8(18, m.UseIntegerPriceOrderMessages())
+	w.WriteBool(17, m.BracketOrdersSupported())
+	w.WriteBool(18, m.UseIntegerPriceOrderMessages())
 	w.WriteUvarint8(19, m.UsesMultiplePositionsPerSymbolAndTradeAccount())
-	w.WriteUvarint8(20, m.MarketDataSupported())
+	w.WriteBool(20, m.MarketDataSupported())
 	return w.Finish(), nil
 }

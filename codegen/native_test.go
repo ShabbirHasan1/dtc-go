@@ -8,7 +8,7 @@ import (
 
 func TestCPPLayout(t *testing.T) {
 	namespaces := NewSchema()
-	err := namespaces.AddHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
+	err := namespaces.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestCPPLayout(t *testing.T) {
 
 func TestPrintCPPLayout(t *testing.T) {
 	namespaces := NewSchema()
-	err := namespaces.AddHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
+	err := namespaces.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}

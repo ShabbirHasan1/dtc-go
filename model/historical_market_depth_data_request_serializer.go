@@ -25,7 +25,7 @@ func (m HistoricalMarketDepthDataRequest) MarshalJSONCompactTo(b []byte) ([]byte
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -44,7 +44,7 @@ func (m HistoricalMarketDepthDataRequestBuilder) MarshalJSONCompactTo(b []byte) 
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -67,7 +67,7 @@ func (m HistoricalMarketDepthDataRequestPointer) MarshalJSONCompactTo(b []byte) 
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -86,7 +86,7 @@ func (m HistoricalMarketDepthDataRequestPointerBuilder) MarshalJSONCompactTo(b [
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -103,7 +103,7 @@ func (m HistoricalMarketDepthDataRequest) MarshalJSONTo(b []byte) ([]byte, error
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -115,7 +115,7 @@ func (m HistoricalMarketDepthDataRequestBuilder) MarshalJSONTo(b []byte) ([]byte
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -131,7 +131,7 @@ func (m HistoricalMarketDepthDataRequestPointer) MarshalJSONTo(b []byte) ([]byte
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -143,7 +143,7 @@ func (m HistoricalMarketDepthDataRequestPointerBuilder) MarshalJSONTo(b []byte) 
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -176,7 +176,7 @@ func (m *HistoricalMarketDepthDataRequestBuilder) UnmarshalJSONCompactFrom(r *js
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -215,7 +215,7 @@ func (m *HistoricalMarketDepthDataRequestPointerBuilder) UnmarshalJSONCompactFro
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -253,7 +253,7 @@ LOOP:
 		case "EndDateTime":
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.Int64()))
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "Integer_1":
 			m.SetInteger_1(r.Uint8())
 		case "f", "F":
@@ -298,7 +298,7 @@ LOOP:
 		case "EndDateTime":
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.Int64()))
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "Integer_1":
 			m.SetInteger_1(r.Uint8())
 		case "f", "F":
@@ -333,7 +333,7 @@ func (m HistoricalMarketDepthDataRequestFixed) MarshalJSONCompactTo(b []byte) ([
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -352,7 +352,7 @@ func (m HistoricalMarketDepthDataRequestFixedBuilder) MarshalJSONCompactTo(b []b
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -375,7 +375,7 @@ func (m HistoricalMarketDepthDataRequestFixedPointer) MarshalJSONCompactTo(b []b
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -394,7 +394,7 @@ func (m HistoricalMarketDepthDataRequestFixedPointerBuilder) MarshalJSONCompactT
 	w.Data = append(w.Data, ',')
 	w.Int64(int64(m.EndDateTime()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.Integer_1())
 	return w.Finish(), nil
@@ -411,7 +411,7 @@ func (m HistoricalMarketDepthDataRequestFixed) MarshalJSONTo(b []byte) ([]byte, 
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -423,7 +423,7 @@ func (m HistoricalMarketDepthDataRequestFixedBuilder) MarshalJSONTo(b []byte) ([
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -439,7 +439,7 @@ func (m HistoricalMarketDepthDataRequestFixedPointer) MarshalJSONTo(b []byte) ([
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -451,7 +451,7 @@ func (m HistoricalMarketDepthDataRequestFixedPointerBuilder) MarshalJSONTo(b []b
 	w.StringField("Exchange", m.Exchange())
 	w.Int64Field("StartDateTime", int64(m.StartDateTime()))
 	w.Int64Field("EndDateTime", int64(m.EndDateTime()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("Integer_1", m.Integer_1())
 	return w.Finish(), nil
 }
@@ -484,7 +484,7 @@ func (m *HistoricalMarketDepthDataRequestFixedBuilder) UnmarshalJSONCompactFrom(
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -523,7 +523,7 @@ func (m *HistoricalMarketDepthDataRequestFixedPointerBuilder) UnmarshalJSONCompa
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -561,7 +561,7 @@ LOOP:
 		case "EndDateTime":
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.Int64()))
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "Integer_1":
 			m.SetInteger_1(r.Uint8())
 		case "f", "F":
@@ -606,7 +606,7 @@ LOOP:
 		case "EndDateTime":
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.Int64()))
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "Integer_1":
 			m.SetInteger_1(r.Uint8())
 		case "f", "F":
@@ -651,7 +651,7 @@ func (m *HistoricalMarketDepthDataRequestBuilder) UnmarshalProtobuf(b []byte) er
 		case 5:
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.ReadInt64()))
 		case 6:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 7:
 			m.SetInteger_1(r.ReadUint8())
 		default:
@@ -691,7 +691,7 @@ func (m *HistoricalMarketDepthDataRequestPointerBuilder) UnmarshalProtobuf(b []b
 		case 5:
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.ReadInt64()))
 		case 6:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 7:
 			m.SetInteger_1(r.ReadUint8())
 		default:
@@ -715,7 +715,7 @@ func (m HistoricalMarketDepthDataRequestBuilder) MarshalProtobuf(b []byte) ([]by
 	w.WriteString(3, m.Exchange())
 	w.WriteVarint64(4, int64(m.StartDateTime()))
 	w.WriteVarint64(5, int64(m.EndDateTime()))
-	w.WriteUvarint8(6, m.UseZLibCompression())
+	w.WriteBool(6, m.UseZLibCompression())
 	w.WriteUvarint8(7, m.Integer_1())
 	return w.Finish(), nil
 }
@@ -731,7 +731,7 @@ func (m HistoricalMarketDepthDataRequestPointerBuilder) MarshalProtobuf(b []byte
 	w.WriteString(3, m.Exchange())
 	w.WriteVarint64(4, int64(m.StartDateTime()))
 	w.WriteVarint64(5, int64(m.EndDateTime()))
-	w.WriteUvarint8(6, m.UseZLibCompression())
+	w.WriteBool(6, m.UseZLibCompression())
 	w.WriteUvarint8(7, m.Integer_1())
 	return w.Finish(), nil
 }
@@ -763,7 +763,7 @@ func (m *HistoricalMarketDepthDataRequestFixedBuilder) UnmarshalProtobuf(b []byt
 		case 5:
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.ReadInt64()))
 		case 6:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 7:
 			m.SetInteger_1(r.ReadUint8())
 		default:
@@ -803,7 +803,7 @@ func (m *HistoricalMarketDepthDataRequestFixedPointerBuilder) UnmarshalProtobuf(
 		case 5:
 			m.SetEndDateTime(DateTimeWithMicrosecondsInt(r.ReadInt64()))
 		case 6:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 7:
 			m.SetInteger_1(r.ReadUint8())
 		default:
@@ -827,7 +827,7 @@ func (m HistoricalMarketDepthDataRequestFixedBuilder) MarshalProtobuf(b []byte) 
 	w.WriteString(3, m.Exchange())
 	w.WriteVarint64(4, int64(m.StartDateTime()))
 	w.WriteVarint64(5, int64(m.EndDateTime()))
-	w.WriteUvarint8(6, m.UseZLibCompression())
+	w.WriteBool(6, m.UseZLibCompression())
 	w.WriteUvarint8(7, m.Integer_1())
 	return w.Finish(), nil
 }
@@ -843,7 +843,7 @@ func (m HistoricalMarketDepthDataRequestFixedPointerBuilder) MarshalProtobuf(b [
 	w.WriteString(3, m.Exchange())
 	w.WriteVarint64(4, int64(m.StartDateTime()))
 	w.WriteVarint64(5, int64(m.EndDateTime()))
-	w.WriteUvarint8(6, m.UseZLibCompression())
+	w.WriteBool(6, m.UseZLibCompression())
 	w.WriteUvarint8(7, m.Integer_1())
 	return w.Finish(), nil
 }

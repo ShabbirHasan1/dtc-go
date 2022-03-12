@@ -17,7 +17,7 @@ func (m HistoricalMarketDepthDataResponseHeader) MarshalJSONCompactTo(b []byte) 
 	w.Data = append(w.Data, "{\"Type\":901,\"F\":["...)
 	w.Int32(m.RequestID())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	return w.Finish(), nil
@@ -28,7 +28,7 @@ func (m HistoricalMarketDepthDataResponseHeaderBuilder) MarshalJSONCompactTo(b [
 	w.Data = append(w.Data, "{\"Type\":901,\"F\":["...)
 	w.Int32(m.RequestID())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	return w.Finish(), nil
@@ -43,7 +43,7 @@ func (m HistoricalMarketDepthDataResponseHeaderPointer) MarshalJSONCompactTo(b [
 	w.Data = append(w.Data, "{\"Type\":901,\"F\":["...)
 	w.Int32(m.RequestID())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	return w.Finish(), nil
@@ -54,7 +54,7 @@ func (m HistoricalMarketDepthDataResponseHeaderPointerBuilder) MarshalJSONCompac
 	w.Data = append(w.Data, "{\"Type\":901,\"F\":["...)
 	w.Int32(m.RequestID())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	return w.Finish(), nil
@@ -67,7 +67,7 @@ func (m HistoricalMarketDepthDataResponseHeaderPointerBuilder) MarshalJSONCompac
 func (m HistoricalMarketDepthDataResponseHeader) MarshalJSONTo(b []byte) ([]byte, error) {
 	w := json.NewWriter(b, 901)
 	w.Int32Field("RequestID", m.RequestID())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	return w.Finish(), nil
 }
@@ -75,7 +75,7 @@ func (m HistoricalMarketDepthDataResponseHeader) MarshalJSONTo(b []byte) ([]byte
 func (m HistoricalMarketDepthDataResponseHeaderBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w := json.NewWriter(b, 901)
 	w.Int32Field("RequestID", m.RequestID())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	return w.Finish(), nil
 }
@@ -87,7 +87,7 @@ func (m HistoricalMarketDepthDataResponseHeaderBuilder) MarshalJSONTo(b []byte) 
 func (m HistoricalMarketDepthDataResponseHeaderPointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w := json.NewWriter(b, 901)
 	w.Int32Field("RequestID", m.RequestID())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	return w.Finish(), nil
 }
@@ -95,7 +95,7 @@ func (m HistoricalMarketDepthDataResponseHeaderPointer) MarshalJSONTo(b []byte) 
 func (m HistoricalMarketDepthDataResponseHeaderPointerBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w := json.NewWriter(b, 901)
 	w.Int32Field("RequestID", m.RequestID())
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	return w.Finish(), nil
 }
@@ -112,7 +112,7 @@ func (m *HistoricalMarketDepthDataResponseHeaderBuilder) UnmarshalJSONCompactFro
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -135,7 +135,7 @@ func (m *HistoricalMarketDepthDataResponseHeaderPointerBuilder) UnmarshalJSONCom
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -165,7 +165,7 @@ LOOP:
 		case "RequestID":
 			m.SetRequestID(r.Int32())
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "NoRecordsToReturn":
 			m.SetNoRecordsToReturn(r.Uint8())
 		case "f", "F":
@@ -202,7 +202,7 @@ LOOP:
 		case "RequestID":
 			m.SetRequestID(r.Int32())
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "NoRecordsToReturn":
 			m.SetNoRecordsToReturn(r.Uint8())
 		case "f", "F":
@@ -239,7 +239,7 @@ func (m *HistoricalMarketDepthDataResponseHeaderBuilder) UnmarshalProtobuf(b []b
 		case 1:
 			m.SetRequestID(r.ReadInt32())
 		case 2:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 3:
 			m.SetNoRecordsToReturn(r.ReadUint8())
 		default:
@@ -271,7 +271,7 @@ func (m *HistoricalMarketDepthDataResponseHeaderPointerBuilder) UnmarshalProtobu
 		case 1:
 			m.SetRequestID(r.ReadInt32())
 		case 2:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 3:
 			m.SetNoRecordsToReturn(r.ReadUint8())
 		default:
@@ -291,7 +291,7 @@ func (m *HistoricalMarketDepthDataResponseHeaderPointerBuilder) UnmarshalProtobu
 func (m HistoricalMarketDepthDataResponseHeaderBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
 	w := pb.NewWriter(b, 901)
 	w.WriteVarint32(1, m.RequestID())
-	w.WriteUvarint8(2, m.UseZLibCompression())
+	w.WriteBool(2, m.UseZLibCompression())
 	w.WriteUvarint8(3, m.NoRecordsToReturn())
 	return w.Finish(), nil
 }
@@ -303,7 +303,7 @@ func (m HistoricalMarketDepthDataResponseHeaderBuilder) MarshalProtobuf(b []byte
 func (m HistoricalMarketDepthDataResponseHeaderPointerBuilder) MarshalProtobuf(b []byte) ([]byte, error) {
 	w := pb.NewWriter(b, 901)
 	w.WriteVarint32(1, m.RequestID())
-	w.WriteUvarint8(2, m.UseZLibCompression())
+	w.WriteBool(2, m.UseZLibCompression())
 	w.WriteUvarint8(3, m.NoRecordsToReturn())
 	return w.Finish(), nil
 }

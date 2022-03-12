@@ -38,7 +38,7 @@ func (m ReplayChartData) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -83,7 +83,7 @@ func (m ReplayChartDataBuilder) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -132,7 +132,7 @@ func (m ReplayChartDataPointer) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -177,7 +177,7 @@ func (m ReplayChartDataPointerBuilder) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -213,7 +213,7 @@ func (m ReplayChartData) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -238,7 +238,7 @@ func (m ReplayChartDataBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -267,7 +267,7 @@ func (m ReplayChartDataPointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -292,7 +292,7 @@ func (m ReplayChartDataPointerBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -359,7 +359,7 @@ func (m *ReplayChartDataBuilder) UnmarshalJSONCompactFrom(r *json.Reader) error 
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseSavedPriorState(r.Uint8())
+	m.SetUseSavedPriorState(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -450,7 +450,7 @@ func (m *ReplayChartDataPointerBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseSavedPriorState(r.Uint8())
+	m.SetUseSavedPriorState(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -526,7 +526,7 @@ LOOP:
 		case "PauseReplayAfterInitialDataSent":
 			m.SetPauseReplayAfterInitialDataSent(r.Uint8())
 		case "UseSavedPriorState":
-			m.SetUseSavedPriorState(r.Uint8())
+			m.SetUseSavedPriorState(r.Bool())
 		case "SymbolVolatility":
 			m.SetSymbolVolatility(r.Float32())
 		case "InterestRate":
@@ -597,7 +597,7 @@ LOOP:
 		case "PauseReplayAfterInitialDataSent":
 			m.SetPauseReplayAfterInitialDataSent(r.Uint8())
 		case "UseSavedPriorState":
-			m.SetUseSavedPriorState(r.Uint8())
+			m.SetUseSavedPriorState(r.Bool())
 		case "SymbolVolatility":
 			m.SetSymbolVolatility(r.Float32())
 		case "InterestRate":
@@ -658,7 +658,7 @@ func (m ReplayChartDataFixed) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -703,7 +703,7 @@ func (m ReplayChartDataFixedBuilder) MarshalJSONCompactTo(b []byte) ([]byte, err
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -752,7 +752,7 @@ func (m ReplayChartDataFixedPointer) MarshalJSONCompactTo(b []byte) ([]byte, err
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -797,7 +797,7 @@ func (m ReplayChartDataFixedPointerBuilder) MarshalJSONCompactTo(b []byte) ([]by
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.PauseReplayAfterInitialDataSent())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseSavedPriorState())
+	w.Bool(m.UseSavedPriorState())
 	w.Data = append(w.Data, ',')
 	w.Float32(m.SymbolVolatility())
 	w.Data = append(w.Data, ',')
@@ -833,7 +833,7 @@ func (m ReplayChartDataFixed) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -858,7 +858,7 @@ func (m ReplayChartDataFixedBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -887,7 +887,7 @@ func (m ReplayChartDataFixedPointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -912,7 +912,7 @@ func (m ReplayChartDataFixedPointerBuilder) MarshalJSONTo(b []byte) ([]byte, err
 	w.Float32Field("ReplaySpeed", m.ReplaySpeed())
 	w.Int32Field("BarTimeInSeconds", m.BarTimeInSeconds())
 	w.Uint8Field("PauseReplayAfterInitialDataSent", m.PauseReplayAfterInitialDataSent())
-	w.Uint8Field("UseSavedPriorState", m.UseSavedPriorState())
+	w.BoolField("UseSavedPriorState", m.UseSavedPriorState())
 	w.Float32Field("SymbolVolatility", m.SymbolVolatility())
 	w.Float32Field("InterestRate", m.InterestRate())
 	w.Int32Field("NumberOfOrdersToTriggerFinishToStopDateTime", m.NumberOfOrdersToTriggerFinishToStopDateTime())
@@ -979,7 +979,7 @@ func (m *ReplayChartDataFixedBuilder) UnmarshalJSONCompactFrom(r *json.Reader) e
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseSavedPriorState(r.Uint8())
+	m.SetUseSavedPriorState(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1070,7 +1070,7 @@ func (m *ReplayChartDataFixedPointerBuilder) UnmarshalJSONCompactFrom(r *json.Re
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseSavedPriorState(r.Uint8())
+	m.SetUseSavedPriorState(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1146,7 +1146,7 @@ LOOP:
 		case "PauseReplayAfterInitialDataSent":
 			m.SetPauseReplayAfterInitialDataSent(r.Uint8())
 		case "UseSavedPriorState":
-			m.SetUseSavedPriorState(r.Uint8())
+			m.SetUseSavedPriorState(r.Bool())
 		case "SymbolVolatility":
 			m.SetSymbolVolatility(r.Float32())
 		case "InterestRate":
@@ -1217,7 +1217,7 @@ LOOP:
 		case "PauseReplayAfterInitialDataSent":
 			m.SetPauseReplayAfterInitialDataSent(r.Uint8())
 		case "UseSavedPriorState":
-			m.SetUseSavedPriorState(r.Uint8())
+			m.SetUseSavedPriorState(r.Bool())
 		case "SymbolVolatility":
 			m.SetSymbolVolatility(r.Float32())
 		case "InterestRate":

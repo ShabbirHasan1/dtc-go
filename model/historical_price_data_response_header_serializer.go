@@ -19,7 +19,7 @@ func (m HistoricalPriceDataResponseHeader) MarshalJSONCompactTo(b []byte) ([]byt
 	w.Data = append(w.Data, ',')
 	w.Int32(int32(m.RecordInterval()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	w.Data = append(w.Data, ',')
@@ -34,7 +34,7 @@ func (m HistoricalPriceDataResponseHeaderBuilder) MarshalJSONCompactTo(b []byte)
 	w.Data = append(w.Data, ',')
 	w.Int32(int32(m.RecordInterval()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	w.Data = append(w.Data, ',')
@@ -53,7 +53,7 @@ func (m HistoricalPriceDataResponseHeaderPointer) MarshalJSONCompactTo(b []byte)
 	w.Data = append(w.Data, ',')
 	w.Int32(int32(m.RecordInterval()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	w.Data = append(w.Data, ',')
@@ -68,7 +68,7 @@ func (m HistoricalPriceDataResponseHeaderPointerBuilder) MarshalJSONCompactTo(b 
 	w.Data = append(w.Data, ',')
 	w.Int32(int32(m.RecordInterval()))
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseZLibCompression())
+	w.Bool(m.UseZLibCompression())
 	w.Data = append(w.Data, ',')
 	w.Uint8(m.NoRecordsToReturn())
 	w.Data = append(w.Data, ',')
@@ -84,7 +84,7 @@ func (m HistoricalPriceDataResponseHeader) MarshalJSONTo(b []byte) ([]byte, erro
 	w := json.NewWriter(b, 801)
 	w.Int32Field("RequestID", m.RequestID())
 	w.Int32Field("RecordInterval", int32(m.RecordInterval()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	w.Float32Field("IntToFloatPriceDivisor", m.IntToFloatPriceDivisor())
 	return w.Finish(), nil
@@ -94,7 +94,7 @@ func (m HistoricalPriceDataResponseHeaderBuilder) MarshalJSONTo(b []byte) ([]byt
 	w := json.NewWriter(b, 801)
 	w.Int32Field("RequestID", m.RequestID())
 	w.Int32Field("RecordInterval", int32(m.RecordInterval()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	w.Float32Field("IntToFloatPriceDivisor", m.IntToFloatPriceDivisor())
 	return w.Finish(), nil
@@ -108,7 +108,7 @@ func (m HistoricalPriceDataResponseHeaderPointer) MarshalJSONTo(b []byte) ([]byt
 	w := json.NewWriter(b, 801)
 	w.Int32Field("RequestID", m.RequestID())
 	w.Int32Field("RecordInterval", int32(m.RecordInterval()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	w.Float32Field("IntToFloatPriceDivisor", m.IntToFloatPriceDivisor())
 	return w.Finish(), nil
@@ -118,7 +118,7 @@ func (m HistoricalPriceDataResponseHeaderPointerBuilder) MarshalJSONTo(b []byte)
 	w := json.NewWriter(b, 801)
 	w.Int32Field("RequestID", m.RequestID())
 	w.Int32Field("RecordInterval", int32(m.RecordInterval()))
-	w.Uint8Field("UseZLibCompression", m.UseZLibCompression())
+	w.BoolField("UseZLibCompression", m.UseZLibCompression())
 	w.Uint8Field("NoRecordsToReturn", m.NoRecordsToReturn())
 	w.Float32Field("IntToFloatPriceDivisor", m.IntToFloatPriceDivisor())
 	return w.Finish(), nil
@@ -140,7 +140,7 @@ func (m *HistoricalPriceDataResponseHeaderBuilder) UnmarshalJSONCompactFrom(r *j
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -171,7 +171,7 @@ func (m *HistoricalPriceDataResponseHeaderPointerBuilder) UnmarshalJSONCompactFr
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseZLibCompression(r.Uint8())
+	m.SetUseZLibCompression(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -207,7 +207,7 @@ LOOP:
 		case "RecordInterval":
 			m.SetRecordInterval(HistoricalDataIntervalEnum(r.Int32()))
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "NoRecordsToReturn":
 			m.SetNoRecordsToReturn(r.Uint8())
 		case "IntToFloatPriceDivisor":
@@ -248,7 +248,7 @@ LOOP:
 		case "RecordInterval":
 			m.SetRecordInterval(HistoricalDataIntervalEnum(r.Int32()))
 		case "UseZLibCompression":
-			m.SetUseZLibCompression(r.Uint8())
+			m.SetUseZLibCompression(r.Bool())
 		case "NoRecordsToReturn":
 			m.SetNoRecordsToReturn(r.Uint8())
 		case "IntToFloatPriceDivisor":
@@ -289,7 +289,7 @@ func (m *HistoricalPriceDataResponseHeaderBuilder) UnmarshalProtobuf(b []byte) e
 		case 2:
 			m.SetRecordInterval(HistoricalDataIntervalEnum(r.ReadInt32()))
 		case 3:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 4:
 			m.SetNoRecordsToReturn(r.ReadUint8())
 		case 5:
@@ -325,7 +325,7 @@ func (m *HistoricalPriceDataResponseHeaderPointerBuilder) UnmarshalProtobuf(b []
 		case 2:
 			m.SetRecordInterval(HistoricalDataIntervalEnum(r.ReadInt32()))
 		case 3:
-			m.SetUseZLibCompression(r.ReadUint8())
+			m.SetUseZLibCompression(r.ReadBool())
 		case 4:
 			m.SetNoRecordsToReturn(r.ReadUint8())
 		case 5:
@@ -348,7 +348,7 @@ func (m HistoricalPriceDataResponseHeaderBuilder) MarshalProtobuf(b []byte) ([]b
 	w := pb.NewWriter(b, 801)
 	w.WriteVarint32(1, m.RequestID())
 	w.WriteVarint32(2, int32(m.RecordInterval()))
-	w.WriteUvarint8(3, m.UseZLibCompression())
+	w.WriteBool(3, m.UseZLibCompression())
 	w.WriteUvarint8(4, m.NoRecordsToReturn())
 	w.WriteFixed32Float32(5, m.IntToFloatPriceDivisor())
 	return w.Finish(), nil
@@ -362,7 +362,7 @@ func (m HistoricalPriceDataResponseHeaderPointerBuilder) MarshalProtobuf(b []byt
 	w := pb.NewWriter(b, 801)
 	w.WriteVarint32(1, m.RequestID())
 	w.WriteVarint32(2, int32(m.RecordInterval()))
-	w.WriteUvarint8(3, m.UseZLibCompression())
+	w.WriteBool(3, m.UseZLibCompression())
 	w.WriteUvarint8(4, m.NoRecordsToReturn())
 	w.WriteFixed32Float32(5, m.IntToFloatPriceDivisor())
 	return w.Finish(), nil

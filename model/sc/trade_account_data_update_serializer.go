@@ -36,7 +36,7 @@ func (m TradeAccountDataUpdate) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
@@ -140,43 +140,43 @@ func (m TradeAccountDataUpdate) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolLimitsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolLimitsArray())
+	w.Bool(m.UseMasterFirm_SymbolLimitsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFees())
+	w.Bool(m.UseMasterFirm_TradeFees())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeePerShareIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeePerShare())
+	w.Bool(m.UseMasterFirm_TradeFeePerShare())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMargin())
+	w.Bool(m.UseMasterFirm_UsePercentOfMargin())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MarginTimeSettingsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MarginTimeSettings())
+	w.Bool(m.UseMasterFirm_MarginTimeSettings())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.Data = append(w.Data, ',')
@@ -200,35 +200,35 @@ func (m TradeAccountDataUpdate) MarshalJSONCompactTo(b []byte) ([]byte, error) {
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArray())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeesFullOverride())
+	w.Bool(m.UseMasterFirm_TradeFeesFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.LiquidationOnlyModeIsSet())
 	w.Data = append(w.Data, ',')
@@ -289,7 +289,7 @@ func (m TradeAccountDataUpdateBuilder) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
@@ -393,43 +393,43 @@ func (m TradeAccountDataUpdateBuilder) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolLimitsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolLimitsArray())
+	w.Bool(m.UseMasterFirm_SymbolLimitsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFees())
+	w.Bool(m.UseMasterFirm_TradeFees())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeePerShareIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeePerShare())
+	w.Bool(m.UseMasterFirm_TradeFeePerShare())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMargin())
+	w.Bool(m.UseMasterFirm_UsePercentOfMargin())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MarginTimeSettingsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MarginTimeSettings())
+	w.Bool(m.UseMasterFirm_MarginTimeSettings())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.Data = append(w.Data, ',')
@@ -453,35 +453,35 @@ func (m TradeAccountDataUpdateBuilder) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArray())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeesFullOverride())
+	w.Bool(m.UseMasterFirm_TradeFeesFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.LiquidationOnlyModeIsSet())
 	w.Data = append(w.Data, ',')
@@ -546,7 +546,7 @@ func (m TradeAccountDataUpdatePointer) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
@@ -650,43 +650,43 @@ func (m TradeAccountDataUpdatePointer) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolLimitsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolLimitsArray())
+	w.Bool(m.UseMasterFirm_SymbolLimitsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFees())
+	w.Bool(m.UseMasterFirm_TradeFees())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeePerShareIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeePerShare())
+	w.Bool(m.UseMasterFirm_TradeFeePerShare())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMargin())
+	w.Bool(m.UseMasterFirm_UsePercentOfMargin())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MarginTimeSettingsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MarginTimeSettings())
+	w.Bool(m.UseMasterFirm_MarginTimeSettings())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.Data = append(w.Data, ',')
@@ -710,35 +710,35 @@ func (m TradeAccountDataUpdatePointer) MarshalJSONCompactTo(b []byte) ([]byte, e
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArray())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeesFullOverride())
+	w.Bool(m.UseMasterFirm_TradeFeesFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.LiquidationOnlyModeIsSet())
 	w.Data = append(w.Data, ',')
@@ -799,7 +799,7 @@ func (m TradeAccountDataUpdatePointerBuilder) MarshalJSONCompactTo(b []byte) ([]
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.Bool(m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
@@ -903,43 +903,43 @@ func (m TradeAccountDataUpdatePointerBuilder) MarshalJSONCompactTo(b []byte) ([]
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.Bool(m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolLimitsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolLimitsArray())
+	w.Bool(m.UseMasterFirm_SymbolLimitsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFees())
+	w.Bool(m.UseMasterFirm_TradeFees())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeePerShareIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeePerShare())
+	w.Bool(m.UseMasterFirm_TradeFeePerShare())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.Bool(m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMargin())
+	w.Bool(m.UseMasterFirm_UsePercentOfMargin())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.Bool(m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.Bool(m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_MarginTimeSettingsIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_MarginTimeSettings())
+	w.Bool(m.UseMasterFirm_MarginTimeSettings())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.Data = append(w.Data, ',')
@@ -963,35 +963,35 @@ func (m TradeAccountDataUpdatePointerBuilder) MarshalJSONCompactTo(b []byte) ([]
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArray())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArray())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.Bool(m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.Bool(m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.Bool(m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_TradeFeesFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_TradeFeesFullOverride())
+	w.Bool(m.UseMasterFirm_TradeFeesFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
 	w.Data = append(w.Data, ',')
-	w.Uint8(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.Bool(m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.Data = append(w.Data, ',')
 	w.Bool(m.LiquidationOnlyModeIsSet())
 	w.Data = append(w.Data, ',')
@@ -1044,7 +1044,7 @@ func (m TradeAccountDataUpdate) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("PercentOfCashBalanceForDailyNetLossLimitIsSet", m.PercentOfCashBalanceForDailyNetLossLimitIsSet())
 	w.Int32Field("PercentOfCashBalanceForDailyNetLossLimit", m.PercentOfCashBalanceForDailyNetLossLimit())
 	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet", m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
-	w.Uint8Field("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.BoolField("DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Uint8Field("DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("FlattenPositionsAtDailyLossLimitIsSet", m.FlattenPositionsAtDailyLossLimitIsSet())
@@ -1096,25 +1096,25 @@ func (m TradeAccountDataUpdate) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("DayMarginTimeZoneIsSet", m.DayMarginTimeZoneIsSet())
 	w.StringField("DayMarginTimeZone", m.DayMarginTimeZone())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.BoolField("m_UseMasterFirm_SymbolLimitsArrayIsSet", m.UseMasterFirm_SymbolLimitsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
+	w.BoolField("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
 	w.BoolField("m_UseMasterFirm_TradeFeesIsSet", m.UseMasterFirm_TradeFeesIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
+	w.BoolField("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
 	w.BoolField("m_UseMasterFirm_TradeFeePerShareIsSet", m.UseMasterFirm_TradeFeePerShareIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
+	w.BoolField("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
 	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet", m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
-	w.Uint8Field("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginIsSet", m.UseMasterFirm_UsePercentOfMarginIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
 	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
-	w.Uint8Field("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValueIsSet", m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
-	w.Uint8Field("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.BoolField("m_UseMasterFirm_MarginTimeSettingsIsSet", m.UseMasterFirm_MarginTimeSettingsIsSet())
-	w.Uint8Field("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
+	w.BoolField("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabledIsSet", m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabled", m.UseMasterFirm_TradingIsDisabled())
 	w.BoolField("IsTradeStatisticsPublicallySharedIsSet", m.IsTradeStatisticsPublicallySharedIsSet())
@@ -1126,21 +1126,21 @@ func (m TradeAccountDataUpdate) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("ReadOnlyShareToAllSCUsernamesIsSet", m.ReadOnlyShareToAllSCUsernamesIsSet())
 	w.Uint8Field("ReadOnlyShareToAllSCUsernames", m.ReadOnlyShareToAllSCUsernames())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayIsSet", m.UseMasterFirm_SymbolCommissionsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
 	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
-	w.Uint8Field("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet", m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
-	w.Uint8Field("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.BoolField("m_UseMasterFirm_TradeFeesFullOverrideIsSet", m.UseMasterFirm_TradeFeesFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
+	w.BoolField("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.BoolField("m_LiquidationOnlyModeIsSet", m.LiquidationOnlyModeIsSet())
 	w.Uint8Field("m_LiquidationOnlyMode", m.LiquidationOnlyMode())
 	w.BoolField("m_CustomerOrFirmIsSet", m.CustomerOrFirmIsSet())
@@ -1173,7 +1173,7 @@ func (m TradeAccountDataUpdateBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("PercentOfCashBalanceForDailyNetLossLimitIsSet", m.PercentOfCashBalanceForDailyNetLossLimitIsSet())
 	w.Int32Field("PercentOfCashBalanceForDailyNetLossLimit", m.PercentOfCashBalanceForDailyNetLossLimit())
 	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet", m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
-	w.Uint8Field("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.BoolField("DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Uint8Field("DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("FlattenPositionsAtDailyLossLimitIsSet", m.FlattenPositionsAtDailyLossLimitIsSet())
@@ -1225,25 +1225,25 @@ func (m TradeAccountDataUpdateBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("DayMarginTimeZoneIsSet", m.DayMarginTimeZoneIsSet())
 	w.StringField("DayMarginTimeZone", m.DayMarginTimeZone())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.BoolField("m_UseMasterFirm_SymbolLimitsArrayIsSet", m.UseMasterFirm_SymbolLimitsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
+	w.BoolField("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
 	w.BoolField("m_UseMasterFirm_TradeFeesIsSet", m.UseMasterFirm_TradeFeesIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
+	w.BoolField("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
 	w.BoolField("m_UseMasterFirm_TradeFeePerShareIsSet", m.UseMasterFirm_TradeFeePerShareIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
+	w.BoolField("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
 	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet", m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
-	w.Uint8Field("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginIsSet", m.UseMasterFirm_UsePercentOfMarginIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
 	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
-	w.Uint8Field("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValueIsSet", m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
-	w.Uint8Field("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.BoolField("m_UseMasterFirm_MarginTimeSettingsIsSet", m.UseMasterFirm_MarginTimeSettingsIsSet())
-	w.Uint8Field("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
+	w.BoolField("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabledIsSet", m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabled", m.UseMasterFirm_TradingIsDisabled())
 	w.BoolField("IsTradeStatisticsPublicallySharedIsSet", m.IsTradeStatisticsPublicallySharedIsSet())
@@ -1255,21 +1255,21 @@ func (m TradeAccountDataUpdateBuilder) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("ReadOnlyShareToAllSCUsernamesIsSet", m.ReadOnlyShareToAllSCUsernamesIsSet())
 	w.Uint8Field("ReadOnlyShareToAllSCUsernames", m.ReadOnlyShareToAllSCUsernames())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayIsSet", m.UseMasterFirm_SymbolCommissionsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
 	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
-	w.Uint8Field("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet", m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
-	w.Uint8Field("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.BoolField("m_UseMasterFirm_TradeFeesFullOverrideIsSet", m.UseMasterFirm_TradeFeesFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
+	w.BoolField("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.BoolField("m_LiquidationOnlyModeIsSet", m.LiquidationOnlyModeIsSet())
 	w.Uint8Field("m_LiquidationOnlyMode", m.LiquidationOnlyMode())
 	w.BoolField("m_CustomerOrFirmIsSet", m.CustomerOrFirmIsSet())
@@ -1306,7 +1306,7 @@ func (m TradeAccountDataUpdatePointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("PercentOfCashBalanceForDailyNetLossLimitIsSet", m.PercentOfCashBalanceForDailyNetLossLimitIsSet())
 	w.Int32Field("PercentOfCashBalanceForDailyNetLossLimit", m.PercentOfCashBalanceForDailyNetLossLimit())
 	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet", m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
-	w.Uint8Field("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.BoolField("DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Uint8Field("DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("FlattenPositionsAtDailyLossLimitIsSet", m.FlattenPositionsAtDailyLossLimitIsSet())
@@ -1358,25 +1358,25 @@ func (m TradeAccountDataUpdatePointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("DayMarginTimeZoneIsSet", m.DayMarginTimeZoneIsSet())
 	w.StringField("DayMarginTimeZone", m.DayMarginTimeZone())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.BoolField("m_UseMasterFirm_SymbolLimitsArrayIsSet", m.UseMasterFirm_SymbolLimitsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
+	w.BoolField("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
 	w.BoolField("m_UseMasterFirm_TradeFeesIsSet", m.UseMasterFirm_TradeFeesIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
+	w.BoolField("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
 	w.BoolField("m_UseMasterFirm_TradeFeePerShareIsSet", m.UseMasterFirm_TradeFeePerShareIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
+	w.BoolField("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
 	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet", m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
-	w.Uint8Field("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginIsSet", m.UseMasterFirm_UsePercentOfMarginIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
 	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
-	w.Uint8Field("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValueIsSet", m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
-	w.Uint8Field("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.BoolField("m_UseMasterFirm_MarginTimeSettingsIsSet", m.UseMasterFirm_MarginTimeSettingsIsSet())
-	w.Uint8Field("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
+	w.BoolField("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabledIsSet", m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabled", m.UseMasterFirm_TradingIsDisabled())
 	w.BoolField("IsTradeStatisticsPublicallySharedIsSet", m.IsTradeStatisticsPublicallySharedIsSet())
@@ -1388,21 +1388,21 @@ func (m TradeAccountDataUpdatePointer) MarshalJSONTo(b []byte) ([]byte, error) {
 	w.BoolField("ReadOnlyShareToAllSCUsernamesIsSet", m.ReadOnlyShareToAllSCUsernamesIsSet())
 	w.Uint8Field("ReadOnlyShareToAllSCUsernames", m.ReadOnlyShareToAllSCUsernames())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayIsSet", m.UseMasterFirm_SymbolCommissionsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
 	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
-	w.Uint8Field("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet", m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
-	w.Uint8Field("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.BoolField("m_UseMasterFirm_TradeFeesFullOverrideIsSet", m.UseMasterFirm_TradeFeesFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
+	w.BoolField("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.BoolField("m_LiquidationOnlyModeIsSet", m.LiquidationOnlyModeIsSet())
 	w.Uint8Field("m_LiquidationOnlyMode", m.LiquidationOnlyMode())
 	w.BoolField("m_CustomerOrFirmIsSet", m.CustomerOrFirmIsSet())
@@ -1435,7 +1435,7 @@ func (m TradeAccountDataUpdatePointerBuilder) MarshalJSONTo(b []byte) ([]byte, e
 	w.BoolField("PercentOfCashBalanceForDailyNetLossLimitIsSet", m.PercentOfCashBalanceForDailyNetLossLimitIsSet())
 	w.Int32Field("PercentOfCashBalanceForDailyNetLossLimit", m.PercentOfCashBalanceForDailyNetLossLimit())
 	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet", m.UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet())
-	w.Uint8Field("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
+	w.BoolField("UseTrailingAccountValueToNotAllowIncreaseInPositions", m.UseTrailingAccountValueToNotAllowIncreaseInPositions())
 	w.BoolField("DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
 	w.Uint8Field("DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("FlattenPositionsAtDailyLossLimitIsSet", m.FlattenPositionsAtDailyLossLimitIsSet())
@@ -1487,25 +1487,25 @@ func (m TradeAccountDataUpdatePointerBuilder) MarshalJSONTo(b []byte) ([]byte, e
 	w.BoolField("DayMarginTimeZoneIsSet", m.DayMarginTimeZoneIsSet())
 	w.StringField("DayMarginTimeZone", m.DayMarginTimeZone())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday", m.UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday())
 	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet())
-	w.Uint8Field("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
+	w.BoolField("m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay", m.UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay())
 	w.BoolField("m_UseMasterFirm_SymbolLimitsArrayIsSet", m.UseMasterFirm_SymbolLimitsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
+	w.BoolField("m_UseMasterFirm_SymbolLimitsArray", m.UseMasterFirm_SymbolLimitsArray())
 	w.BoolField("m_UseMasterFirm_TradeFeesIsSet", m.UseMasterFirm_TradeFeesIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
+	w.BoolField("m_UseMasterFirm_TradeFees", m.UseMasterFirm_TradeFees())
 	w.BoolField("m_UseMasterFirm_TradeFeePerShareIsSet", m.UseMasterFirm_TradeFeePerShareIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
+	w.BoolField("m_UseMasterFirm_TradeFeePerShare", m.UseMasterFirm_TradeFeePerShare())
 	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet", m.UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet())
-	w.Uint8Field("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
+	w.BoolField("m_UseMasterFirm_RequireSufficientMarginForNewPositions", m.UseMasterFirm_RequireSufficientMarginForNewPositions())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginIsSet", m.UseMasterFirm_UsePercentOfMarginIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMargin", m.UseMasterFirm_UsePercentOfMargin())
 	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet())
-	w.Uint8Field("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
+	w.BoolField("m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage", m.UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage())
 	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValueIsSet", m.UseMasterFirm_MinimumRequiredAccountValueIsSet())
-	w.Uint8Field("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
+	w.BoolField("m_UseMasterFirm_MinimumRequiredAccountValue", m.UseMasterFirm_MinimumRequiredAccountValue())
 	w.BoolField("m_UseMasterFirm_MarginTimeSettingsIsSet", m.UseMasterFirm_MarginTimeSettingsIsSet())
-	w.Uint8Field("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
+	w.BoolField("m_UseMasterFirm_MarginTimeSettings", m.UseMasterFirm_MarginTimeSettings())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabledIsSet", m.UseMasterFirm_TradingIsDisabledIsSet())
 	w.BoolField("m_UseMasterFirm_TradingIsDisabled", m.UseMasterFirm_TradingIsDisabled())
 	w.BoolField("IsTradeStatisticsPublicallySharedIsSet", m.IsTradeStatisticsPublicallySharedIsSet())
@@ -1517,21 +1517,21 @@ func (m TradeAccountDataUpdatePointerBuilder) MarshalJSONTo(b []byte) ([]byte, e
 	w.BoolField("ReadOnlyShareToAllSCUsernamesIsSet", m.ReadOnlyShareToAllSCUsernamesIsSet())
 	w.Uint8Field("ReadOnlyShareToAllSCUsernames", m.ReadOnlyShareToAllSCUsernames())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayIsSet", m.UseMasterFirm_SymbolCommissionsArrayIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArray", m.UseMasterFirm_SymbolCommissionsArray())
 	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet())
-	w.Uint8Field("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
+	w.BoolField("m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit", m.UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTrading", m.UseMasterFirm_UsePercentOfMarginForDayTrading())
 	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet", m.UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
+	w.BoolField("m_UseMasterFirm_SymbolCommissionsArrayFullOverride", m.UseMasterFirm_SymbolCommissionsArrayFullOverride())
 	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet())
-	w.Uint8Field("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
+	w.BoolField("m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders", m.UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginFullOverride", m.UseMasterFirm_UsePercentOfMarginFullOverride())
 	w.BoolField("m_UseMasterFirm_TradeFeesFullOverrideIsSet", m.UseMasterFirm_TradeFeesFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
+	w.BoolField("m_UseMasterFirm_TradeFeesFullOverride", m.UseMasterFirm_TradeFeesFullOverride())
 	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet())
-	w.Uint8Field("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
+	w.BoolField("m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride", m.UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride())
 	w.BoolField("m_LiquidationOnlyModeIsSet", m.LiquidationOnlyModeIsSet())
 	w.Uint8Field("m_LiquidationOnlyMode", m.LiquidationOnlyMode())
 	w.BoolField("m_CustomerOrFirmIsSet", m.CustomerOrFirmIsSet())
@@ -1603,7 +1603,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Uint8())
+	m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1811,7 +1811,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Uint8())
+	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1819,7 +1819,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Uint8())
+	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1827,7 +1827,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_SymbolLimitsArray(r.Uint8())
+	m.SetUseMasterFirm_SymbolLimitsArray(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1835,7 +1835,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_TradeFees(r.Uint8())
+	m.SetUseMasterFirm_TradeFees(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1843,7 +1843,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_TradeFeePerShare(r.Uint8())
+	m.SetUseMasterFirm_TradeFeePerShare(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1851,7 +1851,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Uint8())
+	m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1859,7 +1859,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMargin(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMargin(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1867,7 +1867,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Uint8())
+	m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1875,7 +1875,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Uint8())
+	m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1883,7 +1883,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_MarginTimeSettings(r.Uint8())
+	m.SetUseMasterFirm_MarginTimeSettings(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1931,7 +1931,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_SymbolCommissionsArray(r.Uint8())
+	m.SetUseMasterFirm_SymbolCommissionsArray(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1939,7 +1939,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Uint8())
+	m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1947,7 +1947,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1955,7 +1955,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Uint8())
+	m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1963,7 +1963,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Uint8())
+	m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1971,7 +1971,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1979,7 +1979,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_TradeFeesFullOverride(r.Uint8())
+	m.SetUseMasterFirm_TradeFeesFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -1987,7 +1987,7 @@ func (m *TradeAccountDataUpdateBuilder) UnmarshalJSONCompactFrom(r *json.Reader)
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2110,7 +2110,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Uint8())
+	m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2318,7 +2318,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Uint8())
+	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2326,7 +2326,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Uint8())
+	m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2334,7 +2334,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_SymbolLimitsArray(r.Uint8())
+	m.SetUseMasterFirm_SymbolLimitsArray(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2342,7 +2342,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_TradeFees(r.Uint8())
+	m.SetUseMasterFirm_TradeFees(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2350,7 +2350,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_TradeFeePerShare(r.Uint8())
+	m.SetUseMasterFirm_TradeFeePerShare(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2358,7 +2358,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Uint8())
+	m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2366,7 +2366,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMargin(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMargin(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2374,7 +2374,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Uint8())
+	m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2382,7 +2382,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Uint8())
+	m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2390,7 +2390,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_MarginTimeSettings(r.Uint8())
+	m.SetUseMasterFirm_MarginTimeSettings(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2438,7 +2438,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_SymbolCommissionsArray(r.Uint8())
+	m.SetUseMasterFirm_SymbolCommissionsArray(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2446,7 +2446,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Uint8())
+	m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2454,7 +2454,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2462,7 +2462,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Uint8())
+	m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2470,7 +2470,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Uint8())
+	m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2478,7 +2478,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2486,7 +2486,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_TradeFeesFullOverride(r.Uint8())
+	m.SetUseMasterFirm_TradeFeesFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2494,7 +2494,7 @@ func (m *TradeAccountDataUpdatePointerBuilder) UnmarshalJSONCompactFrom(r *json.
 	if r.IsError() {
 		return r.Error()
 	}
-	m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Uint8())
+	m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Bool())
 	if r.IsError() {
 		return r.Error()
 	}
@@ -2604,7 +2604,7 @@ LOOP:
 		case "UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet":
 			m.SetUseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet(r.Bool())
 		case "UseTrailingAccountValueToNotAllowIncreaseInPositions":
-			m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Uint8())
+			m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Bool())
 		case "DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet":
 			m.SetDoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet(r.Bool())
 		case "DoNotAllowIncreaseInPositionsAtDailyLossLimit":
@@ -2708,43 +2708,43 @@ LOOP:
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet":
 			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet(r.Bool())
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday":
-			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Uint8())
+			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Bool())
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet":
 			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet(r.Bool())
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay":
-			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Uint8())
+			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Bool())
 		case "m_UseMasterFirm_SymbolLimitsArrayIsSet":
 			m.SetUseMasterFirm_SymbolLimitsArrayIsSet(r.Bool())
 		case "m_UseMasterFirm_SymbolLimitsArray":
-			m.SetUseMasterFirm_SymbolLimitsArray(r.Uint8())
+			m.SetUseMasterFirm_SymbolLimitsArray(r.Bool())
 		case "m_UseMasterFirm_TradeFeesIsSet":
 			m.SetUseMasterFirm_TradeFeesIsSet(r.Bool())
 		case "m_UseMasterFirm_TradeFees":
-			m.SetUseMasterFirm_TradeFees(r.Uint8())
+			m.SetUseMasterFirm_TradeFees(r.Bool())
 		case "m_UseMasterFirm_TradeFeePerShareIsSet":
 			m.SetUseMasterFirm_TradeFeePerShareIsSet(r.Bool())
 		case "m_UseMasterFirm_TradeFeePerShare":
-			m.SetUseMasterFirm_TradeFeePerShare(r.Uint8())
+			m.SetUseMasterFirm_TradeFeePerShare(r.Bool())
 		case "m_UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet":
 			m.SetUseMasterFirm_RequireSufficientMarginForNewPositionsIsSet(r.Bool())
 		case "m_UseMasterFirm_RequireSufficientMarginForNewPositions":
-			m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Uint8())
+			m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMargin":
-			m.SetUseMasterFirm_UsePercentOfMargin(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMargin(r.Bool())
 		case "m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet":
 			m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet(r.Bool())
 		case "m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage":
-			m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Uint8())
+			m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Bool())
 		case "m_UseMasterFirm_MinimumRequiredAccountValueIsSet":
 			m.SetUseMasterFirm_MinimumRequiredAccountValueIsSet(r.Bool())
 		case "m_UseMasterFirm_MinimumRequiredAccountValue":
-			m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Uint8())
+			m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Bool())
 		case "m_UseMasterFirm_MarginTimeSettingsIsSet":
 			m.SetUseMasterFirm_MarginTimeSettingsIsSet(r.Bool())
 		case "m_UseMasterFirm_MarginTimeSettings":
-			m.SetUseMasterFirm_MarginTimeSettings(r.Uint8())
+			m.SetUseMasterFirm_MarginTimeSettings(r.Bool())
 		case "m_UseMasterFirm_TradingIsDisabledIsSet":
 			m.SetUseMasterFirm_TradingIsDisabledIsSet(r.Bool())
 		case "m_UseMasterFirm_TradingIsDisabled":
@@ -2768,35 +2768,35 @@ LOOP:
 		case "m_UseMasterFirm_SymbolCommissionsArrayIsSet":
 			m.SetUseMasterFirm_SymbolCommissionsArrayIsSet(r.Bool())
 		case "m_UseMasterFirm_SymbolCommissionsArray":
-			m.SetUseMasterFirm_SymbolCommissionsArray(r.Uint8())
+			m.SetUseMasterFirm_SymbolCommissionsArray(r.Bool())
 		case "m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet":
 			m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet(r.Bool())
 		case "m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit":
-			m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Uint8())
+			m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTradingIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTrading":
-			m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Bool())
 		case "m_UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet":
 			m.SetUseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_SymbolCommissionsArrayFullOverride":
-			m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Uint8())
+			m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Bool())
 		case "m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet":
 			m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet(r.Bool())
 		case "m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders":
-			m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Uint8())
+			m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginFullOverrideIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginFullOverride":
-			m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Bool())
 		case "m_UseMasterFirm_TradeFeesFullOverrideIsSet":
 			m.SetUseMasterFirm_TradeFeesFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_TradeFeesFullOverride":
-			m.SetUseMasterFirm_TradeFeesFullOverride(r.Uint8())
+			m.SetUseMasterFirm_TradeFeesFullOverride(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride":
-			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Bool())
 		case "m_LiquidationOnlyModeIsSet":
 			m.SetLiquidationOnlyModeIsSet(r.Bool())
 		case "m_LiquidationOnlyMode":
@@ -2883,7 +2883,7 @@ LOOP:
 		case "UseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet":
 			m.SetUseTrailingAccountValueToNotAllowIncreaseInPositionsIsSet(r.Bool())
 		case "UseTrailingAccountValueToNotAllowIncreaseInPositions":
-			m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Uint8())
+			m.SetUseTrailingAccountValueToNotAllowIncreaseInPositions(r.Bool())
 		case "DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet":
 			m.SetDoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet(r.Bool())
 		case "DoNotAllowIncreaseInPositionsAtDailyLossLimit":
@@ -2987,43 +2987,43 @@ LOOP:
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet":
 			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntradayIsSet(r.Bool())
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginIntraday":
-			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Uint8())
+			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginIntraday(r.Bool())
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet":
 			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDayIsSet(r.Bool())
 		case "m_UseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay":
-			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Uint8())
+			m.SetUseMasterFirm_FlattenPositionsWhenUnderMarginAtEndOfDay(r.Bool())
 		case "m_UseMasterFirm_SymbolLimitsArrayIsSet":
 			m.SetUseMasterFirm_SymbolLimitsArrayIsSet(r.Bool())
 		case "m_UseMasterFirm_SymbolLimitsArray":
-			m.SetUseMasterFirm_SymbolLimitsArray(r.Uint8())
+			m.SetUseMasterFirm_SymbolLimitsArray(r.Bool())
 		case "m_UseMasterFirm_TradeFeesIsSet":
 			m.SetUseMasterFirm_TradeFeesIsSet(r.Bool())
 		case "m_UseMasterFirm_TradeFees":
-			m.SetUseMasterFirm_TradeFees(r.Uint8())
+			m.SetUseMasterFirm_TradeFees(r.Bool())
 		case "m_UseMasterFirm_TradeFeePerShareIsSet":
 			m.SetUseMasterFirm_TradeFeePerShareIsSet(r.Bool())
 		case "m_UseMasterFirm_TradeFeePerShare":
-			m.SetUseMasterFirm_TradeFeePerShare(r.Uint8())
+			m.SetUseMasterFirm_TradeFeePerShare(r.Bool())
 		case "m_UseMasterFirm_RequireSufficientMarginForNewPositionsIsSet":
 			m.SetUseMasterFirm_RequireSufficientMarginForNewPositionsIsSet(r.Bool())
 		case "m_UseMasterFirm_RequireSufficientMarginForNewPositions":
-			m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Uint8())
+			m.SetUseMasterFirm_RequireSufficientMarginForNewPositions(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMargin":
-			m.SetUseMasterFirm_UsePercentOfMargin(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMargin(r.Bool())
 		case "m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet":
 			m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentageIsSet(r.Bool())
 		case "m_UseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage":
-			m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Uint8())
+			m.SetUseMasterFirm_MaximumAllowedAccountBalanceForPositionsAsPercentage(r.Bool())
 		case "m_UseMasterFirm_MinimumRequiredAccountValueIsSet":
 			m.SetUseMasterFirm_MinimumRequiredAccountValueIsSet(r.Bool())
 		case "m_UseMasterFirm_MinimumRequiredAccountValue":
-			m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Uint8())
+			m.SetUseMasterFirm_MinimumRequiredAccountValue(r.Bool())
 		case "m_UseMasterFirm_MarginTimeSettingsIsSet":
 			m.SetUseMasterFirm_MarginTimeSettingsIsSet(r.Bool())
 		case "m_UseMasterFirm_MarginTimeSettings":
-			m.SetUseMasterFirm_MarginTimeSettings(r.Uint8())
+			m.SetUseMasterFirm_MarginTimeSettings(r.Bool())
 		case "m_UseMasterFirm_TradingIsDisabledIsSet":
 			m.SetUseMasterFirm_TradingIsDisabledIsSet(r.Bool())
 		case "m_UseMasterFirm_TradingIsDisabled":
@@ -3047,35 +3047,35 @@ LOOP:
 		case "m_UseMasterFirm_SymbolCommissionsArrayIsSet":
 			m.SetUseMasterFirm_SymbolCommissionsArrayIsSet(r.Bool())
 		case "m_UseMasterFirm_SymbolCommissionsArray":
-			m.SetUseMasterFirm_SymbolCommissionsArray(r.Uint8())
+			m.SetUseMasterFirm_SymbolCommissionsArray(r.Bool())
 		case "m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet":
 			m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimitIsSet(r.Bool())
 		case "m_UseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit":
-			m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Uint8())
+			m.SetUseMasterFirm_DoNotAllowIncreaseInPositionsAtDailyLossLimit(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTradingIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTrading":
-			m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMarginForDayTrading(r.Bool())
 		case "m_UseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet":
 			m.SetUseMasterFirm_SymbolCommissionsArrayFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_SymbolCommissionsArrayFullOverride":
-			m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Uint8())
+			m.SetUseMasterFirm_SymbolCommissionsArrayFullOverride(r.Bool())
 		case "m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet":
 			m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrdersIsSet(r.Bool())
 		case "m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders":
-			m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Uint8())
+			m.SetUseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginFullOverrideIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginFullOverride":
-			m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMarginFullOverride(r.Bool())
 		case "m_UseMasterFirm_TradeFeesFullOverrideIsSet":
 			m.SetUseMasterFirm_TradeFeesFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_TradeFeesFullOverride":
-			m.SetUseMasterFirm_TradeFeesFullOverride(r.Uint8())
+			m.SetUseMasterFirm_TradeFeesFullOverride(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet":
 			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverrideIsSet(r.Bool())
 		case "m_UseMasterFirm_UsePercentOfMarginForDayTradingFullOverride":
-			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Uint8())
+			m.SetUseMasterFirm_UsePercentOfMarginForDayTradingFullOverride(r.Bool())
 		case "m_LiquidationOnlyModeIsSet":
 			m.SetLiquidationOnlyModeIsSet(r.Bool())
 		case "m_LiquidationOnlyMode":

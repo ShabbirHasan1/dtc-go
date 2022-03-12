@@ -34,7 +34,7 @@ func (schema *Schema) PrintCPPLayoutErrors(data []byte) {
 	//goodSizes := make([]CPPStructLayout, 0, len(file.Structs))
 	//badSizes := make([]CPPStructLayout, 0, len(file.Structs))
 	for _, cppStruct := range layout.Structs {
-		namespace := schema.Namespaces[cppStruct.Namespace]
+		namespace := schema.GetNamespace(cppStruct.Namespace)
 		if namespace == nil {
 			panic("namespace: " + cppStruct.Namespace + "  was not found")
 		}
@@ -120,7 +120,8 @@ func parseCPPLayout(contents string) CPPLayout {
 }
 
 func (schema *Schema) PrintCPPLayoutCode() {
-	for _, namespace := range schema.Namespaces {
+	namespaces := schema.GetNamespaces()
+	for _, namespace := range namespaces {
 		for _, s := range namespace.Structs {
 			fmt.Println("std::cout << \"" + s.Namespace.Name + "::" + s.Name + "\" << \" = \" << sizeof(" + s.Namespace.Name + "::" + s.Name + ") << std::endl;")
 			for _, field := range s.Fields {
