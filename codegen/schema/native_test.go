@@ -1,4 +1,4 @@
-package codegen
+package schema
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 
 func TestCPPLayout(t *testing.T) {
 	schema := NewSchema()
-	err := schema.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
+	err := schema.AddCHeaders("../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h", "../testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestCPPLayout(t *testing.T) {
 
 func TestPrintCPPLayout(t *testing.T) {
 	schema := NewSchema()
-	err := schema.AddCHeaders("testdata/DTCProtocol.h", "testdata/DTCProtocolVLS.h", "testdata/DTCProtocol_NonStandard.h")
+	err := schema.AddCHeaders("../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h", "../testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}

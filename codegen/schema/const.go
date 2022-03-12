@@ -1,4 +1,4 @@
-package codegen
+package schema
 
 type Const struct {
 	Namespace *Namespace

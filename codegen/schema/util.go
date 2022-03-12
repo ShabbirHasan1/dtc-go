@@ -1,4 +1,4 @@
-package codegen
+package schema
 
 func align(offset, align int) int {
 	if offset == 0 || align == 0 {

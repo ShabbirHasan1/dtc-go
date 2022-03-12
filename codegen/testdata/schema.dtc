@@ -1,4 +1,4 @@
-extend version 8
+dtc 8
 version 1
 
 enum TradeOrderEnum uint8 {

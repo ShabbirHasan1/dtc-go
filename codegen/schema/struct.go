@@ -1,4 +1,4 @@
-package codegen
+package schema
 
 import (
 	"fmt"
@@ -31,7 +31,7 @@ type Struct struct {
 	Fields       []*Field
 	FieldsByName map[string]*Field
 	Proto        *parser.Message
-	Init         []byte
+	Init         []byte // Exact initial binary value
 }
 
 // FieldsSlice attaches the methods of Interface to []*Field, sorting in increasing order.

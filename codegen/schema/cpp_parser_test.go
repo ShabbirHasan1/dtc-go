@@ -1,4 +1,4 @@
-package codegen
+package schema
 
 import (
 	"fmt"
@@ -7,11 +7,11 @@ import (
 
 func TestLoad(t *testing.T) {
 	schema, err := LoadSchemaFromCHeaders(
-		"testdata/docs.json",
-		"testdata/DTCProtocol.proto",
-		"testdata/DTCProtocol.h",
-		"testdata/DTCProtocolVLS.h",
-		"testdata/DTCProtocol_NonStandard.h",
+		"../testdata/docs.json",
+		"../testdata/DTCProtocol.proto",
+		"../testdata/DTCProtocol.h",
+		"../testdata/DTCProtocolVLS.h",
+		"../testdata/DTCProtocol_NonStandard.h",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -22,7 +22,7 @@ func TestLoad(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	schema := NewSchema()
-	file, err := schema.AddCHeader("testdata/DTCProtocol.h")
+	file, err := schema.AddCHeader("../testdata/DTCProtocol.h")
 	if err != nil {
 		t.Fatal(err)
 	}

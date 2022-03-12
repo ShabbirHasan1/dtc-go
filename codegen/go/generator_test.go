@@ -2,12 +2,12 @@ package golang
 
 import (
 	"fmt"
-	"github.com/moontrade/dtc-go/codegen"
+	"github.com/moontrade/dtc-go/codegen/schema"
 	"testing"
 )
 
 func TestGenerator(t *testing.T) {
-	schema, err := codegen.LoadSchemaFromCHeaders("../testdata/docs.json", "../testdata/DTCProtocol.proto", "../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h")
+	schema, err := schema.LoadSchemaFromCHeaders("../testdata/docs.json", "../testdata/DTCProtocol.proto", "../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestGeneratorNonStandard(t *testing.T) {
-	schema, err := codegen.LoadSchemaFromCHeaders("../testdata/docs.json", "../testdata/DTCProtocol.proto", "../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h", "../testdata/DTCProtocol_NonStandard.h")
+	schema, err := schema.LoadSchemaFromCHeaders("../testdata/docs.json", "../testdata/DTCProtocol.proto", "../testdata/DTCProtocol.h", "../testdata/DTCProtocolVLS.h", "../testdata/DTCProtocol_NonStandard.h")
 	if err != nil {
 		t.Fatal(err)
 	}

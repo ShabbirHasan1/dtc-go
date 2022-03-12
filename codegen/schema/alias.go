@@ -1,4 +1,4 @@
-package codegen
+package schema
 
 type Alias struct {
 	Namespace *Namespace
