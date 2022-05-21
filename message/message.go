@@ -26,7 +26,7 @@ type Message interface {
 	IsGC() bool
 
 	// Close frees up memory for messages allocated using nogc.Alloc
-	Close() error
+	//Close() error
 }
 
 // GCPointer is a message allocated using the Go heap and managed by Go's GC.

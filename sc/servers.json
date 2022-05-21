@@ -1,5 +1,14 @@
 {
   "servers": [
-    "futurestrading3.sierracharts.com"
+    "ds01.ddfplus.com",
+    "ds21.sierracharts.com",
+    "ds22.sierracharts.com",
+    "ds23.sierracharts.com",
+    "futurestrading1.sierracharts.com",
+    "futurestrading2.sierracharts.com",
+    "futurestrading3.sierracharts.com",
+    "futurestrading4.sierracharts.com",
+    "futurestrading5.sierracharts.com",
+    "futurestrading6.sierracharts.com"
   ]
 }

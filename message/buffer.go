@@ -7,6 +7,81 @@ import (
 	"unsafe"
 )
 
+func CopyFixed(dst, src nogc.Pointer) bool {
+	if dst == 0 || src == 0 {
+		return false
+	}
+	var (
+		dstSize = dst.Uint16LE(0)
+		dstType = dst.Uint16LE(2)
+		srcSize = src.Uint16LE(0)
+		srcType = src.Uint16LE(2)
+	)
+	if dstType != srcType {
+		return false
+	}
+	if dstSize < 4 || srcSize < 4 {
+		return false
+	}
+	if dstSize < srcSize {
+		nogc.Copy((dst + 4).Unsafe(), (src + 4).Unsafe(), uintptr(dstSize)-4)
+	} else if dstSize > srcSize {
+		nogc.Copy((dst + 4).Unsafe(), (src + 4).Unsafe(), uintptr(srcSize)-4)
+	} else {
+		nogc.Copy(dst.Unsafe(), src.Unsafe(), uintptr(dstSize))
+	}
+	return true
+}
+
+//func CopyVLS(dst, src nogc.Pointer) bool {
+//	if dst == 0 || src == 0 {
+//		return false
+//	}
+//	var (
+//		dstSize = dst.Uint16LE(0)
+//		dstType = dst.Uint16LE(2)
+//		dstBase = src.Uint16LE(4)
+//		srcSize = src.Uint16LE(0)
+//		srcType = src.Uint16LE(2)
+//		srcBase = src.Uint16LE(4)
+//	)
+//	if dstType != srcType {
+//		return false
+//	}
+//	if dstSize < 7 || srcSize < 7 {
+//		return false
+//	}
+//	if dstSize < srcSize {
+//		nogc.Copy((dst + 4).Unsafe(), (src + 4).Unsafe(), uintptr(dstSize)-4)
+//	} else if dstSize > srcSize {
+//		nogc.Copy((dst + 4).Unsafe(), (src + 4).Unsafe(), uintptr(srcSize)-4)
+//	} else {
+//		nogc.Copy(dst.Unsafe(), src.Unsafe(), uintptr(dstSize))
+//	}
+//	return true
+//}
+
+func Size(ptr unsafe.Pointer) uint16 {
+	if ptr == nil {
+		return 0
+	}
+	return nogc.Pointer(ptr).Uint16LE(0)
+}
+
+func Type(ptr unsafe.Pointer) uint16 {
+	if ptr == nil {
+		return 0
+	}
+	return nogc.Pointer(ptr).Uint16LE(2)
+}
+
+func BaseSize(ptr unsafe.Pointer) uint16 {
+	if ptr == nil {
+		return 0
+	}
+	return nogc.Pointer(ptr).Uint16LE(4)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Bool
 ////////////////////////////////////////////////////////////////////////////////////////////

@@ -17,7 +17,7 @@ func (m Fixed) BaseSize() uint16 {
 	return m.Size()
 }
 
-func NewFixed(size uintptr) Fixed {
+func NewFixedSized(size uintptr) Fixed {
 	return Fixed{GCPointer{gcAlloc(size)}}
 }
 
@@ -33,7 +33,7 @@ func WrapFixed(b []byte) Fixed {
 	return m
 }
 
-func NewFixedFrom(b []byte) Fixed {
+func NewFixed(b []byte) Fixed {
 	if len(b) < 4 {
 		return Fixed{}
 	}
@@ -69,7 +69,7 @@ func (m FixedPointer) IsGC() bool {
 	return false
 }
 
-func AllocFixed(size uintptr) FixedPointer {
+func AllocFixedSized(size uintptr) FixedPointer {
 	return FixedPointer{Pointer{nogc.Alloc(size)}}
 }
 
@@ -77,7 +77,7 @@ func WrapFixedPointer(p nogc.Pointer) FixedPointer {
 	return FixedPointer{Pointer{p}}
 }
 
-func AllocFixedFrom(b []byte) FixedPointer {
+func AllocFixed(b []byte) FixedPointer {
 	if len(b) == 0 {
 		return FixedPointer{}
 	}
@@ -87,4 +87,8 @@ func AllocFixedFrom(b []byte) FixedPointer {
 	}
 	m.Ptr.SetBytes(0, b)
 	return m
+}
+
+type FixedPointerBuilder struct {
+	FixedPointer
 }

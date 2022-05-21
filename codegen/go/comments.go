@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"github.com/moontrade/dtc-go/codegen/schema"
 	"strings"
 )
 
@@ -73,4 +74,116 @@ func (g *Generator) normalizeComments(comments []string) []string {
 		to = append(to, comment)
 	}
 	return to
+}
+
+func (g *Generator) writeClearComment(w *Writer, msg *Struct, name string) {
+	if len(name) > 0 {
+		w.Line("// %s", name)
+	}
+	//w.Line("// {")
+
+	var (
+		maxWidth     = 0
+		maxTypeWidth = 0
+	)
+	for _, f := range msg.Fields {
+		if len(f.Fields) > 0 {
+			continue
+		}
+		if maxWidth < len(f.Name) {
+			maxWidth = len(f.Name)
+		}
+		tn := g.GoTypeName(&f.Type)
+		if f.Type.Kind == schema.KindStringFixed {
+			tn = fmt.Sprintf("%s[%d]", tn, f.Type.Size)
+		}
+		if maxTypeWidth < len(tn) {
+			maxTypeWidth = len(tn)
+		}
+	}
+
+	maxWidth += 2
+	maxTypeWidth += 2
+	pad := func(s string, width int) string {
+		for len(s) < width {
+			s = s + " "
+		}
+		return s
+	}
+	for _, f := range msg.Fields {
+		if len(f.Fields) > 0 {
+			continue
+		}
+
+		name := pad(f.Name, maxWidth)
+		tn := g.GoTypeName(&f.Type)
+		if f.Type.Kind == schema.KindStringFixed {
+			tn = fmt.Sprintf("%s[%d]", tn, f.Type.Size)
+		}
+
+		tn = pad(tn, maxTypeWidth)
+
+		if f.Initial == nil {
+			switch f.Type.Kind {
+			case schema.KindStringFixed, schema.KindStringVLS:
+				w.Line("//     %s%s= \"\"", name, tn)
+			case schema.KindBool:
+				w.Line("//     %s%s= false", name, tn)
+			case schema.KindEnum:
+				option := f.Type.Enum.OptionByValue(0)
+				if option != nil {
+					w.Line("//     %s%s= %s  (%d)", name, option.Name, tn, option.Value)
+				} else {
+					w.Line("//     %s%s= 0", name, tn)
+				}
+			default:
+				w.Line("//     %s%s= 0", name, tn)
+			}
+			continue
+		}
+
+		switch f.Initial.Type {
+		case schema.ValueTypeSizeof:
+			w.Line("//     %s%s= %sSize  (%d)", name, tn, msg.Name, msg.Size)
+		case schema.ValueTypeString:
+			w.Line("//     %s%s= \"%s\"", name, tn, f.Initial.Str)
+		case schema.ValueTypeBool:
+			if f.Initial.Int == 0 {
+				w.Line("//     %s%s= false", name, tn)
+			} else {
+				w.Line("//     %s%s= true", name, tn)
+			}
+		case schema.ValueTypeInt:
+			if f.Type.Kind == schema.KindBool {
+				if f.Initial.Int == 0 {
+					w.Line("//     %s%s= false", name, tn)
+				} else {
+					w.Line("//     %s%s= true", name, tn)
+				}
+			} else {
+				w.Line("//     %s%s= %d", name, tn, f.Initial.Int)
+			}
+		case schema.ValueTypeUint:
+			if f.Type.Kind == schema.KindBool {
+				if f.Initial.Uint == 0 {
+					w.Line("//     %s%s= false", tn, name)
+				} else {
+					w.Line("//     %s%s= true", tn, name)
+				}
+			} else {
+				w.Line("//     %s%s= %d", name, tn, f.Initial.Int)
+			}
+		case schema.ValueTypeFloat:
+			w.Line("//     %s%s= %f", name, tn, f.Initial.Float64)
+		case schema.ValueTypeFloat32Max:
+			w.Line("//     %s%s= math.MaxFloat32", name, tn)
+		case schema.ValueTypeFloat64Max:
+			w.Line("//     %s%s= math.MaxFloat64", name, tn)
+		case schema.ValueTypeConst:
+			w.Line("//     %s%s= %s  (%d)", name, tn, f.Initial.Const.Name, f.Initial.Int)
+		case schema.ValueTypeEnumOption:
+			w.Line("//     %s%s= %s  (%d)", name, tn, f.Initial.EnumOption.Name, f.Initial.Int)
+		}
+	}
+	//w.Line("// }")
 }

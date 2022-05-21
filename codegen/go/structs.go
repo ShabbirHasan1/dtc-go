@@ -155,7 +155,7 @@ func (g *Generator) generateStructs() error {
 					}
 				*/
 				gcWriter.Line("func New%sFrom(b []byte) %s {", msg.Name, msg.Name)
-				gcWriter.IndentLine(1, "return %s{%s: message.New%sFrom(b)}", msg.Name, msg.Suffix(), msg.Suffix())
+				gcWriter.IndentLine(1, "return %s{%s: message.New%s(b)}", msg.Name, msg.Suffix(), msg.Suffix())
 				gcWriter.Line("}")
 				gcWriter.Line("")
 
@@ -166,12 +166,10 @@ func (g *Generator) generateStructs() error {
 
 				gcWriter.Line("func New%s() %sBuilder {", msg.Name, msg.Name)
 				if msg.VLS {
-					gcWriter.IndentLine(1, "a := %sBuilder{message.New%sBuilder(%d)}", msg.Name, msg.Suffix(), msg.Size)
+					gcWriter.IndentLine(1, "return %sBuilder{message.New%sBuilder(_%sDefault)}", msg.Name, msg.Suffix(), msg.Name)
 				} else {
-					gcWriter.IndentLine(1, "a := %sBuilder{message.New%s(%d)}", msg.Name, msg.Suffix(), msg.Size)
+					gcWriter.IndentLine(1, "return %sBuilder{message.New%s(_%sDefault)}", msg.Name, msg.Suffix(), msg.Name)
 				}
-				gcWriter.IndentLine(1, "a.Unsafe().SetBytes(0, _%sDefault)", msg.Name)
-				gcWriter.IndentLine(1, "return a")
 				gcWriter.Line("}")
 				gcWriter.Line("")
 			}
@@ -186,12 +184,10 @@ func (g *Generator) generateStructs() error {
 			write := func(msg *Struct) {
 				nogcWriter.Line("func Alloc%s() %sPointerBuilder {", msg.Name, msg.Name)
 				if msg.VLS {
-					nogcWriter.IndentLine(1, "a := %sPointerBuilder{message.Alloc%sBuilder(%d)}", msg.Name, msg.Suffix(), msg.Size)
+					nogcWriter.IndentLine(1, "return %sPointerBuilder{message.Alloc%sBuilder(_%sDefault)}", msg.Name, msg.Suffix(), msg.Name)
 				} else {
-					nogcWriter.IndentLine(1, "a := %sPointerBuilder{message.Alloc%s(%d)}", msg.Name, msg.Suffix(), msg.Size)
+					nogcWriter.IndentLine(1, "return %sPointerBuilder{message.Alloc%s(_%sDefault)}", msg.Name, msg.Suffix(), msg.Name)
 				}
-				nogcWriter.IndentLine(1, "a.Ptr.SetBytes(0, _%sDefault)", msg.Name)
-				nogcWriter.IndentLine(1, "return a")
 				nogcWriter.Line("}")
 				nogcWriter.Line("")
 
@@ -201,7 +197,7 @@ func (g *Generator) generateStructs() error {
 					}
 				*/
 				nogcWriter.Line("func Alloc%sFrom(b []byte) %sPointer {", msg.Name, msg.Name)
-				nogcWriter.IndentLine(1, "return %sPointer{%sPointer: message.Alloc%sFrom(b)}", msg.Name, msg.Suffix(), msg.Suffix())
+				nogcWriter.IndentLine(1, "return %sPointer{%sPointer: message.Alloc%s(b)}", msg.Name, msg.Suffix(), msg.Suffix())
 				nogcWriter.Line("}")
 				nogcWriter.Line("")
 			}
@@ -496,88 +492,110 @@ func (g *Generator) generateStructs() error {
 			writeSetters(m.Fixed)
 		}
 
-		copyTo := func(w *Writer, msg *Struct, fn, name, toName string) {
-			w.Line("// %s", fn)
-			w.Line("func (m %s) %s(to %s) {", name, fn, toName)
-			for _, field := range msg.Fields {
-				if isHeaderField(field) {
-					continue
-				}
-				if len(field.Fields) > 0 {
-					for _, field := range field.Fields {
+		if g.config.GenerateCopyMethods {
+			copyTo := func(w *Writer, msg *Struct, fn, name, toName string) {
+				w.Line("// %s", fn)
+				w.Line("func (m %s) %s(to %s) {", name, fn, toName)
+				for _, field := range msg.Fields {
+					if isHeaderField(field) {
+						continue
+					}
+					if len(field.Fields) > 0 {
+						for _, field := range field.Fields {
+							w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
+						}
+					} else {
 						w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
 					}
-				} else {
-					w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
 				}
+				w.Line("}")
+				w.Line("")
 			}
-			w.Line("}")
-			w.Line("")
-		}
 
-		// Copy
-		if gcWriter != nil {
-			write := func(msg *Struct) {
-				copyTo(gcWriter, msg, "Copy", msg.Name, msg.Name+"Builder")
-				copyTo(gcWriter, msg, "Copy", msg.Name+"Builder", msg.Name+"Builder")
+			//copy := func(w *Writer, msg *Struct, fn, name, toName string) {
+			//	w.Line("// %s", fn)
+			//	w.Line("func (m %s) %s(to %s) {", name, fn, toName)
+			//	w.IndentLine(1, "")
+			//	for _, field := range msg.Fields {
+			//		if isHeaderField(field) {
+			//			continue
+			//		}
+			//		if len(field.Fields) > 0 {
+			//			for _, field := range field.Fields {
+			//				w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
+			//			}
+			//		} else {
+			//			w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
+			//		}
+			//	}
+			//	w.Line("}")
+			//	w.Line("")
+			//}
 
-				if nogcWriter != nil {
-					copyTo(gcWriter, msg, "CopyPointer", msg.Name, msg.Name+"PointerBuilder")
-					copyTo(gcWriter, msg, "CopyPointer", msg.Name+"Builder", msg.Name+"PointerBuilder")
-				}
+			// Copy
+			if gcWriter != nil {
+				write := func(msg *Struct) {
+					copyTo(gcWriter, msg, "Copy", msg.Name, msg.Name+"Builder")
+					copyTo(gcWriter, msg, "Copy", msg.Name+"Builder", msg.Name+"Builder")
 
-				if msg.Message != nil {
-					to := msg.Message.VLS
-					if msg.VLS {
-						to = msg.Message.Fixed
+					if nogcWriter != nil {
+						copyTo(gcWriter, msg, "CopyPointer", msg.Name, msg.Name+"PointerBuilder")
+						copyTo(gcWriter, msg, "CopyPointer", msg.Name+"Builder", msg.Name+"PointerBuilder")
 					}
-					if to != nil {
-						if nogcWriter != nil {
-							copyTo(gcWriter, msg, "CopyToPointer", msg.Name, to.Name+"PointerBuilder")
-							copyTo(gcWriter, msg, "CopyToPointer", msg.Name+"Builder", to.Name+"PointerBuilder")
+
+					if msg.Message != nil {
+						to := msg.Message.VLS
+						if msg.VLS {
+							to = msg.Message.Fixed
 						}
-						copyTo(gcWriter, msg, "CopyTo", msg.Name, to.Name+"Builder")
-						copyTo(gcWriter, msg, "CopyTo", msg.Name+"Builder", to.Name+"Builder")
-					}
-				}
-			}
-			if m.VLS != nil {
-				write(m.VLS)
-			}
-			if m.Fixed != nil {
-				write(m.Fixed)
-			}
-		}
-		if nogcWriter != nil {
-			write := func(msg *Struct) {
-				if gcWriter != nil {
-					copyTo(nogcWriter, msg, "Copy", msg.Name+"Pointer", msg.Name+"Builder")
-					copyTo(nogcWriter, msg, "Copy", msg.Name+"PointerBuilder", msg.Name+"Builder")
-				}
-
-				copyTo(nogcWriter, msg, "CopyPointer", msg.Name+"Pointer", msg.Name+"PointerBuilder")
-				copyTo(nogcWriter, msg, "CopyPointer", msg.Name+"PointerBuilder", msg.Name+"PointerBuilder")
-
-				if msg.Message != nil {
-					to := msg.Message.VLS
-					if msg.VLS {
-						to = msg.Message.Fixed
-					}
-					if to != nil {
-						if gcWriter != nil {
-							copyTo(nogcWriter, msg, "CopyTo", msg.Name+"Pointer", to.Name+"Builder")
-							copyTo(nogcWriter, msg, "CopyTo", msg.Name+"PointerBuilder", to.Name+"Builder")
+						if to != nil {
+							if nogcWriter != nil {
+								copyTo(gcWriter, msg, "CopyToPointer", msg.Name, to.Name+"PointerBuilder")
+								copyTo(gcWriter, msg, "CopyToPointer", msg.Name+"Builder", to.Name+"PointerBuilder")
+							}
+							copyTo(gcWriter, msg, "CopyTo", msg.Name, to.Name+"Builder")
+							copyTo(gcWriter, msg, "CopyTo", msg.Name+"Builder", to.Name+"Builder")
 						}
-						copyTo(nogcWriter, msg, "CopyToPointer", msg.Name+"Pointer", to.Name+"PointerBuilder")
-						copyTo(nogcWriter, msg, "CopyToPointer", msg.Name+"PointerBuilder", to.Name+"PointerBuilder")
 					}
 				}
+				if m.VLS != nil {
+					write(m.VLS)
+				}
+				if m.Fixed != nil {
+					write(m.Fixed)
+				}
 			}
-			if m.VLS != nil {
-				write(m.VLS)
-			}
-			if m.Fixed != nil {
-				write(m.Fixed)
+			if nogcWriter != nil {
+				write := func(msg *Struct) {
+					if gcWriter != nil {
+						copyTo(nogcWriter, msg, "Copy", msg.Name+"Pointer", msg.Name+"Builder")
+						copyTo(nogcWriter, msg, "Copy", msg.Name+"PointerBuilder", msg.Name+"Builder")
+					}
+
+					copyTo(nogcWriter, msg, "CopyPointer", msg.Name+"Pointer", msg.Name+"PointerBuilder")
+					copyTo(nogcWriter, msg, "CopyPointer", msg.Name+"PointerBuilder", msg.Name+"PointerBuilder")
+
+					if msg.Message != nil {
+						to := msg.Message.VLS
+						if msg.VLS {
+							to = msg.Message.Fixed
+						}
+						if to != nil {
+							if gcWriter != nil {
+								copyTo(nogcWriter, msg, "CopyTo", msg.Name+"Pointer", to.Name+"Builder")
+								copyTo(nogcWriter, msg, "CopyTo", msg.Name+"PointerBuilder", to.Name+"Builder")
+							}
+							copyTo(nogcWriter, msg, "CopyToPointer", msg.Name+"Pointer", to.Name+"PointerBuilder")
+							copyTo(nogcWriter, msg, "CopyToPointer", msg.Name+"PointerBuilder", to.Name+"PointerBuilder")
+						}
+					}
+				}
+				if m.VLS != nil {
+					write(m.VLS)
+				}
+				if m.Fixed != nil {
+					write(m.Fixed)
+				}
 			}
 		}
 
@@ -605,100 +623,6 @@ func (g *Generator) generateStructs() error {
 		}
 	}
 	return nil
-}
-
-func (g *Generator) writeClearComment(w *Writer, msg *Struct, name string) {
-	if len(name) > 0 {
-		w.Line("// %s", name)
-	}
-	w.Line("// {")
-	maxWidth := 0
-	for _, f := range msg.Fields {
-		if len(f.Fields) > 0 {
-			continue
-		}
-		if maxWidth < len(f.Name) {
-			maxWidth = len(f.Name)
-		}
-	}
-
-	maxWidth++
-	pad := func(s string) string {
-		for len(s) < maxWidth {
-			s = s + " "
-		}
-		return s
-	}
-	for _, f := range msg.Fields {
-		if len(f.Fields) > 0 {
-			continue
-		}
-
-		name := pad(f.Name)
-
-		if f.Initial == nil {
-			switch f.Type.Kind {
-			case schema.KindStringFixed, schema.KindStringVLS:
-				w.Line("//     %s= \"\"", name)
-			case schema.KindBool:
-				w.Line("//     %s= false", name)
-			case schema.KindEnum:
-				option := f.Type.Enum.OptionByValue(0)
-				if option != nil {
-					w.Line("//     %s= %s  (%d)", name, option.Name, option.Value)
-				} else {
-					w.Line("//     %s= 0", name)
-				}
-			default:
-				w.Line("//     %s= 0", name)
-			}
-			continue
-		}
-
-		switch f.Initial.Type {
-		case schema.ValueTypeSizeof:
-			w.Line("//     %s= %sSize  (%d)", name, msg.Name, msg.Size)
-		case schema.ValueTypeString:
-			w.Line("//     %s= \"%s\"", name, f.Initial.Str)
-		case schema.ValueTypeBool:
-			if f.Initial.Int == 0 {
-				w.Line("//     %s= false", name)
-			} else {
-				w.Line("//     %s= true", name)
-			}
-		case schema.ValueTypeInt:
-			if f.Type.Kind == schema.KindBool {
-				if f.Initial.Int == 0 {
-					w.Line("//     %s= false", name)
-				} else {
-					w.Line("//     %s= true", name)
-				}
-			} else {
-				w.Line("//     %s= %d", name, f.Initial.Int)
-			}
-		case schema.ValueTypeUint:
-			if f.Type.Kind == schema.KindBool {
-				if f.Initial.Uint == 0 {
-					w.Line("//     %s= false", name)
-				} else {
-					w.Line("//     %s= true", name)
-				}
-			} else {
-				w.Line("//     %s= %d", name, f.Initial.Int)
-			}
-		case schema.ValueTypeFloat:
-			w.Line("//     %s= %f", name, f.Initial.Float64)
-		case schema.ValueTypeFloat32Max:
-			w.Line("//     %s= math.MaxFloat32", name)
-		case schema.ValueTypeFloat64Max:
-			w.Line("//     %s= math.MaxFloat64", name)
-		case schema.ValueTypeConst:
-			w.Line("//     %s= %s  (%d)", name, f.Initial.Const.Name, f.Initial.Int)
-		case schema.ValueTypeEnumOption:
-			w.Line("//     %s= %s  (%d)", name, f.Initial.EnumOption.Name, f.Initial.Int)
-		}
-	}
-	w.Line("// }")
 }
 
 func protobufMarshalField(f *Field, getterExpression string) string {

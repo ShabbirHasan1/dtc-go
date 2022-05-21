@@ -31,15 +31,9 @@ func (g *Generator) generateSerializers(msg *Message) error {
 	writeImports := func(w *Writer) {
 		w.Line("//go:build !tinygo")
 		w.Line("")
-		if gcWriter != nil {
-			if len(g.config.GeneratedComment) > 0 {
-				gcWriter.Line("// %s", g.config.GeneratedComment)
-			}
-		}
-		if nogcWriter != nil && nogcWriter != gcWriter {
-			if len(g.config.GeneratedComment) > 0 {
-				nogcWriter.Line("// %s", g.config.GeneratedComment)
-			}
+		if len(g.config.GeneratedComment) > 0 {
+			w.Line("// %s", g.config.GeneratedComment)
+			w.Line("")
 		}
 		w.Line("package %s", g.packageName)
 		w.Line("")
@@ -213,7 +207,7 @@ func (g *Generator) generateJson(msg *Struct, gcWriter, nogcWriter *Writer) erro
 	}
 
 	unmarshalJSONCompact := func(w *Writer, name string) {
-		w.Line("func (m *%s) UnmarshalJSONCompactFrom(r *json.Reader) error {", name)
+		w.Line("func (m *%s) UnmarshalJSONCompact(r *json.Reader) error {", name)
 		//w.IndentLine(1, "r, err := json.OpenReader(b)")
 		//w.IndentLine(1, "if err != nil {")
 		//w.IndentLine(2, "return err")
@@ -266,8 +260,8 @@ func (g *Generator) generateJson(msg *Struct, gcWriter, nogcWriter *Writer) erro
 		unmarshalJSONCompact(nogcWriter, msg.Name+"PointerBuilder")
 	}
 
-	unmarshalJSON := func(w *Writer, name string) {
-		w.Line("func (m *%s) UnmarshalJSONFrom(r *json.Reader) error {", name)
+	unmarshalJSONFrom := func(w *Writer, name string) {
+		w.Line("func (m *%s) UnmarshalJSONDoc(r *json.Reader) error {", name)
 		w.IndentLine(1, "if r.Type != %d {", msg.Type)
 		w.IndentLine(2, "return message.ErrWrongType")
 		w.IndentLine(1, "}")
@@ -324,6 +318,32 @@ func (g *Generator) generateJson(msg *Struct, gcWriter, nogcWriter *Writer) erro
 		w.Line("")
 	}
 
+	if gcWriter != nil {
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("// JSON Unmarshal")
+		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		gcWriter.Line("")
+
+		unmarshalJSONFrom(gcWriter, msg.Name+"Builder")
+	}
+	if nogcWriter != nil {
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("// JSON Unmarshal")
+		nogcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
+		nogcWriter.Line("")
+
+		unmarshalJSONFrom(nogcWriter, msg.Name+"PointerBuilder")
+	}
+
+	unmarshalJSON := func(w *Writer, name string) {
+		w.Line("func (m *%s) UnmarshalJSONReader(r *json.Reader) error {", name)
+		w.IndentLine(1, "if r.IsCompact {")
+		w.IndentLine(2, "return m.UnmarshalJSONCompact(r)")
+		w.IndentLine(1, "}")
+		w.IndentLine(2, "return m.UnmarshalJSONDoc(r)")
+		w.Line("}")
+		w.Line("")
+	}
 	if gcWriter != nil {
 		gcWriter.Line("//////////////////////////////////////////////////////////////////////////////////////////")
 		gcWriter.Line("// JSON Unmarshal")

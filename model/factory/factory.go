@@ -1,8 +1,7 @@
 package factory
 
 import (
-	"github.com/moontrade/dtc-go/message"
-	"github.com/moontrade/dtc-go/model"
+	v8 "github.com/moontrade/dtc-go/model/v8"
 )
 
 type Factory struct {
@@ -16,29 +15,23 @@ type Factory struct {
 type AccountBalanceAdjustment struct {
 }
 
-func (AccountBalanceAdjustment) New() model.AccountBalanceAdjustmentBuilder {
-	return model.NewAccountBalanceAdjustment()
+func (AccountBalanceAdjustment) New() v8.AccountBalanceAdjustmentBuilder {
+	return v8.NewAccountBalanceAdjustment()
 }
 
-func (AccountBalanceAdjustment) Alloc() model.AccountBalanceAdjustmentPointerBuilder {
-	return model.AllocAccountBalanceAdjustment()
+func (AccountBalanceAdjustment) Alloc() v8.AccountBalanceAdjustmentPointerBuilder {
+	return v8.AllocAccountBalanceAdjustment()
 }
 
 type AccountBalanceAdjustmentFixed struct {
 }
 
-func (AccountBalanceAdjustmentFixed) New() model.AccountBalanceAdjustmentBuilder {
-	return model.NewAccountBalanceAdjustment()
+func (AccountBalanceAdjustmentFixed) New() v8.AccountBalanceAdjustmentBuilder {
+	return v8.NewAccountBalanceAdjustment()
 }
 
-func (AccountBalanceAdjustmentFixed) Alloc() model.AccountBalanceAdjustmentPointerBuilder {
-	return model.AllocAccountBalanceAdjustment()
-}
-
-func (AccountBalanceAdjustmentFixed) AllocFromBytes(b []byte) model.AccountBalanceAdjustmentPointerBuilder {
-	to := model.AllocAccountBalanceAdjustment()
-	model.AccountBalanceAdjustmentFixed{Fixed: message.WrapFixed(b)}.CopyToPointer(to)
-	return to
+func (AccountBalanceAdjustmentFixed) Alloc() v8.AccountBalanceAdjustmentPointerBuilder {
+	return v8.AllocAccountBalanceAdjustment()
 }
 
 //func (AccountBalanceAdjustment) AllocFromFixed(f fixed.AccountBalanceAdjustment) model.AccountBalanceAdjustmentPointer {

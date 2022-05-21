@@ -30,11 +30,28 @@ func (m VLS) BaseSize() uint16 {
 	return m.Unsafe().Uint16LE(4)
 }
 
-func NewVLS(size uintptr) VLS {
+//func (v VLS) CopyTo(b VLSBuilder) {
+//	if v.Ptr == nil || b.Ptr == 0 {
+//		return
+//	}
+//	dstSize := b.BaseSize()
+//	nogc.Copy(b.Ptr, v.Unsafe(), )
+//}
+
+func NewVLSSized(size uintptr) VLS {
 	return VLS{GCPointer{gcAlloc(size)}}
 }
 
-func WrapVLSFromBytes(b []byte) VLS {
+func NewVLS(init []byte) VLS {
+	c := len(init) * 2
+	if c == 0 {
+		return VLS{}
+	}
+	p := gcAlloc(uintptr(c))
+	return VLS{GCPointer{Ptr: p}}
+}
+
+func WrapVLS(b []byte) VLS {
 	if len(b) < 6 {
 		return VLS{}
 	}
@@ -46,22 +63,22 @@ func WrapVLSFromBytes(b []byte) VLS {
 	return m
 }
 
-func WrapVLSFromBytesOfType(b []byte, _type uint16) VLS {
-	if len(b) < 6 {
-		return VLS{}
-	}
-	if _type != nogc.Pointer(unsafe.Pointer(&b[2])).Uint16LE(0) {
-		return VLS{}
-	}
-
-	h := *(*_bytes)(unsafe.Pointer(&b))
-	m := VLS{GCPointer{Ptr: h.Data}}
-	if m.Ptr == nil {
-		return m
-	}
-	nogc.Pointer(m.Ptr).SetBytes(0, b)
-	return m
-}
+//func WrapVLSFromBytesOfType(b []byte, _type uint16) VLS {
+//	if len(b) < 6 {
+//		return VLS{}
+//	}
+//	if _type != nogc.Pointer(unsafe.Pointer(&b[2])).Uint16LE(0) {
+//		return VLS{}
+//	}
+//
+//	h := *(*_bytes)(unsafe.Pointer(&b))
+//	m := VLS{GCPointer{Ptr: h.Data}}
+//	if m.Ptr == nil {
+//		return m
+//	}
+//	nogc.Pointer(m.Ptr).SetBytes(0, b)
+//	return m
+//}
 
 type VLSPointer struct {
 	Pointer
@@ -108,11 +125,23 @@ func (m VLSPointer) BaseSize() uint16 {
 	return m.Ptr.Uint16LE(4)
 }
 
-func AllocVLS(size uintptr) VLSPointer {
-	return VLSPointer{Pointer{nogc.Alloc(size)}}
+func AllocVLSSized(size uintptr) VLSPointer {
+	return VLSPointer{Pointer{nogc.AllocZeroed(size)}}
 }
 
-func NewVLSBuilder(size int) VLSBuilder {
+func AllocVLS(init []byte) VLSPointer {
+	if len(init) == 0 {
+		return VLSPointer{}
+	}
+	p := nogc.Alloc(uintptr(len(init)))
+	if p == 0 {
+		return VLSPointer{}
+	}
+	p.SetBytes(0, init)
+	return VLSPointer{Pointer: Pointer{Ptr: p}}
+}
+
+func NewVLSBuilderSized(size int) VLSBuilder {
 	c := size * 2
 	p := gcAlloc(uintptr(c))
 	return VLSBuilder{vlsBuilder: vlsBuilder{
@@ -122,12 +151,49 @@ func NewVLSBuilder(size int) VLSBuilder {
 	}, ref: p}
 }
 
-func AllocVLSBuilder(size uintptr) VLSPointerBuilder {
-	p, c := nogc.AllocCap(size)
+func NewVLSBuilder(init []byte) VLSBuilder {
+	c := len(init) * 2
+	if c == 0 {
+		return VLSBuilder{}
+	}
+	p := gcAlloc(uintptr(c))
+	return VLSBuilder{vlsBuilder: vlsBuilder{
+		Ptr:    nogc.Pointer(p),
+		cap:    c,
+		growBy: len(init),
+	}, ref: p}
+}
+
+func AllocVLSBuilderSized(size int) VLSPointerBuilder {
+	size *= 2
+	if size == 0 {
+		return VLSPointerBuilder{}
+	}
+	p, c := nogc.AllocZeroedCap(uintptr(size))
+	if p == 0 {
+		return VLSPointerBuilder{}
+	}
 	return VLSPointerBuilder{vlsBuilder: vlsBuilder{
 		Ptr:    p,
 		cap:    int(c),
-		growBy: int(size),
+		growBy: size,
+	}, ref: 0}
+}
+
+func AllocVLSBuilder(init []byte) VLSPointerBuilder {
+	size := len(init) * 2
+	if size == 0 {
+		return VLSPointerBuilder{}
+	}
+	p, c := nogc.AllocCap(uintptr(size))
+	if p == 0 {
+		return VLSPointerBuilder{}
+	}
+	p.SetBytes(0, init)
+	return VLSPointerBuilder{vlsBuilder: vlsBuilder{
+		Ptr:    p,
+		cap:    int(c),
+		growBy: size,
 	}, ref: 0}
 }
 
@@ -159,30 +225,6 @@ func AllocVLSFromBytesOfType(b []byte, _type uint16) VLSPointer {
 		return m
 	}
 	m.Ptr.SetBytes(0, b)
-	return m
-}
-
-func NewVLSFrom(b []byte) VLS {
-	if len(b) < 6 {
-		return VLS{}
-	}
-	m := VLS{GCPointer{Ptr: gcAlloc(uintptr(len(b)))}}
-	if m.Ptr == nil {
-		return m
-	}
-	nogc.Pointer(m.Ptr).SetBytes(0, b)
-	return m
-}
-
-func WrapVLS(b []byte) VLS {
-	if len(b) < 6 {
-		return VLS{}
-	}
-	header := *(*_bytes)(unsafe.Pointer(&b))
-	m := VLS{GCPointer{Ptr: header.Data}}
-	if m.Ptr == nil {
-		return m
-	}
 	return m
 }
 

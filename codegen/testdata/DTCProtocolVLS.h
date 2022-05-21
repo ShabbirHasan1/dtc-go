@@ -105,8 +105,8 @@ namespace DTC_VLS
 		int32_t Integer_1;
 		int32_t Integer_2;
 		int32_t HeartbeatIntervalInSeconds; 
-		DTC::TradeModeEnum TradeMode;
-		vls_t TradeAccount;
+		int32_t Unused1;
+		vls_t TradeAccount; 
 		vls_t HardwareIdentifier;
 		vls_t ClientName;
 		int32_t MarketDataTransmissionInterval;
@@ -163,7 +163,6 @@ namespace DTC_VLS
 		int32_t GetInteger_1() const;
 		int32_t GetInteger_2() const;
 		int32_t GetHeartbeatIntervalInSeconds() const;
-		DTC::TradeModeEnum GetTradeMode() const;
 		const char* GetTradeAccount() const
 		{
 			return GetVariableLengthStringField(Size, BaseSize, TradeAccount, offsetof(s_LogonRequest, TradeAccount));
@@ -221,7 +220,7 @@ namespace DTC_VLS
 		uint8_t MarketDepthIsSupported;
 		uint8_t OneHistoricalPriceDataRequestPerConnection;
 		uint8_t BracketOrdersSupported;
-		uint8_t UseIntegerPriceOrderMessages;
+		uint8_t Unused_1;
 		uint8_t UsesMultiplePositionsPerSymbolAndTradeAccount;
 		uint8_t MarketDataSupported;
 
@@ -256,7 +255,6 @@ namespace DTC_VLS
 		uint8_t GetResubscribeWhenMarketDataFeedAvailable() const;
 		uint8_t GetMarketDepthIsSupported() const;
 		uint8_t GetOneHistoricalPriceDataRequestPerConnection() const;
-		uint8_t GetUseIntegerPriceOrderMessages() const;
 		uint8_t GetBracketOrdersSupported() const;
 		uint8_t GetUsesMultiplePositionsPerSymbolAndTradeAccount() const;
 		uint8_t GetMarketDataSupported() const;
@@ -356,7 +354,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -411,7 +409,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -464,7 +462,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -614,7 +612,7 @@ namespace DTC_VLS
 		DTC::TimeInForceEnum TimeInForce;
 
 		DTC::t_DateTime GoodTillDateTime;
-
+		
 		uint8_t IsAutomatedOrder;
 
 		uint8_t IsParentOrder;
@@ -702,7 +700,7 @@ namespace DTC_VLS
 		{
 			AddVariableLengthStringField(Size, FreeFormText, StringLength);
 		}
-
+		
 		DTC::OpenCloseTradeEnum GetOpenOrClose() const;
 		double GetMaxShowQuantity() const;
 
@@ -729,121 +727,11 @@ namespace DTC_VLS
 	};
 
 	/*==========================================================================*/
-	struct s_SubmitNewSingleOrderInt
-	{
-		uint16_t Size;
-		uint16_t Type;
-		uint16_t BaseSize;
-
-		vls_t Symbol;
-		vls_t Exchange;
-
-		vls_t TradeAccount;
-		vls_t ClientOrderID;
-
-		DTC::OrderTypeEnum OrderType;
-		DTC::BuySellEnum BuySell;
-
-		int64_t Price1;
-		int64_t Price2;
-		float Divisor;
-		int64_t Quantity;
-
-		DTC::TimeInForceEnum TimeInForce;
-		DTC::t_DateTime GoodTillDateTime;
-
-		uint8_t IsAutomatedOrder;
-		uint8_t IsParentOrder;
-
-		vls_t FreeFormText;
-
-		DTC::OpenCloseTradeEnum OpenOrClose;
-
-		s_SubmitNewSingleOrderInt()
-		{
-			Clear();
-		}
-
-		uint16_t GetMessageSize() const;
-		uint16_t GetBaseSize() const;
-		void Clear()
-		{
-			memset(this, 0, sizeof(s_SubmitNewSingleOrderInt));
-			Size = sizeof(s_SubmitNewSingleOrderInt);
-			Type = DTC::SUBMIT_NEW_SINGLE_ORDER_INT;
-			BaseSize = Size;
-		}
-
-		const char* GetSymbol() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, Symbol, offsetof(s_SubmitNewSingleOrderInt, Symbol));
-		}
-
-		void AddSymbol(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, Symbol, StringLength);
-		}
-
-		const char* GetExchange() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, Exchange, offsetof(s_SubmitNewSingleOrderInt, Exchange));
-		}
-
-		void AddExchange(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, Exchange, StringLength);
-		}
-
-		const char* GetTradeAccount() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, TradeAccount, offsetof(s_SubmitNewSingleOrderInt, TradeAccount));
-		}
-
-		void AddTradeAccount(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, TradeAccount, StringLength);
-		}
-
-		const char* GetClientOrderID() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, ClientOrderID, offsetof(s_SubmitNewSingleOrderInt, ClientOrderID));
-		}
-
-		void AddClientOrderID(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, ClientOrderID, StringLength);
-		}
-
-		DTC::OrderTypeEnum GetOrderType() const;
-		DTC::BuySellEnum GetBuySell() const;
-		int64_t GetPrice1() const;
-		int64_t GetPrice2() const;
-		float GetDivisor() const;
-		int64_t GetQuantity() const;
-		DTC::TimeInForceEnum GetTimeInForce() const;
-		DTC::t_DateTime GetGoodTillDateTime() const;
-		uint8_t GetIsAutomatedOrder() const;
-		uint8_t GetIsParentOrder() const;
-
-		const char* GetFreeFormText() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, FreeFormText, offsetof(s_SubmitNewSingleOrderInt, FreeFormText));
-		}
-
-		void AddFreeFormText(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, FreeFormText, StringLength);
-		}
-
-		DTC::OpenCloseTradeEnum GetOpenOrClose() const;
-	};
-
-	/*==========================================================================*/
 	struct s_SubmitFlattenPositionOrder
 	{
-		uint16_t Size;
-		uint16_t Type;
-		uint16_t BaseSize;
+		uint16_t Size = sizeof(s_SubmitFlattenPositionOrder);
+		uint16_t Type = DTC::SUBMIT_FLATTEN_POSITION_ORDER;
+		uint16_t BaseSize = Size;
 
 		vls_t Symbol;
 		vls_t Exchange;
@@ -851,22 +739,10 @@ namespace DTC_VLS
 		vls_t TradeAccount;
 		vls_t ClientOrderID;
 		vls_t FreeFormText;
-		uint8_t IsAutomatedOrder;
-
-		s_SubmitFlattenPositionOrder()
-		{
-			Clear();
-		}
+		uint8_t IsAutomatedOrder= 0;
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
-		void Clear()
-		{
-			memset(this, 0, sizeof(s_SubmitFlattenPositionOrder));
-			Size = sizeof(s_SubmitFlattenPositionOrder);
-			Type = DTC::SUBMIT_FLATTEN_POSITION_ORDER;
-			BaseSize = Size;
-		}
 
 		const char* GetSymbol()
 		{
@@ -936,8 +812,8 @@ namespace DTC_VLS
 
 		double Quantity;
 
-		uint8_t Price1IsSet;
-		uint8_t Price2IsSet;
+		int8_t Price1IsSet;
+		int8_t Price2IsSet;
 
 		int32_t Unused;
 		DTC::TimeInForceEnum TimeInForce;
@@ -952,7 +828,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -1023,79 +899,7 @@ namespace DTC_VLS
 		int8_t GetPrice2IsSet() const;
 		DTC::TimeInForceEnum GetTimeInForce() const;
 		DTC::t_DateTime GetGoodTillDateTime() const;
-		uint8_t GetUpdatePrice1OffsetToParent() const;
-	};
-
-	/*==========================================================================*/
-	struct s_CancelReplaceOrderInt
-	{
-		uint16_t Size;
-		uint16_t Type;
-		uint16_t BaseSize;
-
-		vls_t ServerOrderID;
-		vls_t ClientOrderID;
-
-		int64_t Price1;
-		int64_t Price2;
-		float Divisor;
-		int64_t Quantity;
-		uint8_t Price1IsSet;
-		uint8_t Price2IsSet;
-
-		int32_t Unused;
-		DTC::TimeInForceEnum TimeInForce;
-		DTC::t_DateTime GoodTillDateTime;
-		uint8_t UpdatePrice1OffsetToParent;
-
-		s_CancelReplaceOrderInt()
-		{
-			Clear();
-		}
-
-		uint16_t GetMessageSize() const;
-		uint16_t GetBaseSize() const;
-		void Clear()
-		{
-			memset(this, 0, sizeof(s_CancelReplaceOrderInt));
-			Size = sizeof(s_CancelReplaceOrderInt);
-			Type = DTC::CANCEL_REPLACE_ORDER_INT;
-			BaseSize = Size;
-
-			Divisor = 1.0f;
-			Price1IsSet = 1;
-			Price2IsSet = 1;
-		}
-
-		const char* GetServerOrderID() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, ServerOrderID, offsetof(s_CancelReplaceOrderInt, ServerOrderID));
-		}
-
-		void AddServerOrderID(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, ServerOrderID, StringLength);
-		}
-
-		const char* GetClientOrderID() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, ClientOrderID, offsetof(s_CancelReplaceOrderInt, ClientOrderID));
-		}
-
-		void AddClientOrderID(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, ClientOrderID, StringLength);
-		}
-
-		int64_t GetPrice1() const;
-		int64_t GetPrice2() const;
-		float GetDivisor() const;
-		int64_t GetQuantity() const;
-		int8_t GetPrice1IsSet() const;
-		int8_t GetPrice2IsSet() const;
-		DTC::TimeInForceEnum GetTimeInForce() const;
-		DTC::t_DateTime GetGoodTillDateTime() const;
-		uint8_t GetUpdatePrice1OffsetToParent() const;
+		uint8_t GetUpdatePrice1OffsetToParent() const;		
 	};
 
 	/*==========================================================================*/
@@ -1104,7 +908,7 @@ namespace DTC_VLS
 		uint16_t Size;
 		uint16_t Type;
 		uint16_t BaseSize;
-
+		
 		vls_t ServerOrderID;
 		vls_t ClientOrderID;
 		vls_t TradeAccount;
@@ -1113,7 +917,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -1210,7 +1014,7 @@ namespace DTC_VLS
 			Type = DTC::SUBMIT_NEW_OCO_ORDER;
 			BaseSize = Size;
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 
@@ -1284,7 +1088,6 @@ namespace DTC_VLS
 			AddVariableLengthStringField(Size, TradeAccount, StringLength);
 		}
 
-
 		const char* GetPrice1_1AsString() const
 		{
 			return GetVariableLengthStringField(Size, BaseSize, Price1_1AsString, offsetof(s_SubmitNewOCOOrder, Price1_1AsString));
@@ -1347,150 +1150,6 @@ namespace DTC_VLS
 	};
 
 	/*==========================================================================*/
-	struct s_SubmitNewOCOOrderInt
-	{
-		uint16_t Size;
-		uint16_t Type;
-		uint16_t BaseSize;
-
-		vls_t Symbol;
-		vls_t Exchange;
-
-		vls_t ClientOrderID_1;
-		DTC::OrderTypeEnum OrderType_1;
-		DTC::BuySellEnum BuySell_1;
-		int64_t Price1_1;
-		int64_t Price2_1;
-		int64_t Quantity_1;
-
-		vls_t ClientOrderID_2;
-		DTC::OrderTypeEnum OrderType_2;
-		DTC::BuySellEnum BuySell_2;
-		int64_t Price1_2;
-		int64_t Price2_2;
-		int64_t Quantity_2;
-
-		DTC::TimeInForceEnum TimeInForce;
-		DTC::t_DateTime GoodTillDateTime;
-
-		vls_t TradeAccount;
-
-		uint8_t IsAutomatedOrder;
-
-		vls_t ParentTriggerClientOrderID;
-
-		vls_t FreeFormText;
-
-		float Divisor;
-
-		DTC::OpenCloseTradeEnum OpenOrClose;
-
-		DTC::PartialFillHandlingEnum PartialFillHandling;
-
-		s_SubmitNewOCOOrderInt()
-		{
-			Clear();
-		}
-
-		uint16_t GetMessageSize() const;
-		uint16_t GetBaseSize() const;
-		void Clear()
-		{
-			memset(this, 0, sizeof(s_SubmitNewOCOOrderInt));
-			Size = sizeof(s_SubmitNewOCOOrderInt);
-			Type = DTC::SUBMIT_NEW_OCO_ORDER_INT;
-			BaseSize = Size;
-		}
-
-		void AddClientOrderID_1(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, ClientOrderID_1, StringLength);
-		}
-
-		void AddClientOrderID_2(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, ClientOrderID_2, StringLength);
-		}
-
-		const char* GetFreeFormText() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, FreeFormText, offsetof(s_SubmitNewOCOOrderInt, FreeFormText));
-		}
-
-		void AddFreeFormText(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, FreeFormText, StringLength);
-		}
-
-		const char* GetClientOrderID_1() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, ClientOrderID_1, offsetof(s_SubmitNewOCOOrderInt, ClientOrderID_1));
-		}
-
-		const char* GetClientOrderID_2() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, ClientOrderID_2, offsetof(s_SubmitNewOCOOrderInt, ClientOrderID_2));
-		}
-
-		const char* GetSymbol() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, Symbol, offsetof(s_SubmitNewOCOOrderInt, Symbol));
-		}
-
-		void AddSymbol(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, Symbol, StringLength);
-		}
-
-		const char* GetExchange() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, Exchange, offsetof(s_SubmitNewOCOOrderInt, Exchange));
-		}
-
-		void AddExchange(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, Exchange, StringLength);
-		}
-
-		void AddParentTriggerClientOrderID(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, ParentTriggerClientOrderID, StringLength);
-		}
-
-		const char* GetParentTriggerClientOrderID() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, ParentTriggerClientOrderID, offsetof(s_SubmitNewOCOOrderInt, ParentTriggerClientOrderID));
-		}
-
-		const char* GetTradeAccount() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, TradeAccount, offsetof(s_SubmitNewOCOOrderInt, TradeAccount));
-		}
-
-		void AddTradeAccount(uint16_t StringLength)
-		{
-			AddVariableLengthStringField(Size, TradeAccount, StringLength);
-		}
-
-		DTC::OrderTypeEnum GetOrderType_1() const;
-		DTC::OrderTypeEnum GetOrderType_2() const;
-		DTC::BuySellEnum GetBuySell_1() const;
-		DTC::BuySellEnum GetBuySell_2() const;
-		DTC::TimeInForceEnum GetTimeInForce() const;
-		DTC::t_DateTime GetGoodTillDateTime() const;
-		uint8_t GetIsAutomatedOrder() const;
-		int64_t GetPrice1_1() const;
-		int64_t GetPrice2_1() const;
-		int64_t GetPrice1_2() const;
-		int64_t GetPrice2_2() const;
-		int64_t GetQuantity_1() const;
-		int64_t GetQuantity_2() const;
-		float GetDivisor() const;
-		DTC::OpenCloseTradeEnum GetOpenOrClose() const;
-		DTC::PartialFillHandlingEnum GetPartialFillHandling() const;
-	};
-
-	/*==========================================================================*/
 	struct s_OpenOrdersRequest
 	{
 		uint16_t Size;
@@ -1508,7 +1167,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -1566,7 +1225,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -1654,7 +1313,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -1778,6 +1437,8 @@ namespace DTC_VLS
 		DTC::t_DateTimeWithMillisecondsInt OrderReceivedDateTime;
 		DTC::t_DateTimeWithMilliseconds LatestTransactionDateTime;
 
+		vls_t Username;
+
 		s_OrderUpdate()
 		{
 			Clear();
@@ -1794,7 +1455,7 @@ namespace DTC_VLS
 
 			//The following initializations indicate to the Client that these variables are in an unset state and their values should not be used
 			Price1 = DBL_MAX;
-			Price2 = DBL_MAX;
+			Price2 = DBL_MAX; 
 
 			OrderQuantity = DBL_MAX;
 			FilledQuantity = DBL_MAX;
@@ -1935,6 +1596,16 @@ namespace DTC_VLS
 			AddVariableLengthStringField(Size, FreeFormText, StringLength);
 		}
 
+		const char* GetUsername() const
+		{
+			return GetVariableLengthStringField(Size, BaseSize, Username, offsetof(s_OrderUpdate, Username));
+		}
+
+		void AddUsername(uint16_t StringLength)
+		{
+			AddVariableLengthStringField(Size, Username, StringLength);
+		}
+
 		double GetOrderQuantity() const;
 		double GetFilledQuantity() const;
 		double GetRemainingQuantity() const;
@@ -1958,7 +1629,7 @@ namespace DTC_VLS
 		DTC::t_DateTime GetOrderReceivedDateTime() const;
 		DTC::t_DateTimeWithMilliseconds GetLatestTransactionDateTime() const;
 	};
-
+	
 	/*==========================================================================*/
 	struct s_OpenOrdersReject
 	{
@@ -1973,7 +1644,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -2004,7 +1675,7 @@ namespace DTC_VLS
 		uint16_t Type = DTC::HISTORICAL_ORDER_FILL_RESPONSE;
 		uint16_t BaseSize = Size;
 
-		int32_t RequestID = 0;
+		int32_t RequestID = 0; 
 
 		int32_t TotalNumberMessages = 0;
 
@@ -2020,7 +1691,7 @@ namespace DTC_VLS
 		vls_t UniqueExecutionID;
 		vls_t TradeAccount;
 
-		DTC::OpenCloseTradeEnum OpenClose = DTC::TRADE_UNSET;
+		DTC::OpenCloseTradeEnum OpenClose = DTC::TRADE_UNSET; 
 
 		uint8_t NoOrderFills = 0;
 
@@ -2029,7 +1700,7 @@ namespace DTC_VLS
 		double HighPriceDuringPosition = 0;
 		double LowPriceDuringPosition = 0;
 		double PositionQuantity = DBL_MAX;
-
+				
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 
@@ -2484,7 +2155,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -2651,9 +2322,9 @@ namespace DTC_VLS
 			AddVariableLengthStringField(Size, Symbol, StringLength);
 		}
 
-		const char* GetSymbol() const
-		{
-			return GetVariableLengthStringField(Size, BaseSize, Symbol, offsetof(s_SecurityDefinitionForSymbolRequest, Symbol));
+		const char* GetSymbol() const 
+		{ 
+			return GetVariableLengthStringField(Size, BaseSize, Symbol, offsetof(s_SecurityDefinitionForSymbolRequest, Symbol)); 
 		}
 
 		void AddExchange(uint16_t StringLength)
@@ -2680,7 +2351,7 @@ namespace DTC_VLS
 		vls_t Exchange;
 
 		DTC::SecurityTypeEnum SecurityType;
-
+		
 		vls_t Description;
 		float MinPriceIncrement;
 		DTC::PriceDisplayFormatEnum PriceDisplayFormat;
@@ -2724,12 +2395,14 @@ namespace DTC_VLS
 		uint32_t OpenInterest;
 		DTC::t_DateTime4Byte RolloverDate;
 		uint8_t IsDelayed;
+		int64_t SecurityIdentifier = 0;
+		vls_t ProductIdentifier;
 
 		s_SecurityDefinitionResponse()
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -2834,6 +2507,17 @@ namespace DTC_VLS
 		uint32_t GetOpenInterest() const;
 		DTC::t_DateTime4Byte GetRolloverDate() const;
 		uint8_t GetIsDelayed() const;
+		int64_t GetSecurityIdentifier() const;
+
+		void AddProductIdentifier(uint16_t StringLength)
+		{
+			AddVariableLengthStringField(Size, ProductIdentifier, StringLength);
+		}
+
+		const char* GetProductIdentifier() const
+		{
+			return GetVariableLengthStringField(Size, BaseSize, ProductIdentifier, offsetof(s_SecurityDefinitionResponse, ProductIdentifier));
+		}
 	};
 
 
@@ -3002,7 +2686,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -3405,7 +3089,7 @@ namespace DTC_VLS
 		{
 			Clear();
 		}
-
+		
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 		void Clear()
@@ -3728,7 +3412,7 @@ namespace DTC_VLS
 		}
 
 		int32_t GetRequestID() const;
-
+		
 		void AddSymbol(uint16_t StringLength)
 		{
 			AddVariableLengthStringField(Size, Symbol, StringLength);

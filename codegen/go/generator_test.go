@@ -11,7 +11,7 @@ func TestGenerator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	g, err := NewGenerator(DefaultConfig("../../model"), schema)
+	g, err := NewGenerator(DefaultConfig("../../model/v8"), schema)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,9 +27,9 @@ func TestGeneratorNonStandard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c := DefaultConfig("../../model/sc")
+	c := DefaultConfig("../../model/v8/sc")
 	c.NonStandard = true
-	c.RootPackage = "github.com/moontrade/dtc-go/model/sc"
+	c.RootPackage = "github.com/moontrade/dtc-go/model/v8/sc"
 	g, err := NewGenerator(c, schema)
 	if err != nil {
 		t.Fatal(err)
