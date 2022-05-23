@@ -1,4 +1,4 @@
-use crate::message::Error;
+use crate::error::Error;
 use crate::v8::*;
 use crate::*;
 

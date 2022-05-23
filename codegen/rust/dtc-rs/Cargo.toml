@@ -4,12 +4,19 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "dtc-rs-example"
+name = "dtc"
 path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4"
+env_logger = "0.9"
+memchr = "2.5"
+async-trait = "0.1"
+thiserror = "1"
+clap = { version = "3.1.18", features = ["derive"] }
+libmdbx = "0.1"
 ntex = { version = "0.5", features = ["tokio", "rustls"] }
 ntex-bytes = "0.1"
 ntex-io = "0.1"
@@ -17,20 +24,13 @@ ntex-util = "0.1"
 ntex-service = "0.3"
 pin-project-lite = "0.2"
 rustls = "0.20"
-# rustls
 tls_rust = { version = "0.20", package = "rustls", optional = true }
 rand = "0.8"
 byteorder = "1.4"
 futures = "0.3"
-
-log = "0.4"
-env_logger = "0.9"
 rustls-pemfile = { version = "1" }
 webpki-roots = { version = "0.22" }
 
-libmdbx = "0.1"
-memchr = "2.5"
-async-trait = "0.1"
 
 [dev-dependencies]
 
@@ -38,5 +38,5 @@ async-trait = "0.1"
 [profile.release]
 opt-level = 2
 lto = true
-strip = true
+# strip = true
 panic = "abort"

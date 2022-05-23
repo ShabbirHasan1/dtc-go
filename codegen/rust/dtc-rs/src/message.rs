@@ -1,6 +1,5 @@
+use crate::error::Error;
 use core::ptr;
-use ntex::connect::ConnectError;
-use ntex_bytes::BytesMut;
 
 pub enum Parsed<'a, A: Message, B: Message> {
     Left(&'a A),
@@ -49,7 +48,7 @@ pub trait Message: Sized + Into<Vec<u8>> + Send {
     #[inline]
     fn parse(data: &[u8]) -> Result<Parsed<Self::Safe, Self::Unsafe>, Error> {
         if data.len() < 6 {
-            return Err(Error::Malformed(Some("need more data")));
+            return Err(Error::Malformed("need more data"));
         }
         let size = unsafe { u16::from_le(*(data.as_ptr() as *const u16)) };
         let base_size = if Self::BASE_SIZE_OFFSET == 0 {
@@ -58,12 +57,7 @@ pub trait Message: Sized + Into<Vec<u8>> + Send {
             unsafe { u16::from_le(*(data.as_ptr().offset(Self::BASE_SIZE_OFFSET) as *const u16)) }
         };
         if (base_size as usize) >= Self::BASE_SIZE {
-            unsafe {
-                Ok(Parsed::Left(Self::Safe::leak(
-                    data.as_ptr(),
-                    size as usize,
-                )))
-            }
+            unsafe { Ok(Parsed::Left(Self::Safe::leak(data.as_ptr(), size as usize))) }
         } else {
             unsafe {
                 Ok(Parsed::Right(Self::Unsafe::leak(
@@ -71,16 +65,6 @@ pub trait Message: Sized + Into<Vec<u8>> + Send {
                     size as usize,
                 )))
             }
-        }
-    }
-
-    #[inline]
-    fn write_to(&self, b: &mut BytesMut) {
-        unsafe {
-            b.extend_from_slice(std::slice::from_raw_parts(
-                self.as_ptr() as *const u8,
-                self.size() as usize,
-            ));
         }
     }
 
@@ -138,16 +122,6 @@ impl VLS {
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum Error {
-    OutOfMemory,
-    Overflow,
-    Malformed(Option<&'static str>),
-    UnknownType(u16),
-    Connect(ConnectError),
-    SendError,
-}
-
 pub(crate) fn get_fixed_string(src: &[u8]) -> &str {
     match memchr::memchr(0, src) {
         Some(idx) => unsafe { std::str::from_utf8_unchecked(&src[0..idx]) },
@@ -160,11 +134,9 @@ pub(crate) fn set_fixed_string(src: &str, dst: &mut [u8]) {
         if src.len() < dst.len() {
             ptr::copy(src.as_ptr() as *mut u8, dst.as_ptr() as *mut u8, src.len());
             dst[src.len()] = 0;
-            // *(dst.as_ptr() as *mut u8).offset(src.len() as isize) = 0;
         } else {
             ptr::copy(src.as_ptr(), dst.as_ptr() as *mut u8, dst.len() - 1);
             dst[dst.len() - 1] = 0;
-            // *dst.offset(dst.len() as isize - 1) = 0;
         }
     }
 }
