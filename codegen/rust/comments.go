@@ -2,6 +2,7 @@ package rust
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/moontrade/dtc-go/codegen/schema"
@@ -12,9 +13,9 @@ func (g *Generator) writeComments(w *Writer, indent int, name string, comments [
 		return nil
 	}
 	comments = g.normalizeComments(comments)
-	if !strings.HasPrefix(comments[0], name) {
-		comments[0] = fmt.Sprintf("%s %s", name, strings.TrimSpace(comments[0]))
-	}
+	// if !strings.HasPrefix(comments[0], name) {
+	// 	comments[0] = fmt.Sprintf("%s %s", name, strings.TrimSpace(comments[0]))
+	// }
 	for _, comment := range comments {
 		comment = strings.TrimSpace(comment)
 		if len(comment) == 0 {
@@ -81,7 +82,6 @@ func (g *Generator) writeClearComment(w *Writer, msg *Struct, name string) {
 	if len(name) > 0 {
 		w.Line("/// %s", name)
 	}
-	//w.Line("// {")
 
 	var (
 		maxWidth     = 0
@@ -95,8 +95,10 @@ func (g *Generator) writeClearComment(w *Writer, msg *Struct, name string) {
 			maxWidth = len(f.Name)
 		}
 		tn := g.RustTypeName(&f.Type)
-		if f.Type.Kind == schema.KindStringFixed {
-			tn = fmt.Sprintf("%s[%d]", tn, f.Type.Size)
+		if f.Type.Kind == schema.KindStringVLS {
+			tn = "string"
+		} else if f.Type.Kind == schema.KindStringFixed {
+			tn = fmt.Sprintf("string%d", f.Type.Size)
 		}
 		if maxTypeWidth < len(tn) {
 			maxTypeWidth = len(tn)
@@ -118,72 +120,97 @@ func (g *Generator) writeClearComment(w *Writer, msg *Struct, name string) {
 
 		name := pad(f.Name, maxWidth)
 		tn := g.RustTypeName(&f.Type)
-		if f.Type.Kind == schema.KindStringFixed {
-			tn = fmt.Sprintf("%s[%d]", tn, f.Type.Size)
+		if f.Type.Kind == schema.KindStringVLS {
+			tn = "string"
+		} else if f.Type.Kind == schema.KindStringFixed {
+			tn = fmt.Sprintf("string%d", f.Type.Size)
 		}
-
 		tn = pad(tn, maxTypeWidth)
 
 		if f.Initial == nil {
 			switch f.Type.Kind {
-			case schema.KindStringFixed, schema.KindStringVLS:
-				w.Line("///     %s%s= \"\"", name, tn)
+			case schema.KindStringFixed:
+				w.Line("/// %s%s= \"\"", name, tn)
+			case schema.KindStringVLS:
+				w.Line("/// %s%s= \"\"", name, tn)
 			case schema.KindBool:
-				w.Line("///     %s%s= false", name, tn)
+				w.Line("/// %s%s= false", name, tn)
 			case schema.KindEnum:
 				option := f.Type.Enum.OptionByValue(0)
 				if option != nil {
-					w.Line("///     %s%s= %s  (%d)", name, option.Name, tn, option.Value)
+					w.Line("/// %s%s= %s  (%d)", name, tn, option.Name, option.Value)
 				} else {
-					w.Line("///     %s%s= 0", name, tn)
+					w.Line("/// %s%s= 0", name, tn)
 				}
 			default:
-				w.Line("///     %s%s= 0", name, tn)
+				w.Line("/// %s%s= 0", name, tn)
 			}
 			continue
 		}
 
 		switch f.Initial.Type {
 		case schema.ValueTypeSizeof:
-			w.Line("///     %s%s= %sSize  (%d)", name, tn, msg.Name, msg.Size)
+			w.Line("/// %s%s= %sSize  (%d)", name, tn, msg.Name, msg.Size)
 		case schema.ValueTypeString:
-			w.Line("///     %s%s= \"%s\"", name, tn, f.Initial.Str)
+			w.Line("/// %s%s= \"%s\"", name, tn, f.Initial.Str)
 		case schema.ValueTypeBool:
 			if f.Initial.Int == 0 {
-				w.Line("///     %s%s= false", name, tn)
+				w.Line("/// %s%s= false", name, tn)
 			} else {
-				w.Line("///     %s%s= true", name, tn)
+				w.Line("/// %s%s= true", name, tn)
 			}
 		case schema.ValueTypeInt:
 			if f.Type.Kind == schema.KindBool {
 				if f.Initial.Int == 0 {
-					w.Line("///     %s%s= false", name, tn)
+					w.Line("/// %s%s= false", name, tn)
 				} else {
-					w.Line("///     %s%s= true", name, tn)
+					w.Line("/// %s%s= true", name, tn)
 				}
 			} else {
-				w.Line("///     %s%s= %d", name, tn, f.Initial.Int)
+				switch f.Initial.Int {
+				case math.MaxInt8:
+					w.Line("/// %s%s= i8::MAX", tn, name)
+				case math.MaxInt16:
+					w.Line("/// %s%s= i16::MAX", tn, name)
+				case math.MaxInt32:
+					w.Line("/// %s%s= i32::MAX", tn, name)
+				case math.MaxInt64:
+					w.Line("/// %s%s= i64::MAX", tn, name)
+				default:
+					w.Line("/// %s%s= %d", name, tn, f.Initial.Int)
+				}
 			}
 		case schema.ValueTypeUint:
 			if f.Type.Kind == schema.KindBool {
 				if f.Initial.Uint == 0 {
-					w.Line("///     %s%s= false", tn, name)
+					w.Line("/// %s%s= false", tn, name)
 				} else {
-					w.Line("///     %s%s= true", tn, name)
+					w.Line("/// %s%s= true", tn, name)
 				}
 			} else {
-				w.Line("///     %s%s= %d", name, tn, f.Initial.Int)
+				switch f.Initial.Uint {
+				case math.MaxUint8:
+					w.Line("/// %s%s= u8::MAX", tn, name)
+				case math.MaxUint16:
+					w.Line("/// %s%s= u16::MAX", tn, name)
+				case math.MaxUint32:
+					w.Line("/// %s%s= u32::MAX", tn, name)
+				case math.MaxUint64:
+					w.Line("/// %s%s= u64::MAX", tn, name)
+				default:
+					w.Line("/// %s%s= %d", name, tn, f.Initial.Uint)
+				}
 			}
 		case schema.ValueTypeFloat:
-			w.Line("///     %s%s= %f", name, tn, f.Initial.Float64)
+			w.Line("/// %s%s= %f", name, tn, f.Initial.Float64)
 		case schema.ValueTypeFloat32Max:
-			w.Line("///     %s%s= f32.MAX", name, tn)
+			w.Line("/// %s%s= f32.MAX", name, tn)
 		case schema.ValueTypeFloat64Max:
-			w.Line("///     %s%s= f64::MAX", name, tn)
+			w.Line("/// %s%s= f64::MAX", name, tn)
 		case schema.ValueTypeConst:
-			w.Line("///     %s%s= %s  (%d)", name, tn, f.Initial.Const.Name, f.Initial.Int)
+			w.Line("/// %s%s= %s  (%d)", name, tn, f.Initial.Const.Name, f.Initial.Int)
 		case schema.ValueTypeEnumOption:
-			w.Line("///     %s%s= %s  (%d)", name, tn, f.Initial.EnumOption.Name, f.Initial.Int)
+			w.Line("/// %s%s= %s  (%d)", name, tn, f.Initial.EnumOption.Name, f.Initial.Int)
 		}
 	}
 	//w.Line("// }")

@@ -10,14 +10,14 @@ type Writer struct {
 }
 
 func (w *Writer) WriteByteSlice(b []byte) {
-	w.b = append(w.b, "[]byte{"...)
+	w.b = append(w.b, "["...)
 	for i, a := range b {
 		w.b = append(w.b, strconv.Itoa(int(a))...)
 		if i < len(b)-1 {
 			w.b = append(w.b, ',', ' ')
 		}
 	}
-	w.b = append(w.b, '}')
+	w.b = append(w.b, ']')
 }
 
 func (w *Writer) Indent(times int, format string, args ...interface{}) {

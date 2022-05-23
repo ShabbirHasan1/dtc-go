@@ -1,12 +1,16 @@
 use std::time::Instant;
 
-use ntex::{
-    codec::Encoder,
-    connect::rustls,
-};
+use ntex::{codec::Encoder, connect::rustls};
+// use ntex::openssl::{SslConnector, SslMethod};
+// use tls_openssl::ssl::{SslVerifyMode};
 use ntex_bytes::*;
 
-use crate::{*, error::{ConnectError, CloseReason, Error}, connection::{Connection, Handler}, util::Framed};
+use crate::{
+    connection::{Connection, Handler},
+    error::{CloseReason, ConnectError, Error},
+    util::Framed,
+    *,
+};
 
 pub struct Client {
     connector: ntex::connect::Connector<String>,
@@ -14,14 +18,12 @@ pub struct Client {
 
 impl Client {
     pub fn new() -> Self {
-        Self { connector: connect::Connector::new() }
+        Self {
+            connector: connect::Connector::new(),
+        }
     }
 
-    pub async fn start<H: Handler>(
-        &self,
-        host: String,
-        handler: H,
-    ) -> Result<(), Error> {
+    pub async fn start<H: Handler>(&self, host: String, handler: H) -> Result<(), Error> {
         let (tx, rx) = mpsc::channel();
         let mut conn = Connection::new(host.clone(), Instant::now(), tx.clone());
 
@@ -77,13 +79,24 @@ impl Client {
 }
 
 pub struct TlsClient {
-    cert_store: RootCertStore,
-    config: ClientConfig,
+    // cert_store: RootCertStore,
+    // config: ClientConfig,
     connector: rustls::Connector<String>,
+    // connector: connect::openssl::Connector<String>,
 }
 
 impl TlsClient {
     pub fn new() -> Self {
+        // load ssl keys
+        // let mut builder = SslConnector::builder(SslMethod::tls()).unwrap();
+        // // builder
+        // //     .set_private_key_file("./examples/key.pem", SslFiletype::PEM)
+        // //     .unwrap();
+        // // builder
+        // //     .set_certificate_chain_file("./examples/cert.pem")
+        // //     .unwrap();
+        // builder.set_verify(SslVerifyMode::NONE);
+
         let mut cert_store = RootCertStore::empty();
         cert_store.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
             OwnedTrustAnchor::from_subject_spki_name_constraints(
@@ -95,31 +108,28 @@ impl TlsClient {
 
         let config = ClientConfig::builder()
             .with_safe_defaults()
-            .with_root_certificates(cert_store.clone())
+            .with_root_certificates(cert_store)
             .with_no_client_auth();
 
-        let connector = rustls::Connector::new(config.clone());
+        let connector = rustls::Connector::new(config);
+        // let connector = connect::openssl::Connector::new(builder.build());
 
         Self {
-            cert_store,
-            config,
+            // cert_store: cert_store,
+            // config,
             connector,
         }
     }
 
-    pub fn cert_store(&self) -> &RootCertStore {
-        &self.cert_store
-    }
+    // pub fn cert_store(&self) -> &RootCertStore {
+    //     &self.cert_store
+    // }
 
-    pub fn config(&self) -> &ClientConfig {
-        &self.config
-    }
+    // pub fn config(&self) -> &ClientConfig {
+    //     &self.config
+    // }
 
-    pub async fn start<H: Handler>(
-        &self,
-        host: String,
-        handler: H,
-    ) -> Result<(), Error> {
+    pub async fn start<H: Handler>(&self, host: String, handler: H) -> Result<(), Error> {
         let (tx, rx) = mpsc::channel();
         let mut conn = Connection::new(host.clone(), Instant::now(), tx.clone());
 
@@ -135,6 +145,7 @@ impl TlsClient {
                         reason: e.clone().into(),
                     },
                 );
+                log::error!("{}", e.clone());
                 return Err(Error::Connect(e.into()));
             }
         };
@@ -198,7 +209,7 @@ impl Into<ConnectError> for ntex::connect::ConnectError {
             connect::ConnectError::NoRecords => ConnectError::NoRecords,
             connect::ConnectError::InvalidInput => ConnectError::InvalidInput,
             connect::ConnectError::Unresolved => ConnectError::Unresolved,
-            connect::ConnectError::Io(e) => ConnectError::Io(e)
+            connect::ConnectError::Io(e) => ConnectError::Io(e),
         }
     }
 }

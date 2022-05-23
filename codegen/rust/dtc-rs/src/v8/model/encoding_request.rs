@@ -1,4 +1,4 @@
-use crate::{set_fixed_string, Message, allocate};
+use crate::{set_fixed, Message, allocate};
 
 pub trait EncodingRequest: Message {    
     fn protocol_version(&self) -> i32;
@@ -28,6 +28,18 @@ pub enum EncodingEnum {
     // JsonEncoding = 2,
     // JsonCompactEncoding = 3,
     // ProtocolBuffers = 4,
+}
+
+impl EncodingEnum {
+    #[inline]
+    pub fn to_le(self) -> Self {
+        unsafe { core::mem::transmute((self as u32).to_le()) }
+    }
+
+    #[inline]
+    pub fn from_le(value: Self) -> Self {
+        unsafe { core::mem::transmute(u32::from_le(value as u32)) }
+    }
 }
 
 pub struct EncodingRequestSafe(*const EncodingRequestData);
@@ -191,10 +203,10 @@ pub struct EncodingRequestData {
 impl EncodingRequestData {
     pub fn new() -> Self {
         Self {
-            size: 16,
-            r#type: 2,
-            protocol_version: 8,
-            encoding: EncodingEnum::BinaryWithVariableLengthStrings,
+            size: 16u16.to_le(),
+            r#type: 2u16.to_le(),
+            protocol_version: 8i32.to_le(),
+            encoding: EncodingEnum::BinaryWithVariableLengthStrings.to_le(),
             protocol_type: [b'D', b'T', b'C', b'\0'],
         }
     }
@@ -219,12 +231,12 @@ impl EncodingRequest for EncodingRequestSafe {
     }
 
     fn set_encoding(&mut self, value: EncodingEnum) -> &mut Self {
-        self.encoding = value;
+        self.encoding = value.to_le();
         self
     }
 
     fn set_protocol_type(&mut self, value: &str) -> &mut Self {
-        set_fixed_string(value, &mut self.protocol_type[..]);
+        set_fixed(&mut self.protocol_type[..], value);
         self
     }
 
@@ -247,7 +259,7 @@ impl EncodingRequest for EncodingRequestUnsafe {
         if self.is_out_of_bounds(8) {
             EncodingEnum::BinaryEncoding
         } else {
-            unsafe { core::mem::transmute(u32::from_le(self.encoding as u32)) }
+            EncodingEnum::from_le(self.encoding)
         }
     }
 
@@ -272,7 +284,7 @@ impl EncodingRequest for EncodingRequestUnsafe {
     }
 
     fn set_protocol_type(&mut self, value: &str) -> &mut Self {
-        set_fixed_string(value, &mut self.protocol_type[..]);
+        set_fixed(&mut self.protocol_type[..], value);
         self
     }
 

@@ -96,7 +96,7 @@ unsafe impl Send for LogonRequestVLSData {}
 impl Drop for LogonRequestFixed {
     #[inline]
     fn drop(&mut self) {
-        deallocate(self.data as *mut u8, self.capacity() as usize)
+        deallocate(self.data as *mut u8, self.capacity() as usize);
     }
 }
 
@@ -292,11 +292,11 @@ impl LogonRequest for LogonRequestFixed {
     }
 
     fn username(&self) -> &str {
-        get_fixed_string(&self.username[0..32])
+        get_fixed(&self.username[0..32])
     }
 
     fn set_username(&mut self, value: &str) {
-        set_fixed_string(value, &mut self.username[..]);
+        set_fixed(&mut self.username[..], value);
     }
 }
 
@@ -313,13 +313,13 @@ impl LogonRequest for LogonRequestFixedUnsafe {
         if self.is_out_of_bounds(40) {
             ""
         } else {
-            get_fixed_string(&self.username[..])
+            get_fixed(&self.username[..])
         }
     }
 
     fn set_username(&mut self, value: &str) {
         if !self.is_out_of_bounds(40) {
-            set_fixed_string(value, &mut self.username[..]);
+            set_fixed(&mut self.username[..], value);
         }
     }
 }
@@ -521,7 +521,7 @@ impl LogonRequest for LogonRequestVLS {
     }
 
     fn set_username(&mut self, value: &str) {
-        self.username = set_vls::<Self>(self, self.username, value).unwrap();
+        self.username = set_vls(self, self.username, value);
     }
 }
 
@@ -544,7 +544,7 @@ impl LogonRequest for LogonRequestVLSUnsafe {
 
     fn set_username(&mut self, value: &str) {
         if !self.is_out_of_bounds(16) {
-            self.username = set_vls::<Self>(self, self.username, value).unwrap();
+            self.username = set_vls(self, self.username, value);
         }
     }
 }

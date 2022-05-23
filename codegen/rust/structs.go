@@ -16,8 +16,13 @@ func (g *Generator) generateStructs() error {
 		writer := &Writer{}
 		if len(g.config.GeneratedComment) > 0 {
 			writer.Line("// %s", g.config.GeneratedComment)
-			writer.Line("")
 		}
+
+		writer.Line("use super::constants::*;")
+		writer.Line("use super::alias::*;")
+		writer.Line("use super::enums::*;")
+		writer.Line("use crate::message::*;")
+		writer.Line("")
 
 		// writeImports := func(w *Writer) {
 		// 	w.Line("package %s", g.packageName)
@@ -34,15 +39,15 @@ func (g *Generator) generateStructs() error {
 				return
 			}
 			g.writeClearComment(w, msg, "")
-			w.Write("var _%sDefault = ", msg.Name)
+			w.Write("const %s_DEFAULT: [u8; %d] = ", strings.ToUpper(toSnakeCase(msg.Name)), len(msg.Init))
 			w.WriteByteSlice(msg.Init)
-			w.Write("\n\n")
+			w.Write(";\n\n")
 		}
 		writeMessageSize := func(w *Writer, msg *Struct) {
 			if msg == nil {
 				return
 			}
-			w.Line("const %sSize = %d", msg.Name, msg.Size)
+			w.Line("const %s_SIZE: usize = %d;", strings.ToUpper(toSnakeCase(msg.Name)), msg.Size)
 			w.Line("")
 		}
 
@@ -51,297 +56,529 @@ func (g *Generator) generateStructs() error {
 		writeMessageDefault(writer, m.VLS)
 		writeMessageDefault(writer, m.Fixed)
 
+		// Trait
+		{
+			write := func(msg *Struct) {
+				if msg.Doc != nil {
+					_ = g.writeComments(writer, 0, msg.Name, msg.Doc.Description)
+				}
+				writer.Line("pub trait %s {", cleanStructName(msg.Struct.Name))
+				for _, field := range msg.Fields {
+					if !field.IsSuper() {
+						continue
+					}
+					if len(field.Fields) > 0 {
+						for _, f := range field.Fields {
+							if f.Doc != nil {
+								g.writeComments(writer, 1, f.Name, f.Doc.Description)
+							}
+							writer.IndentLine(1, "fn %s(&self) -> %s;", f.Name, g.PublicType(&f.Type))
+							writer.Line("")
+						}
+					} else {
+						if field.Doc != nil {
+							g.writeComments(writer, 1, field.Name, field.Doc.Description)
+						}
+						writer.IndentLine(1, "fn %s(&self) -> %s;", field.Name, g.PublicType(&field.Type))
+						writer.Line("")
+					}
+				}
+				for i, field := range msg.Fields {
+					if !field.IsSuper() {
+						continue
+					}
+					if len(field.Fields) > 0 {
+						for _, f := range field.Fields {
+							if f.Doc != nil {
+								g.writeComments(writer, 1, f.Name, f.Doc.Description)
+							}
+							writer.IndentLine(1, "fn %s(&mut self, value: %s) -> &mut Self;", f.SetterName(), g.PublicType(&f.Type))
+						}
+					} else {
+						if field.Doc != nil {
+							g.writeComments(writer, 1, field.Name, field.Doc.Description)
+						}
+						writer.IndentLine(1, "fn %s(&mut self, value: %s) -> &mut Self;", field.SetterName(), g.PublicType(&field.Type))
+					}
+					if i < len(msg.Fields)-1 {
+						writer.Line("")
+					}
+				}
+				writer.Line("")
+				writer.IndentLine(1, "fn copy_to(&self, to: &mut impl %s) {", cleanStructName(msg.Struct.Name))
+				for _, field := range msg.Fields {
+					if !field.IsSuper() {
+						continue
+					}
+					writer.IndentLine(2, "to.%s(self.%s());", field.SetterName(), field.Name)
+				}
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			} else {
+				write(m.Fixed)
+			}
+		}
+
 		// Type declarations
 		{
 			write := func(msg *Struct) {
 				if msg.Doc != nil {
 					_ = g.writeComments(writer, 0, msg.Name, msg.Doc.Description)
 				}
-				writer.Line("type %s struct {", msg.Name)
-				writer.IndentLine(1, "message.%s", msg.Suffix())
-				writer.Line("}")
-				writer.Line("")
-
-				if msg.Doc != nil {
-					_ = g.writeComments(writer, 0, msg.Name+"Builder", msg.Doc.Description)
-				}
-				writer.Line("type %sBuilder struct {", msg.Name)
+				writer.Line("pub struct %s {", msg.Name)
 				if msg.VLS {
-					writer.IndentLine(1, "message.%sBuilder", msg.Suffix())
+					writer.IndentLine(1, "data: *const %s,", msg.DataName)
+					writer.IndentLine(1, "capacity: usize")
 				} else {
-					writer.IndentLine(1, "message.%s", msg.Suffix())
+					writer.IndentLine(1, "data: *const %s", msg.DataName)
 				}
 				writer.Line("}")
 				writer.Line("")
-			}
-			if m.VLS != nil {
-				write(m.VLS)
-			}
-			if m.Fixed != nil {
-				write(m.Fixed)
-			}
-		}
 
-		// Constructors
-		{
-			write := func(msg *Struct) {
-				/*
-					func NewAccountBalanceAdjustmentFrom(b []byte) AccountBalanceAdjustment {
-						return AccountBalanceAdjustment{VLS: message.NewVLSFrom(b)}
-					}
-
-					func AccountBalanceAdjustmentWrap(b []byte) AccountBalanceAdjustment {
-						return AccountBalanceAdjustment{VLS: message.WrapVLS(b)}
-					}
-				*/
-				writer.Line("func New%sFrom(b []byte) %s {", msg.Name, msg.Name)
-				writer.IndentLine(1, "return %s{%s: message.New%s(b)}", msg.Name, msg.Suffix(), msg.Suffix())
-				writer.Line("}")
-				writer.Line("")
-
-				writer.Line("func Wrap%s(b []byte) %s {", msg.Name, msg.Name)
-				writer.IndentLine(1, "return %s{%s: message.Wrap%s(b)}", msg.Name, msg.Suffix(), msg.Suffix())
-				writer.Line("}")
-				writer.Line("")
-
-				writer.Line("func New%s() %sBuilder {", msg.Name, msg.Name)
+				writer.Line("pub struct %s {", msg.UnsafeName)
 				if msg.VLS {
-					writer.IndentLine(1, "return %sBuilder{message.New%sBuilder(_%sDefault)}", msg.Name, msg.Suffix(), msg.Name)
+					writer.IndentLine(1, "data: *const %s,", msg.DataName)
+					writer.IndentLine(1, "capacity: usize")
 				} else {
-					writer.IndentLine(1, "return %sBuilder{message.New%s(_%sDefault)}", msg.Name, msg.Suffix(), msg.Name)
+					writer.IndentLine(1, "data: *const %s", msg.DataName)
 				}
 				writer.Line("}")
 				writer.Line("")
-			}
-			if m.VLS != nil {
-				write(m.VLS)
-			}
-			if m.Fixed != nil {
-				write(m.Fixed)
-			}
-		}
 
-		// Clear
-		{
-			write := func(msg *Struct) {
-				g.writeClearComment(writer, msg, "Clear")
-				writer.Line("func (m %sBuilder) Clear() {", msg.Name)
-				writer.IndentLine(1, "m.Unsafe().SetBytes(0, _%sDefault)", msg.Name)
-				writer.Line("}")
-				writer.Line("")
-			}
-			if m.VLS != nil {
-				write(m.VLS)
-			}
-			if m.Fixed != nil {
-				write(m.Fixed)
-			}
-		}
-
-		// ToBuilder
-		{
-			write := func(msg *Struct) {
-				writer.Line("// ToBuilder")
-				writer.Line("func (m %s) ToBuilder() %sBuilder {", msg.Name, msg.Name)
-				if msg.VLS {
-					writer.IndentLine(1, "return %sBuilder{m.%s.ToBuilder()}", msg.Name, msg.Suffix())
-				} else {
-					writer.IndentLine(1, "return %sBuilder{m.%s}", msg.Name, msg.Suffix())
-				}
-				writer.Line("}")
-				writer.Line("")
-			}
-			if m.VLS != nil {
-				write(m.VLS)
-			}
-			if m.Fixed != nil {
-				write(m.Fixed)
-			}
-		}
-
-		// Finish
-		{
-			write := func(msg *Struct) {
-				writer.Line("// Finish")
-				writer.Line("func (m %sBuilder) Finish() %s {", msg.Name, msg.Name)
-				if msg.VLS {
-					writer.IndentLine(1, "return %s{m.%sBuilder.Finish()}", msg.Name, msg.Suffix())
-				} else {
-					writer.IndentLine(1, "return %s{m.%s}", msg.Name, msg.Suffix())
-				}
-				writer.Line("}")
-				writer.Line("")
-			}
-			if m.VLS != nil {
-				write(m.VLS)
-			}
-			if m.Fixed != nil {
-				write(m.Fixed)
-			}
-		}
-
-		// Getters
-		writeGetters := func(msg *Struct) {
-			for _, f := range msg.Fields {
-				if isHeaderField(f) {
-					continue
-				}
-
-				if f.Fields != nil {
-					for _, field := range f.Fields {
-
-						if field.Doc != nil {
-							_ = g.writeComments(writer, 0, field.Name, field.Doc.Description)
-						} else {
-							writer.Line("// %s", field.Name)
-						}
-						g.writeFieldGetter(writer, field, "", "Unsafe()")
-						if field.Doc != nil {
-							_ = g.writeComments(writer, 0, field.Name, field.Doc.Description)
-						} else {
-							writer.Line("// %s", field.Name)
-						}
-						g.writeFieldGetter(writer, field, "Builder", "Unsafe()")
-
-					}
-				} else {
-					if f.Doc != nil {
-						_ = g.writeComments(writer, 0, f.Name, f.Doc.Description)
-					} else {
-						writer.Line("// %s", f.Name)
-					}
-					g.writeFieldGetter(writer, f, "", "Unsafe()")
-					if f.Doc != nil {
-						_ = g.writeComments(writer, 0, f.Name, f.Doc.Description)
-					} else {
-						writer.Line("// %s", f.Name)
-					}
-					g.writeFieldGetter(writer, f, "Builder", "Unsafe()")
-
-				}
-			}
-		}
-		if m.VLS != nil {
-			writeGetters(m.VLS)
-		}
-		if m.Fixed != nil {
-			writeGetters(m.Fixed)
-		}
-
-		// Setters
-		writeSetters := func(msg *Struct) {
-			for _, f := range msg.Fields {
-				if isHeaderField(f) {
-					continue
-				}
-				if f.Fields != nil {
-					for _, field := range f.Fields {
-						if field.Field.Type.Kind == schema.KindStringVLS {
-							if field.Doc != nil {
-								_ = g.writeComments(writer, 0, "Set"+field.Name, field.Doc.Description)
-							} else {
-								writer.Line("// Set%s", field.Name)
-							}
-							g.writeFieldSetter(writer, field, "Builder", "VLSBuilder")
-						} else {
-							if field.Doc != nil {
-								_ = g.writeComments(writer, 0, "Set"+field.Name, field.Doc.Description)
-							} else {
-								writer.Line("// Set%s", field.Name)
-							}
-							g.writeFieldSetter(writer, field, "Builder", "Unsafe()")
-						}
-					}
-				} else {
-
-					if f.Field.Type.Kind == schema.KindStringVLS {
-						if f.Doc != nil {
-							_ = g.writeComments(writer, 0, "Set"+f.Name, f.Doc.Description)
-						} else {
-							writer.Line("// Set%s", f.Name)
-						}
-						g.writeFieldSetter(writer, f, "Builder", "VLSBuilder")
-					} else {
-						if f.Doc != nil {
-							_ = g.writeComments(writer, 0, "Set"+f.Name, f.Doc.Description)
-						} else {
-							writer.Line("// Set%s", f.Name)
-						}
-						g.writeFieldSetter(writer, f, "Builder", "Unsafe()")
-					}
-				}
-			}
-		}
-		if m.VLS != nil {
-			writeSetters(m.VLS)
-		}
-		if m.Fixed != nil {
-			writeSetters(m.Fixed)
-		}
-
-		if g.config.GenerateCopyMethods {
-			copyTo := func(w *Writer, msg *Struct, fn, name, toName string) {
-				w.Line("// %s", fn)
-				w.Line("func (m %s) %s(to %s) {", name, fn, toName)
+				writer.Line("#[repr(packed, C)]")
+				writer.Line("pub struct %s {", msg.DataName)
 				for _, field := range msg.Fields {
-					if isHeaderField(field) {
+					if len(field.Fields) > 0 {
+						largest := field.Fields[0]
+						for _, f := range field.Fields {
+							if f.Type.Size > largest.Type.Size {
+								largest = f
+							}
+						}
+						writer.IndentLine(1, "%s: %s,", largest.Name, g.RustTypeName(&largest.Type))
+					} else {
+						writer.IndentLine(1, "%s: %s,", field.Name, g.RustTypeName(&field.Type))
+					}
+				}
+				writer.Line("}")
+				writer.Line("")
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+		}
+
+		// Data Constructors
+		{
+			write := func(msg *Struct) {
+				writer.Line("impl %s {", msg.DataName)
+				writer.IndentLine(1, "pub fn new() -> Self {")
+				writer.IndentLine(2, "Self {")
+				for _, field := range msg.Fields {
+					if len(field.Fields) > 0 {
+						largest := field.Fields[0]
+						for _, f := range field.Fields {
+							if f.Type.Size > largest.Type.Size {
+								largest = f
+							}
+						}
+						field = largest
+					}
+					writer.IndentLine(3, "%s: %s,", field.Name, field.Init)
+				}
+				writer.IndentLine(2, "}")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+		}
+
+		// Send impl
+		{
+			write := func(msg *Struct) {
+				writer.Line("unsafe impl Send for %s {}", msg.Name)
+				writer.Line("unsafe impl Send for %s {}", msg.UnsafeName)
+				writer.Line("unsafe impl Send for %s {}", msg.DataName)
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+			writer.Line("")
+		}
+
+		// Drop
+		{
+			write := func(msg *Struct) {
+				writer.Line("impl Drop for %s {", msg.Name)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn drop(&mut self) {")
+				writer.IndentLine(2, "crate::deallocate(self.data as *mut u8, self.capacity() as usize);")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+				writer.Line("impl Drop for %s {", msg.UnsafeName)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn drop(&mut self) {")
+				writer.IndentLine(2, "crate::deallocate(self.data as *mut u8, self.capacity() as usize);")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+		}
+
+		// Clone
+		{
+			write := func(msg *Struct) {
+				writer.Line("impl Clone for %s {", msg.Name)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn clone(&self) -> Self {")
+				writer.IndentLine(2, "let mut c = Self::new();")
+				writer.IndentLine(2, "self.copy_to(&mut c);")
+				writer.IndentLine(2, "c")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+				writer.Line("impl Clone for %s {", msg.UnsafeName)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn clone(&self) -> Self {")
+				writer.IndentLine(2, "let mut c = Self::new();")
+				writer.IndentLine(2, "self.copy_to(&mut c);")
+				writer.IndentLine(2, "c")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+		}
+
+		// Into<Vec<u8>>
+		{
+			write := func(msg *Struct) {
+				writer.Line("impl Into<Vec<u8>> for %s {", msg.Name)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn into(self) -> Vec<u8> {")
+				writer.IndentLine(2, "self.into_vec()")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+				writer.Line("impl Into<Vec<u8>> for %s {", msg.UnsafeName)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn into(self) -> Vec<u8> {")
+				writer.IndentLine(2, "self.into_vec()")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+		}
+
+		// Deref
+		{
+			write := func(msg *Struct) {
+				writer.Line("impl core::ops::Deref for %s {", msg.Name)
+				writer.IndentLine(1, "type Target = %s;", msg.DataName)
+				writer.Line("")
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn deref(&self) -> &Self::Target {")
+				writer.IndentLine(2, "unsafe { &*self.data }")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+				writer.Line("impl core::ops::DerefMut for %s {", msg.Name)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn deref_mut(&mut self) -> &mut Self::Target {")
+				writer.IndentLine(2, "unsafe { &mut *(self.data as *mut Self::Target) }")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+				writer.Line("impl core::ops::Deref for %s {", msg.UnsafeName)
+				writer.IndentLine(1, "type Target = %s;", msg.DataName)
+				writer.Line("")
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn deref(&self) -> &Self::Target {")
+				writer.IndentLine(2, "unsafe { &*self.data }")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+				writer.Line("impl core::ops::DerefMut for %s {", msg.UnsafeName)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn deref_mut(&mut self) -> &mut Self::Target {")
+				writer.IndentLine(2, "unsafe { &mut *(self.data as *mut Self::Target) }")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+		}
+
+		// impl Message
+		{
+			write := func(msg *Struct, isUnsafe bool) {
+				if isUnsafe {
+					writer.Line("impl crate::Message for %s {", msg.UnsafeName)
+				} else {
+					writer.Line("impl crate::Message for %s {", msg.Name)
+				}
+				writer.IndentLine(1, "type Safe = %s;", msg.Name)
+				writer.IndentLine(1, "type Unsafe = %s;", msg.UnsafeName)
+				writer.IndentLine(1, "type Data = %s;", msg.DataName)
+				writer.IndentLine(1, "const BASE_SIZE: usize = %d;", msg.Struct.Size)
+				if msg.VLS {
+					writer.IndentLine(1, "const BASE_SIZE_OFFSET: isize = 4;")
+					writer.IndentLine(1, "const DEFAULT_CAPACITY: usize = Self::BASE_SIZE * 2;")
+				} else {
+					writer.IndentLine(1, "const BASE_SIZE_OFFSET: isize = 0;")
+				}
+				writer.Line("")
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn new() -> Self {")
+				writer.IndentLine(2, "Self {")
+				if msg.VLS {
+					writer.IndentLine(3, "data: crate::allocate(Self::BASE_SIZE, %s::new()),", msg.DataName)
+					writer.IndentLine(3, "capacity: Self::DEFAULT_CAPACITY")
+				} else {
+					writer.IndentLine(3, "data: crate::allocate(Self::BASE_SIZE, %s::new())", msg.DataName)
+				}
+				writer.IndentLine(2, "}")
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn to_safe(self) -> Self::Safe {")
+				if isUnsafe {
+					writer.IndentLine(2, "let mut s = Self::Safe::new();")
+					writer.IndentLine(2, "self.copy_to(&mut s);")
+					writer.IndentLine(2, "s")
+				} else {
+					writer.IndentLine(2, "self")
+				}
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn size(&self) -> u16 {")
+				writer.IndentLine(2, "u16::from_le(self.size)")
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn r#type(&self) -> u16 {")
+				writer.IndentLine(2, "u16::from_le(self.r#type)")
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn base_size(&self) -> u16 {")
+				if msg.VLS {
+					writer.IndentLine(2, "u16::from_le(self.base_size)")
+				} else {
+					writer.IndentLine(2, "u16::from_le(self.size)")
+				}
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn capacity(&self) -> u16 {")
+				if msg.VLS {
+					writer.IndentLine(2, "self.capacity as u16")
+				} else {
+					writer.IndentLine(2, "u16::from_le(self.size)")
+				}
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "unsafe fn as_ptr(&self) -> *const Self::Data {")
+				writer.IndentLine(2, "self.data")
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				if msg.VLS {
+					writer.IndentLine(1, "unsafe fn from_raw_parts(data: *const u8, capacity: usize) -> Self {")
+				} else {
+					writer.IndentLine(1, "unsafe fn from_raw_parts(data: *const u8, _: usize) -> Self {")
+				}
+				writer.IndentLine(2, "Self {")
+				if msg.VLS {
+					writer.IndentLine(3, "data: data as *const %s,", msg.DataName)
+					writer.IndentLine(3, "capacity")
+				} else {
+					writer.IndentLine(3, "data: data as *const %s", msg.DataName)
+				}
+				writer.IndentLine(2, "}")
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.Line("}")
+				writer.Line("")
+
+				if msg.VLS {
+					if isUnsafe {
+						writer.Line("impl crate::VLSMessage for %s {", msg.UnsafeName)
+					} else {
+						writer.Line("impl crate::VLSMessage for %s {", msg.Name)
+					}
+
+					writer.IndentLine(1, "#[inline]")
+					writer.IndentLine(1, "unsafe fn set_ptr(&mut self, value: *const u8) {")
+					writer.IndentLine(2, "self.data = value as *const %s;", msg.DataName)
+					writer.IndentLine(1, "}")
+					writer.Line("")
+
+					writer.IndentLine(1, "#[inline]")
+					writer.IndentLine(1, "fn set_capacity(&mut self, capacity: u16) {")
+					writer.IndentLine(2, "self.capacity = capacity as usize;")
+					writer.IndentLine(1, "}")
+					writer.Line("")
+
+					writer.IndentLine(1, "#[inline]")
+					writer.IndentLine(1, "fn set_size(&mut self, size: u16) {")
+					writer.IndentLine(2, "self.size = size.to_le();")
+					writer.IndentLine(1, "}")
+					writer.Line("")
+
+					writer.Write("}")
+					writer.Write("")
+				}
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed, false)
+				write(m.Fixed, true)
+			}
+			if m.VLS != nil {
+				write(m.VLS, false)
+				write(m.VLS, true)
+			}
+		}
+
+		// impl
+		{
+			write := func(msg *Struct, isUnsafe bool) {
+				if msg.Doc != nil {
+					_ = g.writeComments(writer, 0, msg.Name, msg.Doc.Description)
+				}
+				if isUnsafe {
+					writer.Line("impl %s for %s {", cleanStructName(msg.Struct.Name), msg.UnsafeName)
+				} else {
+					writer.Line("impl %s for %s {", cleanStructName(msg.Struct.Name), msg.Name)
+				}
+				for _, field := range msg.Fields {
+					if !field.IsSuper() {
 						continue
 					}
 					if len(field.Fields) > 0 {
-						for _, field := range field.Fields {
-							w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
+						largest := field.Fields[0]
+						for _, f := range field.Fields {
+							if f.Type.Size > largest.Type.Size {
+								largest = f
+							}
+						}
+						for _, f := range field.Fields {
+							if f.Doc != nil {
+								g.writeComments(writer, 1, f.Name, f.Doc.Description)
+							}
+							writer.IndentLine(1, "fn %s(&self) -> %s {", f.Name, g.PublicType(&f.Type))
+							g.getAccessor(writer, 2, largest, isUnsafe)
+							writer.IndentLine(1, "}")
+							writer.Line("")
 						}
 					} else {
-						w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
+						if field.Doc != nil {
+							g.writeComments(writer, 1, field.Name, field.Doc.Description)
+						}
+						writer.IndentLine(1, "fn %s(&self) -> %s {", field.Name, g.PublicType(&field.Type))
+						g.getAccessor(writer, 2, field, isUnsafe)
+						writer.IndentLine(1, "}")
+						writer.Line("")
 					}
 				}
-				w.Line("}")
-				w.Line("")
+				for i, field := range msg.Fields {
+					if !field.IsSuper() {
+						continue
+					}
+					if len(field.Fields) > 0 {
+						largest := field.Fields[0]
+						for _, f := range field.Fields {
+							if f.Type.Size > largest.Type.Size {
+								largest = f
+							}
+						}
+						for _, f := range field.Fields {
+							if f.Doc != nil {
+								g.writeComments(writer, 1, f.Name, f.Doc.Description)
+							}
+							writer.IndentLine(1, "fn %s(&self) -> %s {", f.SetterName(), g.PublicType(&f.Type))
+							g.setAccessor(writer, 2, largest, isUnsafe)
+							writer.IndentLine(1, "}")
+							writer.Line("")
+						}
+					} else {
+						if field.Doc != nil {
+							g.writeComments(writer, 1, field.Name, field.Doc.Description)
+						}
+						writer.IndentLine(1, "fn %s(&mut self, value: %s) -> &mut Self {", field.SetterName(), g.PublicType(&field.Type))
+						g.setAccessor(writer, 2, field, isUnsafe)
+						writer.IndentLine(1, "}")
+						writer.Line("")
+					}
+					if i < len(msg.Fields)-1 {
+						writer.Line("")
+					}
+				}
+				writer.Line("}")
+				writer.Line("")
 			}
-
-			//copy := func(w *Writer, msg *Struct, fn, name, toName string) {
-			//	w.Line("// %s", fn)
-			//	w.Line("func (m %s) %s(to %s) {", name, fn, toName)
-			//	w.IndentLine(1, "")
-			//	for _, field := range msg.Fields {
-			//		if isHeaderField(field) {
-			//			continue
-			//		}
-			//		if len(field.Fields) > 0 {
-			//			for _, field := range field.Fields {
-			//				w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
-			//			}
-			//		} else {
-			//			w.IndentLine(1, "to.Set%s(m.%s())", field.Name, field.Name)
-			//		}
-			//	}
-			//	w.Line("}")
-			//	w.Line("")
-			//}
-
-			// Copy
-			{
-				write := func(msg *Struct) {
-					copyTo(writer, msg, "Copy", msg.Name, msg.Name+"Builder")
-					copyTo(writer, msg, "Copy", msg.Name+"Builder", msg.Name+"Builder")
-
-					if msg.Message != nil {
-						to := msg.Message.VLS
-						if msg.VLS {
-							to = msg.Message.Fixed
-						}
-						if to != nil {
-							copyTo(writer, msg, "CopyTo", msg.Name, to.Name+"Builder")
-							copyTo(writer, msg, "CopyTo", msg.Name+"Builder", to.Name+"Builder")
-						}
-					}
-				}
-				if m.VLS != nil {
-					write(m.VLS)
-				}
-				if m.Fixed != nil {
-					write(m.Fixed)
-				}
+			if m.VLS != nil {
+				write(m.VLS, false)
+				write(m.VLS, true)
+			}
+			if m.Fixed != nil {
+				write(m.Fixed, false)
+				write(m.Fixed, true)
 			}
 		}
 
@@ -352,204 +589,101 @@ func (g *Generator) generateStructs() error {
 	return nil
 }
 
-func (g *Generator) writeFieldGetter(w *Writer, f *Field, suffix, ptrAccessor string) {
-	w.Line("func (m %s%s) %s() %s {", f.Struct.Name, suffix, f.Name, g.RustTypeName(&f.Type))
-	w.IndentLine(1, "return %s", g.fieldGetValue(f, ptrAccessor))
-	w.Line("}")
-	w.Line("")
-}
-
-func (g *Generator) fieldGetValue(f *Field, ptrAccessor string) string {
-	if f.Field.Type.Alias != nil {
-		return fmt.Sprintf("%s(%s)",
-			g.RustTypeName(&f.Field.Type),
-			//fmt.Sprintf("%s.%s", g.root.Name, cleanName(f.Field.Type.Alias.Name)),
-			g.primitiveGetter(
-				f.Field.Type.Alias.Type.Kind,
-				f.Field.Type.Offset,
-				f.Field.Type.Size,
-				"m",
-				ptrAccessor,
-				f.Struct.VLS,
-			),
-		)
-	}
-	if f.Field.Type.Enum != nil {
-		return fmt.Sprintf("%s(%s)",
-			g.RustTypeName(&f.Field.Type),
-			g.primitiveGetter(
-				f.Field.Type.Enum.Type,
-				f.Field.Type.Offset,
-				f.Field.Type.Size,
-				"m",
-				ptrAccessor,
-				f.Struct.VLS,
-			),
-		)
-	}
-
-	return g.primitiveGetter(
-		f.Field.Type.Kind,
-		f.Field.Type.Offset,
-		f.Field.Type.Size,
-		"m",
-		ptrAccessor,
-		f.Struct.VLS,
-	)
-}
-
-func (g *Generator) primitiveGetter(kind schema.Kind, offset, size int, messageVar, ptrAccessor string, vls bool) string {
-	var (
-		bounds = offset + size
-		suffix = "Fixed"
-		prefix = ""
-	)
-	if vls {
-		suffix = "VLS"
-	}
-	switch kind {
-	case schema.KindBool:
-		prefix = "Bool"
-	case schema.KindInt8:
-		prefix = "Int8"
-	case schema.KindInt16:
-		prefix = "Int16"
-	case schema.KindInt32:
-		prefix = "Int32"
-	case schema.KindInt64:
-		prefix = "Int64"
-	case schema.KindUint8:
-		prefix = "Uint8"
-	case schema.KindUint16:
-		prefix = "Uint16"
-	case schema.KindUint32:
-		prefix = "Uint32"
-	case schema.KindUint64:
-		prefix = "Uint64"
-	case schema.KindFloat32:
-		prefix = "Float32"
-	case schema.KindFloat64:
-		prefix = "Float64"
-	case schema.KindStringFixed:
-		prefix = "String"
-	case schema.KindStringVLS:
-		prefix = "String"
-	}
-
-	//messagePackage := ""
-	//if pkg != g.root {
-	//	messagePackage = pkg.Name + "."
-	//}
-	return fmt.Sprintf("message.%s%s(%s.%s, %d, %d)", prefix, suffix, messageVar, ptrAccessor, bounds, offset)
-}
-
-func (g *Generator) writeFieldSetter(w *Writer, f *Field, suffix, ptrAccessor string) {
-	if f.Field.Type.Kind.IsString() && f.Struct.VLS {
-		w.Line("func (m *%s%s) Set%s(value %s) {", f.Struct.Name, suffix, f.Name, g.RustTypeName(&f.Type))
-	} else {
-		w.Line("func (m %s%s) Set%s(value %s) {", f.Struct.Name, suffix, f.Name, g.RustTypeName(&f.Type))
-	}
-	w.IndentLine(1, "%s", g.fieldSetValue(f, ptrAccessor))
-	w.Line("}")
-	w.Line("")
-}
-
-func (g *Generator) fieldSetValue(f *Field, ptrAccessor string) string {
-	if f.Field.Type.Alias != nil {
-		return g.primitiveSetter(
-			f.Field.Type.Alias.Type.Kind,
-			f.Field.Type.Offset,
-			f.Field.Type.Size,
-			"m",
-			ptrAccessor,
-			fmt.Sprintf("%s(value)", primitiveKindName(f.Field.Type.Alias.Type.Kind)),
-			f.Struct.VLS,
-		)
-	}
-	if f.Field.Type.Enum != nil {
-		return g.primitiveSetter(
-			f.Field.Type.Enum.Type,
-			f.Field.Type.Offset,
-			f.Field.Type.Size,
-			"m",
-			ptrAccessor,
-			fmt.Sprintf("%s(value)", primitiveKindName(f.Field.Type.Enum.Type)),
-			f.Struct.VLS,
-		)
-	}
-	return g.primitiveSetter(
-		f.Field.Type.Kind,
-		f.Field.Type.Offset,
-		f.Field.Type.Size,
-		"m",
-		ptrAccessor,
-		"value",
-		f.Struct.VLS,
-	)
-}
-
-func (g *Generator) primitiveSetter(kind schema.Kind, offset, size int, messageVar, ptrAccessor, valueExpr string, vls bool) string {
-	var (
-		bounds = offset + size
-		suffix = "Fixed"
-		prefix = ""
-	)
-	if vls {
-		suffix = "VLS"
-	}
-	switch kind {
-	case schema.KindBool:
-		prefix = "SetBool"
-	case schema.KindInt8:
-		prefix = "SetInt8"
-	case schema.KindInt16:
-		prefix = "SetInt16"
-	case schema.KindInt32:
-		prefix = "SetInt32"
-	case schema.KindInt64:
-		prefix = "SetInt64"
-	case schema.KindUint8:
-		prefix = "SetUint8"
-	case schema.KindUint16:
-		prefix = "SetUint16"
-	case schema.KindUint32:
-		prefix = "SetUint32"
-	case schema.KindUint64:
-		prefix = "SetUint64"
-	case schema.KindFloat32:
-		prefix = "SetFloat32"
-	case schema.KindFloat64:
-		prefix = "SetFloat64"
-	case schema.KindStringFixed:
-		prefix = "SetString"
-	case schema.KindStringVLS:
-		prefix = "SetString"
-	}
-
-	//messagePackage := ""
-	//if pkg != g.root {
-	//	messagePackage = pkg.Name + "."
-	//}
-
-	if kind == schema.KindStringVLS {
-		if ptrAccessor == "VLSPointerBuilder" {
-			return fmt.Sprintf("message.%s%sPointer(&%s.%s, %d, %d, %s)", prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
+func (g *Generator) getAccessor(w *Writer, indent int, f *Field, isUnsafe bool) {
+	if isUnsafe {
+		w.IndentLine(indent, "if self.is_out_of_bounds(%d) {", f.Field.Type.Offset+f.Field.Type.Size)
+		if f.Type.Kind == schema.KindStringFixed || f.Type.Kind == schema.KindStringVLS {
+			w.IndentLine(indent+1, "\"\"")
 		} else {
-			return fmt.Sprintf("message.%s%s(&%s.%s, %d, %d, %s)", prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
+			w.IndentLine(indent+1, initValue(f.Field))
 		}
-
-	} else {
-		return fmt.Sprintf("message.%s%s(%s.%s, %d, %d, %s)", prefix, suffix, messageVar, ptrAccessor, bounds, offset, valueExpr)
+		w.IndentLine(indent, "} else {")
+		indent++
+	}
+	t := &f.Type
+	if t.Kind == schema.KindAlias {
+		t = &t.Alias.Type
+	}
+	switch t.Kind {
+	case schema.KindBool:
+		w.IndentLine(indent, "self.%s", f.Name)
+	case schema.KindInt8:
+		w.IndentLine(indent, "self.%s", f.Name)
+	case schema.KindInt16:
+		w.IndentLine(indent, "i16::from_le(self.%s)", f.Name)
+	case schema.KindInt32:
+		w.IndentLine(indent, "i32::from_le(self.%s)", f.Name)
+	case schema.KindInt64:
+		w.IndentLine(indent, "i64::from_le(self.%s)", f.Name)
+	case schema.KindUint8:
+		w.IndentLine(indent, "self.%s", f.Name)
+	case schema.KindUint16:
+		w.IndentLine(indent, "u16::from_le(self.%s)", f.Name)
+	case schema.KindUint32:
+		w.IndentLine(indent, "u32::from_le(self.%s)", f.Name)
+	case schema.KindUint64:
+		w.IndentLine(indent, "u64::from_le(self.%s)", f.Name)
+	case schema.KindFloat32:
+		w.IndentLine(indent, "crate::f32_le(self.%s)", f.Name)
+	case schema.KindFloat64:
+		w.IndentLine(indent, "crate::f64_le(self.%s)", f.Name)
+	case schema.KindStringFixed:
+		w.IndentLine(indent, "crate::get_fixed(&self.%s[..])", f.Name)
+	case schema.KindStringVLS:
+		w.IndentLine(indent, "crate::get_vls(self, self.%s)", f.Name)
+	case schema.KindEnum:
+		w.IndentLine(indent, "%s::from_le(self.%s)",
+			cleanStructName(f.Type.Enum.Name), f.Name)
+	}
+	if isUnsafe {
+		indent--
+		w.IndentLine(indent, "}")
 	}
 }
 
-func isHeaderField(f *Field) bool {
-	if f == nil {
-		return false
+func (g *Generator) setAccessor(w *Writer, indent int, f *Field, isUnsafe bool) {
+	if isUnsafe {
+		w.IndentLine(indent, "if !self.is_out_of_bounds(%d) {", f.Field.Type.Offset+f.Field.Type.Size)
+		indent++
 	}
-	switch strings.ToLower(f.Name) {
-	case "size", "type", "basesize":
-		return true
+	t := &f.Type
+	if t.Kind == schema.KindAlias {
+		t = &t.Alias.Type
 	}
-	return false
+	switch t.Kind {
+	case schema.KindBool:
+		w.IndentLine(indent, "self.%s = value;", f.Name)
+	case schema.KindInt8:
+		w.IndentLine(indent, "self.%s = value;", f.Name)
+	case schema.KindInt16:
+		w.IndentLine(indent, "self.%s = value.to_le();", f.Name)
+	case schema.KindInt32:
+		w.IndentLine(indent, "self.%s = value.to_le();", f.Name)
+	case schema.KindInt64:
+		w.IndentLine(indent, "self.%s = value.to_le();", f.Name)
+	case schema.KindUint8:
+		w.IndentLine(indent, "self.%s = value;", f.Name)
+	case schema.KindUint16:
+		w.IndentLine(indent, "self.%s = value.to_le();", f.Name)
+	case schema.KindUint32:
+		w.IndentLine(indent, "self.%s = value.to_le();", f.Name)
+	case schema.KindUint64:
+		w.IndentLine(indent, "self.%s = value.to_le();", f.Name)
+	case schema.KindFloat32:
+		w.IndentLine(indent, "self.%s = f32_le(value);", f.Name)
+	case schema.KindFloat64:
+		w.IndentLine(indent, "self.%s = f64_le(value);", f.Name)
+	case schema.KindStringFixed:
+		w.IndentLine(indent, "crate::set_fixed(&mut self.%s[..], value);", f.Name)
+	case schema.KindStringVLS:
+		w.IndentLine(indent, "self.%s = crate::set_vls(self, self.%s, value);", f.Name, f.Name)
+	case schema.KindEnum:
+		w.IndentLine(indent, "self.%s = unsafe { core::mem::transmute((value as %s).to_le()) };",
+			f.Name, primitiveTypeName(f.Type.Enum.Type))
+	}
+	if isUnsafe {
+		indent--
+		w.IndentLine(indent, "}")
+	}
+	w.IndentLine(indent, "self")
 }

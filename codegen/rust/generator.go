@@ -3,8 +3,8 @@ package rust
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -42,7 +42,7 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 	for _, alias := range s.Aliases {
 		a := &Alias{
 			Alias: alias,
-			Name:  cleanName(alias.Name),
+			Name:  cleanStructName(alias.Name),
 		}
 		if !alias.Type.Kind.IsPrimitive() {
 			return nil, fmt.Errorf("alias kind is not primitive: %d", alias.Type.Kind)
@@ -80,7 +80,7 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 	for _, enum := range s.Enums {
 		e := &Enum{
 			Enum:          enum,
-			Name:          cleanName(enum.Name),
+			Name:          cleanStructName(enum.Name),
 			OptionsByName: make(map[string]*EnumOption),
 		}
 		if !e.Type.IsPrimitive() {
@@ -91,7 +91,7 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 			o := &EnumOption{
 				EnumOption: option,
 				Enum:       e,
-				Name:       option.Name,
+				Name:       toCamelCase(option.Name),
 			}
 			if generator.all[o.Name] != nil {
 				return nil, fmt.Errorf("EnumOption name conflict: %s", o.Name)
@@ -118,20 +118,24 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 			return nil, nil
 		}
 
+		suffix := "VLS"
+		if !st.VLS {
+			suffix = "Fixed"
+		}
 		msg := &Struct{
 			Struct:       st,
-			Name:         cleanName(st.Name),
+			Name:         fmt.Sprintf("%s%s", cleanStructName(st.Name), suffix),
+			UnsafeName:   fmt.Sprintf("%s%s%s", cleanStructName(st.Name), suffix, "Unsafe"),
+			DataName:     fmt.Sprintf("%s%s%s", cleanStructName(st.Name), suffix, "Data"),
 			FieldsByName: make(map[string]*Field),
-		}
-		if !st.VLS && s.MessagesByName[st.Name].VLS != nil {
-			msg.Name = fmt.Sprintf("%sFixed", msg.Name)
 		}
 		for _, field := range st.Fields {
 			var (
 				f = &Field{
 					Struct: msg,
 					Field:  field,
-					Name:   cleanName(field.Name),
+					Name:   cleanFieldName(field.Name),
+					Init:   initValue(field),
 				}
 			)
 			if field.Type.Union != nil {
@@ -139,7 +143,7 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 					ff := &Field{
 						Struct: msg,
 						Field:  field,
-						Name:   cleanName(field.Name),
+						Name:   cleanFieldName(field.Name),
 					}
 					if msg.FieldsByName[ff.Name] != nil {
 						return nil, fmt.Errorf("%s.%s duplicate field name after cleanName", st.Name, field.Name)
@@ -234,105 +238,145 @@ func (g *Generator) writeFile(name string, data []byte) error {
 	if err := os.WriteFile(path, data, 0755); err != nil {
 		return err
 	}
-	if g.config.GoFmt {
-		if err := exec.Command("gofmt", "-w", path).Run(); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
-func (g *Generator) generateMessages() error {
-	for _, model := range g.messages {
-		msg := model.Fixed
-		if msg == nil {
-			msg = model.VLS
-		}
-		if msg == nil {
+func toCamelCase(name string) string {
+	out := make([]byte, 0, len(name))
+	last := byte(0)
+	for i := 0; i < len(name); i++ {
+		if i == 0 {
+			out = append(out, toUpper(name[i]))
+			last = name[0]
 			continue
 		}
-		w := &Writer{}
-		// w.Line("package %s", g.config.RootPackage)
-		// w.Line("")
-		// w.Line("import (")
-		// w.IndentLine(1, "\"github.com/moontrade/dtc-go/message\"")
-		// w.Line(")")
-		// w.Line("")
-
-		w.Line("type %s interface {", msg.Name)
-		w.IndentLine(1, "message.Message")
-		w.Line("")
-		w.IndentLine(1, "ToBuilder() %sBuilder", msg.Name)
-		w.Line("")
-
-		for i, field := range msg.Fields {
-			if isHeaderField(field) {
-				continue
-			}
-
-			if field.Fields != nil {
-				for _, field := range field.Fields {
-					w.IndentLine(1, "%s() %s", field.Name, g.RustTypeName(&field.Type))
-				}
+		if name[i] != '_' {
+			if last == '_' {
+				out = append(out, toUpper(name[i]))
 			} else {
-				w.IndentLine(1, "%s() %s", field.Name, g.RustTypeName(&field.Type))
-			}
-
-			if i < len(msg.Fields)-1 {
-				w.Line("")
+				out = append(out, toLower(name[i]))
 			}
 		}
-		w.Line("}")
-		w.Line("")
 
-		w.Line("type %sBuilder interface {", msg.Name)
-		w.IndentLine(1, "message.Builder")
-		w.Line("")
-		w.IndentLine(1, "%s", msg.Name)
-		w.Line("")
-		w.IndentLine(1, "Finish() %s", msg.Name)
-		w.Line("")
-
-		for i, field := range msg.Fields {
-			if isHeaderField(field) {
-				continue
-			}
-
-			if field.Fields != nil {
-				for _, field := range field.Fields {
-					if field.Type.Kind.IsString() {
-						w.IndentLine(1, "Set%s(value %s) %sBuilder", field.Name, g.RustTypeName(&field.Type), msg.Name)
-					} else {
-						w.IndentLine(1, "Set%s(value %s)", field.Name, g.RustTypeName(&field.Type))
-					}
-				}
-			} else {
-				if field.Type.Kind.IsString() {
-					w.IndentLine(1, "Set%s(value %s) %sBuilder", field.Name, g.RustTypeName(&field.Type), msg.Name)
-				} else {
-					w.IndentLine(1, "Set%s(value %s)", field.Name, g.RustTypeName(&field.Type))
-				}
-			}
-
-			if i < len(msg.Fields)-1 {
-				w.Line("")
-			}
-		}
-		w.Line("}")
-		w.Line("")
-
-		w.Line("type %sFactory interface {", msg.Name)
-		w.IndentLine(1, "New() %sBuilder", msg.Name)
-		w.Line("")
-		w.IndentLine(1, "Alloc() %sBuilder", msg.Name)
-		w.Line("}")
-		w.Line("")
-
-		if err := g.writeFile(fmt.Sprintf("%s_interfaces.go", toSnakeCase(msg.Name)), w.b); err != nil {
-			return err
-		}
+		last = name[i]
 	}
-	return nil
+	return string(out)
+}
+
+func toUpper(b byte) byte {
+	switch b {
+	case 'a':
+		return 'A'
+	case 'b':
+		return 'B'
+	case 'c':
+		return 'C'
+	case 'd':
+		return 'D'
+	case 'e':
+		return 'E'
+	case 'f':
+		return 'F'
+	case 'g':
+		return 'G'
+	case 'h':
+		return 'H'
+	case 'i':
+		return 'I'
+	case 'j':
+		return 'J'
+	case 'k':
+		return 'K'
+	case 'l':
+		return 'L'
+	case 'm':
+		return 'M'
+	case 'n':
+		return 'N'
+	case 'o':
+		return 'O'
+	case 'p':
+		return 'P'
+	case 'q':
+		return 'Q'
+	case 'r':
+		return 'R'
+	case 's':
+		return 'S'
+	case 't':
+		return 'T'
+	case 'u':
+		return 'U'
+	case 'v':
+		return 'V'
+	case 'w':
+		return 'W'
+	case 'x':
+		return 'X'
+	case 'y':
+		return 'Y'
+	case 'z':
+		return 'Z'
+	}
+	return b
+}
+
+func toLower(b byte) byte {
+	switch b {
+	case 'A':
+		return 'a'
+	case 'B':
+		return 'b'
+	case 'C':
+		return 'c'
+	case 'D':
+		return 'd'
+	case 'E':
+		return 'e'
+	case 'F':
+		return 'f'
+	case 'G':
+		return 'g'
+	case 'H':
+		return 'h'
+	case 'I':
+		return 'i'
+	case 'J':
+		return 'j'
+	case 'K':
+		return 'k'
+	case 'L':
+		return 'l'
+	case 'M':
+		return 'm'
+	case 'N':
+		return 'n'
+	case 'O':
+		return 'o'
+	case 'P':
+		return 'p'
+	case 'Q':
+		return 'q'
+	case 'R':
+		return 'r'
+	case 'S':
+		return 's'
+	case 'T':
+		return 't'
+	case 'U':
+		return 'u'
+	case 'V':
+		return 'v'
+	case 'W':
+		return 'w'
+	case 'X':
+		return 'x'
+	case 'Y':
+		return 'y'
+	case 'Z':
+		return 'z'
+	}
+	return b
 }
 
 func toSnakeCase(name string) string {
@@ -390,9 +434,9 @@ func valueToRust(v *schema.Value) string {
 	case schema.ValueTypeString:
 		return fmt.Sprintf("\"%s\"", v.Str)
 	case schema.ValueTypeConst:
-		return cleanName(v.Const.Name)
+		return cleanFieldName(v.Const.Name)
 	case schema.ValueTypeEnumOption:
-		return cleanName(v.EnumOption.Name)
+		return cleanFieldName(v.EnumOption.Name)
 	case schema.ValueTypeSizeof:
 		return fmt.Sprintf("%d", v.Struct.Size)
 	}
@@ -424,7 +468,42 @@ func primitiveTypeName(kind schema.Kind) string {
 	case schema.KindFloat64:
 		return "f64"
 	case schema.KindStringFixed, schema.KindStringVLS:
-		return "String"
+		return "&str"
+	default:
+		return "invalid"
+	}
+}
+
+func (g *Generator) PublicType(t *schema.Type) string {
+	switch t.Kind {
+	case schema.KindBool:
+		return "bool"
+	case schema.KindInt8:
+		return "i8"
+	case schema.KindInt16:
+		return "i16"
+	case schema.KindInt32:
+		return "i32"
+	case schema.KindInt64:
+		return "i64"
+	case schema.KindUint8:
+		return "u8"
+	case schema.KindUint16:
+		return "u16"
+	case schema.KindUint32:
+		return "u32"
+	case schema.KindUint64:
+		return "u64"
+	case schema.KindFloat32:
+		return "f32"
+	case schema.KindFloat64:
+		return "f64"
+	case schema.KindStringFixed, schema.KindStringVLS:
+		return "&str"
+	case schema.KindEnum:
+		return cleanStructName(t.Enum.Name)
+	case schema.KindAlias:
+		return cleanStructName(t.Alias.Name)
 	default:
 		return "invalid"
 	}
@@ -454,13 +533,200 @@ func (g *Generator) RustTypeName(t *schema.Type) string {
 		return "f32"
 	case schema.KindFloat64:
 		return "f64"
-	case schema.KindStringFixed, schema.KindStringVLS:
-		return "String"
+	case schema.KindStringFixed:
+		return fmt.Sprintf("[u8; %d]", t.Size)
+	case schema.KindStringVLS:
+		return "VLS"
 	case schema.KindEnum:
-		return cleanName(t.Enum.Name)
+		return cleanStructName(t.Enum.Name)
 	case schema.KindAlias:
-		return cleanName(t.Alias.Name)
+		return cleanStructName(t.Alias.Name)
 	default:
 		return "invalid"
+	}
+}
+
+func initValue(field *schema.Field) string {
+	if field.Type.Union != nil {
+		largest := field.Type.Union.Fields[0]
+		for _, f := range field.Type.Union.Fields {
+			if f.Type.Size > largest.Type.Size {
+				largest = f
+			}
+		}
+		return initValue(largest)
+	}
+	value := field.Initial
+
+	if value != nil {
+		switch value.Type {
+		case schema.ValueTypeUnknown:
+			panic("unknown type")
+		case schema.ValueTypeInt:
+			switch value.Int {
+			case math.MaxInt8:
+				return "i8::MAX"
+			case math.MaxInt16:
+				return "i16::MAX.to_le()"
+			case math.MaxInt32:
+				return "i32::MAX.to_le()"
+			case math.MaxInt64:
+				return "i64::MAX.to_le()"
+			default:
+				switch field.Type.Kind {
+				case schema.KindInt8:
+					return fmt.Sprintf("%d", value.Int)
+				case schema.KindInt16:
+					return fmt.Sprintf("%di16.to_le()", value.Int)
+				case schema.KindInt32:
+					return fmt.Sprintf("%di32.to_le()", value.Int)
+				case schema.KindInt64:
+					return fmt.Sprintf("%di64.to_le()", value.Int)
+				case schema.KindUint8:
+					return fmt.Sprintf("%d", value.Int)
+				case schema.KindUint16:
+					return fmt.Sprintf("%du16.to_le()", value.Int)
+				case schema.KindUint32:
+					return fmt.Sprintf("%du32.to_le()", value.Int)
+				case schema.KindUint64:
+					return fmt.Sprintf("%du64.to_le()", value.Int)
+				}
+			}
+			return fmt.Sprintf("%d", value.Int)
+		case schema.ValueTypeUint:
+			switch value.Uint {
+			case math.MaxUint8:
+				return "u8::MAX"
+			case math.MaxUint16:
+				return "u16::MAX.to_le()"
+			case math.MaxUint32:
+				return "u32::MAX.to_le()"
+			case math.MaxUint64:
+				return "u64::MAX.to_le()"
+			default:
+				switch field.Type.Kind {
+				case schema.KindInt8:
+					return fmt.Sprintf("%d", value.Uint)
+				case schema.KindInt16:
+					return fmt.Sprintf("%di16.to_le()", value.Uint)
+				case schema.KindInt32:
+					return fmt.Sprintf("%di32.to_le()", value.Uint)
+				case schema.KindInt64:
+					return fmt.Sprintf("%di64.to_le()", value.Uint)
+				case schema.KindUint8:
+					return fmt.Sprintf("%d", value.Int)
+				case schema.KindUint16:
+					return fmt.Sprintf("%du16.to_le()", value.Uint)
+				case schema.KindUint32:
+					return fmt.Sprintf("%du32.to_le()", value.Uint)
+				case schema.KindUint64:
+					return fmt.Sprintf("%du64.to_le()", value.Uint)
+				}
+			}
+			return fmt.Sprintf("%d", value.Uint)
+		case schema.ValueTypeBool:
+			if value.Int > 0 || value.Uint > 0 {
+				return "true"
+			} else {
+				return "false"
+			}
+		case schema.ValueTypeFloat:
+			if value.Float64 == 0.0 {
+				return "0.0"
+			} else {
+				strconv.FormatFloat(value.Float64, 'g', 4, 64)
+			}
+		case schema.ValueTypeFloat32Max:
+			return "f32_le(f32::MAX)"
+		case schema.ValueTypeFloat64Max:
+			return "f64_le(f64::MAX)"
+		case schema.ValueTypeString:
+			if field.Struct.VLS {
+				panic("default VLS string")
+			}
+
+			b := make([]byte, 0, 128)
+			b = append(b, '[')
+			for i := 0; i < field.Type.Size; i++ {
+				if i < len(value.Str) {
+					b = strconv.AppendInt(b, int64(value.Str[i]), 10)
+				} else {
+					b = strconv.AppendInt(b, int64(0), 10)
+				}
+				if i < field.Type.Size-1 {
+					b = append(b, ',')
+				}
+			}
+			b = append(b, ']')
+
+			return string(b)
+
+		case schema.ValueTypeConst:
+			// return value.Const.Name
+			// switch field.Type.Kind {
+			// case schema.KindInt8:
+			// 	return fmt.Sprintf("%d", value.Const.Value.Int)
+			// case schema.KindInt16:
+			// 	return fmt.Sprintf("%di16.to_le()", value.Const.Value.Int)
+			// case schema.KindInt32:
+			// 	return fmt.Sprintf("%di32.to_le()", value.Const.Value.Int)
+			// case schema.KindInt64:
+			// 	return fmt.Sprintf("%di64.to_le()", value.Const.Value.Int)
+			// case schema.KindUint8:
+			// 	return fmt.Sprintf("%d", value.Const.Value.Int)
+			// case schema.KindUint16:
+			// 	return fmt.Sprintf("%du16.to_le()", value.Const.Value.Int)
+			// case schema.KindUint32:
+			// 	return fmt.Sprintf("%du32.to_le()", value.Const.Value.Int)
+			// case schema.KindUint64:
+			// 	return fmt.Sprintf("%du64.to_le()", value.Const.Value.Int)
+			// }
+
+			return fmt.Sprintf("%s.to_le()", value.Const.Name)
+		case schema.ValueTypeEnumOption:
+			return fmt.Sprintf("%s::%s.to_le()", cleanStructName(value.EnumOption.Enum.Name), toCamelCase(value.EnumOption.Name))
+		case schema.ValueTypeSizeof:
+			return fmt.Sprintf("%du16.to_le()", field.Struct.Size)
+		}
+		return "0"
+	} else {
+		t := &field.Type
+		if t.Kind == schema.KindAlias {
+			t = &field.Type.Alias.Type
+		}
+		switch t.Kind {
+		case schema.KindBool:
+			return "false"
+		case schema.KindInt8:
+			return "0"
+		case schema.KindInt16:
+			return "0"
+		case schema.KindInt32:
+			return "0"
+		case schema.KindInt64:
+			return "0"
+		case schema.KindUint8:
+			return "0"
+		case schema.KindUint16:
+			return "0"
+		case schema.KindUint32:
+			return "0"
+		case schema.KindUint64:
+			return "0"
+		case schema.KindFloat32:
+			return "0.0f32"
+		case schema.KindFloat64:
+			return "0.0f64"
+		case schema.KindStringFixed:
+			return fmt.Sprintf("[0; %d]", field.Type.Size)
+		case schema.KindStringVLS:
+			return "crate::message::VLS::new()"
+		case schema.KindEnum:
+			return fmt.Sprintf("%s::%s.to_le()", cleanStructName(field.Type.Enum.Name), toCamelCase(field.Type.Enum.Options[0].Name))
+		case schema.KindAlias:
+			return "0"
+		default:
+			return "invalid"
+		}
 	}
 }

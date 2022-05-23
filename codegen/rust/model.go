@@ -1,6 +1,7 @@
 package rust
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -38,9 +39,9 @@ func (m *Message) HasProtobuf() bool {
 
 func (m *Message) Name() string {
 	if m.VLS != nil {
-		return m.VLS.Name
+		return cleanStructName(m.VLS.Struct.Name)
 	}
-	return m.Fixed.Name
+	return cleanStructName(m.Fixed.Struct.Name)
 }
 
 type Alias struct {
@@ -70,6 +71,8 @@ type Struct struct {
 	*schema.Struct
 	Message      *Message
 	Name         string
+	UnsafeName   string
+	DataName     string
 	Fields       []*Field
 	FieldsByName map[string]*Field
 }
@@ -86,6 +89,7 @@ type Field struct {
 	*schema.Field
 	Struct *Struct
 	Name   string
+	Init   string
 	Fields []*Field
 }
 
@@ -115,7 +119,30 @@ func (x FieldsByProtoNumber) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
 // Sort is a convenience method: x.Sort() calls Sort(x).
 func (x FieldsByProtoNumber) Sort() { sort.Sort(x) }
 
-func cleanName(n string) string {
+func cleanFieldName(n string) string {
+	if strings.HasPrefix(n, "s_") {
+		return strings.TrimSpace(n[2:])
+	}
+	if strings.HasPrefix(n, "m_") {
+		return strings.TrimSpace(n[2:])
+	}
+	if strings.HasPrefix(n, "t_") {
+		return strings.TrimSpace(n[2:])
+	}
+	if strings.HasPrefix(n, "n_") {
+		return strings.TrimSpace(n[2:])
+	}
+	n = strings.TrimSpace(n)
+	n = toSnakeCase(n)
+	if n == "type" {
+		return "r#type"
+	} else {
+		return n
+	}
+}
+
+func cleanStructName(n string) string {
+	n = strings.TrimSpace(n)
 	if strings.HasPrefix(n, "s_") {
 		return strings.TrimSpace(n[2:])
 	}
@@ -130,6 +157,23 @@ func cleanName(n string) string {
 	}
 	n = strings.TrimSpace(n)
 	return n
+}
+
+func cleanStructDataName(n string) string {
+	return fmt.Sprintf("%s%s", cleanStructName(n), "Data")
+}
+
+func (f *Field) SetterName() string {
+	return fmt.Sprintf("set_%s", strings.ReplaceAll(f.Name, "r#", ""))
+}
+
+func (f *Field) IsSuper() bool {
+	switch strings.ToLower(f.Name) {
+	case "size", "type", "r#type", "base_size", "basesize":
+		return false
+	default:
+		return true
+	}
 }
 
 func primitiveKindName(kind schema.Kind) string {
@@ -155,9 +199,9 @@ func primitiveKindName(kind schema.Kind) string {
 	case schema.KindFloat64:
 		return "f64"
 	case schema.KindStringFixed:
-		return "String"
+		return "&str"
 	case schema.KindStringVLS:
-		return "String"
+		return "&str"
 	}
 	return "invalid"
 }

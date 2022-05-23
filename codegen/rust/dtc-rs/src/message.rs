@@ -82,6 +82,32 @@ pub trait Message: Sized + Into<Vec<u8>> + Send {
     }
 }
 
+#[inline]
+pub(crate) const fn f32_le(value: f32) -> f32 {
+    #[cfg(target_endian = "little")]
+    {
+        value
+    }
+    #[cfg(not(target_endian = "little"))]
+    {
+        let v: u32 = unsafe { core::mem::transmute(value) };
+        unsafe { core::mem::transmute(v.to_le()) }
+    }
+}
+
+#[inline]
+pub(crate) const fn f64_le(value: f64) -> f64 {
+    #[cfg(target_endian = "little")]
+    {
+        value
+    }
+    #[cfg(not(target_endian = "little"))]
+    {
+        let v: u64 = unsafe { core::mem::transmute(value) };
+        unsafe { core::mem::transmute(v.to_le()) }
+    }
+}
+
 pub(crate) trait VLSMessage: Message {
     unsafe fn set_ptr(&mut self, value: *const u8);
 
@@ -122,14 +148,14 @@ impl VLS {
     }
 }
 
-pub(crate) fn get_fixed_string(src: &[u8]) -> &str {
+pub(crate) fn get_fixed(src: &[u8]) -> &str {
     match memchr::memchr(0, src) {
         Some(idx) => unsafe { std::str::from_utf8_unchecked(&src[0..idx]) },
         None => unsafe { std::str::from_utf8_unchecked(src) },
     }
 }
 
-pub(crate) fn set_fixed_string(src: &str, dst: &mut [u8]) {
+pub(crate) fn set_fixed(dst: &mut [u8], src: &str) {
     unsafe {
         if src.len() < dst.len() {
             ptr::copy(src.as_ptr() as *mut u8, dst.as_ptr() as *mut u8, src.len());
@@ -166,13 +192,9 @@ pub(crate) fn get_vls<M: VLSMessage>(m: &M, offset: VLS) -> &str {
     }
 }
 
-pub(crate) fn set_vls<M: VLSMessage>(
-    message: &mut M,
-    mut offset: VLS,
-    value: &str,
-) -> core::result::Result<VLS, Error> {
+pub(crate) fn set_vls<M: VLSMessage>(message: &mut M, mut offset: VLS, value: &str) -> VLS {
     if (message.size() as u32) < (offset.offset() as u32 + offset.length() as u32) {
-        Ok(VLS::new())
+        VLS::new()
     } else if offset.length() > value.len() as u16 {
         // In-place write.
         offset.set_length((value.len() as u16) + 1);
@@ -185,12 +207,12 @@ pub(crate) fn set_vls<M: VLSMessage>(
             *(message.as_ptr() as *mut u8)
                 .offset(offset.offset() as isize + value.len() as isize) = 0;
         }
-        Ok(offset)
+        offset
     } else {
         // Overflow?
         let new_size = message.size() as usize + value.len() + 1;
         if new_size > u16::MAX as usize {
-            return Err(Error::Overflow);
+            return VLS::new();
         }
 
         // Add NULL terminator to length.
@@ -213,7 +235,7 @@ pub(crate) fn set_vls<M: VLSMessage>(
             message.set_capacity(data.capacity() as u16);
             core::mem::forget(data);
         }
-        Ok(offset)
+        offset
     }
 }
 

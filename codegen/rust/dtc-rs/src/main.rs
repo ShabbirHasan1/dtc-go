@@ -10,14 +10,17 @@ mod v8;
 
 pub use client::*;
 use log::info;
-pub use message::*;
 
-use std::{io, time::Duration};
+use message::*;
+pub use message::{Message, Parsed};
+
+use std::io;
 
 use ntex::{channel::mpsc, codec, connect, rt};
 use rustls::{ClientConfig, OwnedTrustAnchor, RootCertStore};
 
 use clap::Parser;
+
 
 /// DTC client/server
 #[derive(Parser, Debug)]
@@ -111,11 +114,15 @@ mod tests {
 
     #[test]
     fn test_client() {
-        let client = TlsClient::new();
+        std::env::set_var("RUST_LOG", "trace");
+        env_logger::init();
+        let client = Client::new();
+
+        // let client = TlsClient::new();
         rt::block_on(async move {
             match client
                 .start(
-                    crate::sierra_chart::FUTURES_TRADING_1.into(),
+                    crate::sierra_chart::DENALI_1.into(),
                     ClientHandler::<FixedFactory>::new(),
                 )
                 .await
@@ -123,8 +130,9 @@ mod tests {
                 Ok(()) => {
                     println!("success")
                 }
-                Err(_reason) => {
-                    println!("error");
+                Err(reason) => {
+                    println!("{}", reason);
+                    // log::error!("connect error: {}", reason);
                     // println("error {}", reason);
                 }
             }

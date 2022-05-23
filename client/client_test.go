@@ -322,3 +322,7 @@ func closestFit(size int, classes []SizeClass) SizeClass {
 	}
 	return SizeClass{}
 }
+
+func TestConnect(t *testing.T) {
+
+}

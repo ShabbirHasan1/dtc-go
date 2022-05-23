@@ -6,22 +6,18 @@ func (g *Generator) generateAliases() error {
 		w.Line("// %s", g.config.GeneratedComment)
 		w.Line("")
 	}
-	w.Line("package %s", g.packageName)
-	w.Line("")
 
-	w.Line("type (")
 	for _, alias := range g.aliases {
 		if alias.Doc != nil {
-			_ = g.writeComments(w, 1, alias.Name, alias.Doc.Description)
+			_ = g.writeComments(w, 0, alias.Name, alias.Doc.Description)
 		}
-		w.IndentLine(1, "%s %s", alias.Name, g.RustTypeName(&alias.Type))
+		w.Line("pub type %s = %s;", alias.Name, g.RustTypeName(&alias.Type))
 
 		if alias != g.aliases[len(g.aliases)-1] {
 			w.Line("")
 		}
 	}
-	w.Line(")")
 	w.Line("")
 
-	return g.writeFile("alias.go", w.b)
+	return g.writeFile("alias.rs", w.b)
 }

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yoheimuta/go-protoparser/v4/parser"
 	"math"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/yoheimuta/go-protoparser/v4/parser"
 )
 
 func parseError(lineIndex int, line, message string) error {
@@ -49,8 +50,10 @@ func LoadSchemaFromCHeaders(docsPath, protoPath string, headerPaths ...string) (
 	if err != nil {
 		return nil, err
 	}
-	if err = schema.AddProto(protoPath); err != nil {
-		return nil, err
+	if len(protoPath) > 0 {
+		if err = schema.AddProto(protoPath); err != nil {
+			return nil, err
+		}
 	}
 	if err = schema.Validate(); err != nil {
 		return nil, err
