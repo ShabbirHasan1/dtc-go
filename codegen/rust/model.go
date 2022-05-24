@@ -70,6 +70,7 @@ type EnumOption struct {
 type Struct struct {
 	*schema.Struct
 	Message      *Message
+	TypeConst    *Constant
 	Name         string
 	UnsafeName   string
 	DataName     string

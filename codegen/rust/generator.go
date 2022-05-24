@@ -138,6 +138,15 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 					Init:   initValue(field),
 				}
 			)
+			if strings.ToLower(field.Name) == "type" {
+				if field.Initial == nil {
+					panic("type must have a value")
+				}
+				msg.TypeConst = generator.constantsByName[field.Initial.Const.Name]
+				if msg.TypeConst == nil {
+					panic("type must have a type const")
+				}
+			}
 			if field.Type.Union != nil {
 				for _, field := range field.Type.Union.Fields {
 					ff := &Field{
@@ -182,10 +191,18 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 		}
 		name := ""
 		if m.Fixed != nil {
+			if m.Fixed.TypeConst == nil {
+				fmt.Printf("[WARN] type %s does not have a TypeConst\n", m.Fixed.Name)
+				continue
+			}
 			name = m.Fixed.Name
 			m.Fixed.Message = m
 		}
 		if m.VLS != nil {
+			if m.VLS.TypeConst == nil {
+				fmt.Printf("[WARN] type %s does not have a TypeConst\n", m.VLS.Name)
+				continue
+			}
 			name = m.VLS.Name
 			m.VLS.Message = m
 		}
@@ -228,6 +245,15 @@ func (g *Generator) Run() error {
 		return err
 	}
 	if err := g.generateStructs(); err != nil {
+		return err
+	}
+	if err := g.generateMod(); err != nil {
+		return err
+	}
+	if err := g.generateFactory(); err != nil {
+		return err
+	}
+	if err := g.generateHandler(); err != nil {
 		return err
 	}
 	return nil
@@ -558,22 +584,49 @@ func initValue(field *schema.Field) string {
 	}
 	value := field.Initial
 
+	t := &field.Type
+	if t.Kind == schema.KindAlias {
+		t = &t.Alias.Type
+	}
+
 	if value != nil {
 		switch value.Type {
 		case schema.ValueTypeUnknown:
 			panic("unknown type")
 		case schema.ValueTypeInt:
+			if t.Kind == schema.KindFloat32 || t.Kind == schema.KindFloat64 {
+				return fmt.Sprintf("%d.0", value.Uint)
+			}
+			if t.Kind == schema.KindBool {
+				if value.Uint != 0 || value.Int != 0 {
+					return "true"
+				} else {
+					return "false"
+				}
+			}
 			switch value.Int {
 			case math.MaxInt8:
+				if t.Kind != schema.KindInt8 {
+					return fmt.Sprintf("(i8::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "i8::MAX"
 			case math.MaxInt16:
+				if t.Kind != schema.KindInt16 {
+					return fmt.Sprintf("(i16::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "i16::MAX.to_le()"
 			case math.MaxInt32:
+				if t.Kind != schema.KindInt32 {
+					return fmt.Sprintf("(i32::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "i32::MAX.to_le()"
 			case math.MaxInt64:
+				if t.Kind != schema.KindInt64 {
+					return fmt.Sprintf("(i64::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "i64::MAX.to_le()"
 			default:
-				switch field.Type.Kind {
+				switch t.Kind {
 				case schema.KindInt8:
 					return fmt.Sprintf("%d", value.Int)
 				case schema.KindInt16:
@@ -594,17 +647,39 @@ func initValue(field *schema.Field) string {
 			}
 			return fmt.Sprintf("%d", value.Int)
 		case schema.ValueTypeUint:
+			if t.Kind == schema.KindFloat32 || t.Kind == schema.KindFloat64 {
+				return fmt.Sprintf("%d.0", value.Uint)
+			}
+			if t.Kind == schema.KindBool {
+				if value.Uint != 0 || value.Int != 0 {
+					return "true"
+				} else {
+					return "false"
+				}
+			}
 			switch value.Uint {
 			case math.MaxUint8:
+				if t.Kind != schema.KindUint8 {
+					return fmt.Sprintf("(u8::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "u8::MAX"
 			case math.MaxUint16:
+				if t.Kind != schema.KindUint16 {
+					return fmt.Sprintf("(u16::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "u16::MAX.to_le()"
 			case math.MaxUint32:
+				if t.Kind != schema.KindUint32 {
+					return fmt.Sprintf("(u32::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "u32::MAX.to_le()"
 			case math.MaxUint64:
+				if t.Kind != schema.KindUint64 {
+					return fmt.Sprintf("(u64)::MAX as %s).to_le()", primitiveTypeName(t.Kind))
+				}
 				return "u64::MAX.to_le()"
 			default:
-				switch field.Type.Kind {
+				switch t.Kind {
 				case schema.KindInt8:
 					return fmt.Sprintf("%d", value.Uint)
 				case schema.KindInt16:
@@ -634,7 +709,11 @@ func initValue(field *schema.Field) string {
 			if value.Float64 == 0.0 {
 				return "0.0"
 			} else {
-				strconv.FormatFloat(value.Float64, 'g', 4, 64)
+				v := strconv.FormatFloat(value.Float64, 'g', 4, 64)
+				if strings.IndexByte(v, '.') == -1 {
+					return fmt.Sprintf("%s.0", v)
+				}
+				return v
 			}
 		case schema.ValueTypeFloat32Max:
 			return "f32_le(f32::MAX)"
@@ -688,45 +767,55 @@ func initValue(field *schema.Field) string {
 		case schema.ValueTypeSizeof:
 			return fmt.Sprintf("%du16.to_le()", field.Struct.Size)
 		}
-		return "0"
+
+		return defaultValue(t)
 	} else {
-		t := &field.Type
-		if t.Kind == schema.KindAlias {
-			t = &field.Type.Alias.Type
+		return defaultValue(t)
+	}
+}
+
+func defaultValue(t *schema.Type) string {
+	if t.Kind == schema.KindAlias {
+		return defaultValue(&t.Alias.Type)
+	} else if t.Kind == schema.KindUnion {
+		largest := t.Union.Fields[0]
+		for _, f := range t.Union.Fields {
+			if f.Type.Size > largest.Type.Size {
+				largest = f
+			}
 		}
-		switch t.Kind {
-		case schema.KindBool:
-			return "false"
-		case schema.KindInt8:
-			return "0"
-		case schema.KindInt16:
-			return "0"
-		case schema.KindInt32:
-			return "0"
-		case schema.KindInt64:
-			return "0"
-		case schema.KindUint8:
-			return "0"
-		case schema.KindUint16:
-			return "0"
-		case schema.KindUint32:
-			return "0"
-		case schema.KindUint64:
-			return "0"
-		case schema.KindFloat32:
-			return "0.0f32"
-		case schema.KindFloat64:
-			return "0.0f64"
-		case schema.KindStringFixed:
-			return fmt.Sprintf("[0; %d]", field.Type.Size)
-		case schema.KindStringVLS:
-			return "crate::message::VLS::new()"
-		case schema.KindEnum:
-			return fmt.Sprintf("%s::%s.to_le()", cleanStructName(field.Type.Enum.Name), toCamelCase(field.Type.Enum.Options[0].Name))
-		case schema.KindAlias:
-			return "0"
-		default:
-			return "invalid"
-		}
+		return defaultValue(&largest.Type)
+	}
+	switch t.Kind {
+	case schema.KindBool:
+		return "false"
+	case schema.KindInt8:
+		return "0i8"
+	case schema.KindInt16:
+		return "0i16"
+	case schema.KindInt32:
+		return "0i32"
+	case schema.KindInt64:
+		return "0i64"
+	case schema.KindUint8:
+		return "0u8"
+	case schema.KindUint16:
+		return "0u16"
+	case schema.KindUint32:
+		return "0u32"
+	case schema.KindUint64:
+		return "0u64"
+	case schema.KindFloat32:
+		return "0.0f32"
+	case schema.KindFloat64:
+		return "0.0f64"
+	case schema.KindStringFixed:
+		return fmt.Sprintf("[0; %d]", t.Size)
+	case schema.KindStringVLS:
+		return "crate::message::VLS::new()"
+	case schema.KindEnum:
+		return fmt.Sprintf("%s::%s.to_le()", cleanStructName(t.Enum.Name), toCamelCase(t.Enum.Options[0].Name))
+	default:
+		return "invalid"
 	}
 }

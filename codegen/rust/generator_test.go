@@ -12,7 +12,7 @@ func TestGenerator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	g, err := NewGenerator(DefaultConfig("out"), schema)
+	g, err := NewGenerator(DefaultConfig("dtc-rs/src/v8"), schema)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func TestGenerator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(g)
+	// fmt.Println(g)
 }
 
 func TestGeneratorNonStandard(t *testing.T) {

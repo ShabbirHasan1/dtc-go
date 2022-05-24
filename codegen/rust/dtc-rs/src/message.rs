@@ -46,29 +46,6 @@ pub trait Message: Sized + Into<Vec<u8>> + Send {
     }
 
     #[inline]
-    fn parse(data: &[u8]) -> Result<Parsed<Self::Safe, Self::Unsafe>, Error> {
-        if data.len() < 6 {
-            return Err(Error::Malformed("need more data"));
-        }
-        let size = unsafe { u16::from_le(*(data.as_ptr() as *const u16)) };
-        let base_size = if Self::BASE_SIZE_OFFSET == 0 {
-            size
-        } else {
-            unsafe { u16::from_le(*(data.as_ptr().offset(Self::BASE_SIZE_OFFSET) as *const u16)) }
-        };
-        if (base_size as usize) >= Self::BASE_SIZE {
-            unsafe { Ok(Parsed::Left(Self::Safe::leak(data.as_ptr(), size as usize))) }
-        } else {
-            unsafe {
-                Ok(Parsed::Right(Self::Unsafe::leak(
-                    data.as_ptr(),
-                    size as usize,
-                )))
-            }
-        }
-    }
-
-    #[inline]
     fn into_vec(self) -> Vec<u8> {
         let r = unsafe {
             Vec::from_raw_parts(
@@ -79,6 +56,29 @@ pub trait Message: Sized + Into<Vec<u8>> + Send {
         };
         core::mem::forget(self);
         r
+    }
+}
+
+#[inline]
+pub fn parse<S: Message, U: Message>(data: &[u8]) -> Result<Parsed<S, U>, Error> {
+    if data.len() < 6 {
+        return Err(Error::Malformed("need more data"));
+    }
+    let size = unsafe { u16::from_le(*(data.as_ptr() as *const u16)) };
+    let base_size = if S::BASE_SIZE_OFFSET == 0 {
+        size
+    } else {
+        unsafe { u16::from_le(*(data.as_ptr().offset(S::BASE_SIZE_OFFSET) as *const u16)) }
+    };
+    if (base_size as usize) >= S::BASE_SIZE {
+        unsafe { Ok(Parsed::Left(S::leak(data.as_ptr(), size as usize))) }
+    } else {
+        unsafe {
+            Ok(Parsed::Right(U::leak(
+                data.as_ptr(),
+                size as usize,
+            )))
+        }
     }
 }
 

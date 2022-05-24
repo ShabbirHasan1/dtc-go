@@ -18,9 +18,7 @@ func (g *Generator) generateStructs() error {
 			writer.Line("// %s", g.config.GeneratedComment)
 		}
 
-		writer.Line("use super::constants::*;")
-		writer.Line("use super::alias::*;")
-		writer.Line("use super::enums::*;")
+		writer.Line("use super::*;")
 		writer.Line("use crate::message::*;")
 		writer.Line("")
 
@@ -110,7 +108,17 @@ func (g *Generator) generateStructs() error {
 					if !field.IsSuper() {
 						continue
 					}
-					writer.IndentLine(2, "to.%s(self.%s());", field.SetterName(), field.Name)
+					if len(field.Fields) > 0 {
+						largest := field.Fields[0]
+						for _, f := range field.Fields {
+							if f.Type.Size > largest.Type.Size {
+								largest = f
+							}
+						}
+						writer.IndentLine(2, "to.%s(self.%s());", largest.SetterName(), largest.Name)
+					} else {
+						writer.IndentLine(2, "to.%s(self.%s());", field.SetterName(), field.Name)
+					}
 				}
 				writer.IndentLine(1, "}")
 				writer.Line("}")
@@ -191,7 +199,7 @@ func (g *Generator) generateStructs() error {
 						}
 						field = largest
 					}
-					writer.IndentLine(3, "%s: %s,", field.Name, field.Init)
+					writer.IndentLine(3, "%s: %s,", field.Name, initValue(field.Field))
 				}
 				writer.IndentLine(2, "}")
 				writer.IndentLine(1, "}")
@@ -551,7 +559,7 @@ func (g *Generator) generateStructs() error {
 							if f.Doc != nil {
 								g.writeComments(writer, 1, f.Name, f.Doc.Description)
 							}
-							writer.IndentLine(1, "fn %s(&self) -> %s {", f.SetterName(), g.PublicType(&f.Type))
+							writer.IndentLine(1, "fn %s(&mut self, value: %s) -> &mut Self {", f.SetterName(), g.PublicType(&f.Type))
 							g.setAccessor(writer, 2, largest, isUnsafe)
 							writer.IndentLine(1, "}")
 							writer.Line("")

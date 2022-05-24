@@ -118,7 +118,11 @@ func (g *Generator) writeClearComment(w *Writer, msg *Struct, name string) {
 			continue
 		}
 
-		name := pad(f.Name, maxWidth)
+		name := f.Name
+		if name == "r#type" {
+			name = "type"
+		}
+		name = pad(name, maxWidth)
 		tn := g.RustTypeName(&f.Type)
 		if f.Type.Kind == schema.KindStringVLS {
 			tn = "string"
