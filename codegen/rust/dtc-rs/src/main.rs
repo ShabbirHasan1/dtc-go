@@ -98,26 +98,32 @@ mod tests {
         }
     }
 
-    impl<F: Factory> super::connection::Handler for ClientHandler<F> {
+    impl<F: Factory> crate::connection::Handler for ClientHandler<F> {
         fn on_message(&self, data: &[u8], conn: &Connection) -> Result<(), Error> {
             crate::v8::handle::<F, Self>(self, data, conn)
         }
     }
 
     impl<F: Factory> crate::v8::Handler for ClientHandler<F> {
-        fn on_logon_request(
-            &self,
-            _ctx: &Connection,
-            _request: &impl LogonRequest,
-        ) -> Result<(), Error> {
-            Ok(())
-        }
-
         fn on_encoding_request(
             &self,
             conn: &Connection,
             msg: &impl EncodingRequest,
         ) -> Result<(), Error> {
+            info!("on_encoding_request");
+            
+
+            let msg = msg.clone_safe();
+
+            Ok(())
+        }
+
+        fn on_encoding_request_extended(
+            &self,
+            conn: &Connection,
+            msg: &impl EncodingRequestExtended,
+        ) -> Result<(), Error> {
+            
             todo!()
         }
 
@@ -129,6 +135,14 @@ mod tests {
             todo!()
         }
 
+        fn on_logon_request(
+            &self,
+            _ctx: &Connection,
+            _request: &impl LogonRequest,
+        ) -> Result<(), Error> {
+            Ok(())
+        }
+
         fn on_logon_response(
             &self,
             conn: &Connection,
@@ -138,10 +152,19 @@ mod tests {
         }
 
         fn on_logoff(&self, conn: &Connection, msg: &impl Logoff) -> Result<(), Error> {
+            
             todo!()
         }
 
         fn on_heartbeat(&self, conn: &Connection, msg: &impl Heartbeat) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_heartbeat_extended(
+            &self,
+            conn: &Connection,
+            msg: &impl HeartbeatExtended,
+        ) -> Result<(), Error> {
             todo!()
         }
 
@@ -150,6 +173,7 @@ mod tests {
             conn: &Connection,
             msg: &impl MarketDataFeedStatus,
         ) -> Result<(), Error> {
+            msg.clone_safe();
             todo!()
         }
 
@@ -849,6 +873,322 @@ mod tests {
             &self,
             conn: &Connection,
             msg: &impl HistoricalMarketDepthDataRecordResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_historical_trades_request(
+            &self,
+            conn: &Connection,
+            msg: &impl HistoricalTradesRequest,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_historical_trades_reject(
+            &self,
+            conn: &Connection,
+            msg: &impl HistoricalTradesReject,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_historical_trades_response(
+            &self,
+            conn: &Connection,
+            msg: &impl HistoricalTradesResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_replay_chart_data(
+            &self,
+            conn: &Connection,
+            msg: &impl ReplayChartData,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_replay_chart_data_perform_action(
+            &self,
+            conn: &Connection,
+            msg: &impl ReplayChartDataPerformAction,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_replay_chart_data_status(
+            &self,
+            conn: &Connection,
+            msg: &impl ReplayChartDataStatus,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_request_num_current_client_connections(
+            &self,
+            conn: &Connection,
+            msg: &impl RequestNumCurrentClientConnections,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_num_current_client_connections_response(
+            &self,
+            conn: &Connection,
+            msg: &impl NumCurrentClientConnectionsResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_client_device_update(
+            &self,
+            conn: &Connection,
+            msg: &impl ClientDeviceUpdate,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_interprocess_synchronization_remote_state(
+            &self,
+            conn: &Connection,
+            msg: &impl InterprocessSynchronizationRemoteState,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_interprocess_synchronization_snapshot_request(
+            &self,
+            conn: &Connection,
+            msg: &impl InterprocessSynchronizationSnapshotRequest,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_interprocess_synchronization_trade_activity_request(
+            &self,
+            conn: &Connection,
+            msg: &impl InterprocessSynchronizationTradeActivityRequest,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_write_intraday_data_file_session_value(
+            &self,
+            conn: &Connection,
+            msg: &impl WriteIntradayDataFileSessionValue,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_sc_configuration_synchronization(
+            &self,
+            conn: &Connection,
+            msg: &impl SCConfigurationSynchronization,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_download_historical_order_fill_and_account_balance_data(
+            &self,
+            conn: &Connection,
+            msg: &impl DownloadHistoricalOrderFillAndAccountBalanceData,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_order(&self, conn: &Connection, msg: &impl TradeOrder) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_individual_trade_position(
+            &self,
+            conn: &Connection,
+            msg: &impl IndividualTradePosition,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_position_consolidated(
+            &self,
+            conn: &Connection,
+            msg: &impl TradePositionConsolidated,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_activity_data(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeActivityData,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_request(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataRequest,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_response(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_update(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataUpdate,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_delete(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataDelete,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_symbol_limits_response(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataSymbolLimitsResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_symbol_limits_update(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataSymbolLimitsUpdate,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_symbol_commission_response(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataSymbolCommissionResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_symbol_commission_update(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataSymbolCommissionUpdate,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_authorized_username_response(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataAuthorizedUsernameResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_authorized_username_add(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataAuthorizedUsernameAdd,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_authorized_username_remove(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataAuthorizedUsernameRemove,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_username_to_share_with_response(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataUsernameToShareWithResponse,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_username_to_share_with_add(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataUsernameToShareWithAdd,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_username_to_share_with_remove(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataUsernameToShareWithRemove,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_response_trailer(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataResponseTrailer,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_trade_account_data_update_operation_complete(
+            &self,
+            conn: &Connection,
+            msg: &impl TradeAccountDataUpdateOperationComplete,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_processed_fill_identifier(
+            &self,
+            conn: &Connection,
+            msg: &impl ProcessedFillIdentifier,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_flatten_positions_for_trade_account(
+            &self,
+            conn: &Connection,
+            msg: &impl FlattenPositionsForTradeAccount,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_user_information(
+            &self,
+            conn: &Connection,
+            msg: &impl UserInformation,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_margin_data_request(
+            &self,
+            conn: &Connection,
+            msg: &impl MarginDataRequest,
+        ) -> Result<(), Error> {
+            todo!()
+        }
+
+        fn on_margin_data_response(
+            &self,
+            conn: &Connection,
+            msg: &impl MarginDataResponse,
         ) -> Result<(), Error> {
             todo!()
         }

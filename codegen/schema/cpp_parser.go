@@ -189,8 +189,16 @@ func (schema *Schema) AddCHeader(path string) (*CHeaderFile, error) {
 					if len(packStack) > 0 {
 						pack = packStack[len(packStack)-1]
 					}
+					if blockName == "s_MessageBase" {
+						state = 0
+						continue
+					}
 					var s *Struct
 					s, err = file.parseStruct(pack, blockName, block)
+					if s == nil {
+						state = 0
+						continue
+					}
 					if err != nil {
 						return nil, parseError(lineIndex, line, err.Error())
 					}
@@ -326,17 +334,35 @@ func (schema *Schema) AddCHeader(path string) (*CHeaderFile, error) {
 				blockName = strings.TrimSpace(blockName[0:index])
 			}
 
-		case strings.HasPrefix(line, "typedef"):
-			line = strings.TrimSpace(line[len("typedef"):])
-			index := strings.LastIndex(line, " ")
-			if index == -1 {
-				return nil, parseError(lineIndex, line, "invalid typedef")
+		case strings.HasPrefix(line, "typedef"), strings.HasPrefix(line, "using"):
+			if strings.HasPrefix(line, "using") {
+				line = strings.TrimSpace(line[len("using"):])
+			} else {
+				line = strings.TrimSpace(line[len("typedef"):])
 			}
-			base := strings.TrimSpace(line[0:index])
-			name := strings.TrimSpace(line[index+1:])
-			if strings.HasSuffix(name, ";") {
-				name = strings.TrimSpace(name[0 : len(name)-1])
+			index := strings.Index(line, "//")
+			if index > -1 {
+				line = strings.TrimSpace(line[:index])
 			}
+			if strings.HasSuffix(line, ";") {
+				line = strings.TrimSpace(line[0 : len(line)-1])
+			}
+			name := line
+			base := line
+			index = strings.LastIndex(line, " ")
+			if index > -1 {
+				base = strings.TrimSpace(line[0:index])
+				name = strings.TrimSpace(line[index+1:])
+			}
+
+			if strings.HasPrefix(name, "std::") {
+				continue
+			}
+			switch name {
+			case "uint8_t", "uint16_t", "uint32_t", "uint64_t", "int8_t", "int16_t", "int32_t", "int64_t":
+				continue
+			}
+
 			if strings.Contains(name, "vls_t") || strings.Contains(name, "uint8_t") {
 				continue
 			}
@@ -344,6 +370,12 @@ func (schema *Schema) AddCHeader(path string) (*CHeaderFile, error) {
 				Namespace: file.currentNamespace,
 				Name:      name,
 				Type:      file.typeOf(base),
+			}
+			if alias.Type.Kind == KindUnknown {
+				alias.Type = file.typeOf(name)
+			}
+			if alias.Type.Kind == KindUnknown {
+				continue
 			}
 			if file.Schema.Docs != nil {
 				alias.Doc = file.Schema.Docs.TypeNamed(alias.Name)
@@ -749,6 +781,10 @@ func (f *CHeaderFile) parseStruct(pack int, name string, lines []string) (*Struc
 
 	if f.Schema.Docs != nil {
 		message.Doc = f.Schema.Docs.MessageNamed(message.Name)
+	}
+
+	if len(message.Fields) == 0 || strings.ToLower(message.Fields[0].Name) != "size" {
+		return nil, nil
 	}
 
 	for _, field := range message.Fields {

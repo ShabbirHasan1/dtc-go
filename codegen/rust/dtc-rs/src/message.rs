@@ -7,8 +7,8 @@ pub enum Parsed<'a, A: Message, B: Message> {
 }
 
 pub trait Message: Sized + Into<Vec<u8>> + Send {
-    type Safe: Message;
-    type Unsafe: Message;
+    // type Safe: Message;
+    // type Unsafe: Message;
     type Data: Sized;
 
     const BASE_SIZE: usize = core::mem::size_of::<Self::Data>();
@@ -17,11 +17,9 @@ pub trait Message: Sized + Into<Vec<u8>> + Send {
 
     fn new() -> Self;
 
-    fn to_safe(self) -> Self::Safe;
-
     #[inline]
-    fn is_out_of_bounds(&self, offset: u16) -> bool {
-        self.base_size() < offset
+    fn is_out_of_bounds(&self, min_base_size: u16) -> bool {
+        self.base_size() < min_base_size
     }
 
     fn size(&self) -> u16;
@@ -73,12 +71,7 @@ pub fn parse<S: Message, U: Message>(data: &[u8]) -> Result<Parsed<S, U>, Error>
     if (base_size as usize) >= S::BASE_SIZE {
         unsafe { Ok(Parsed::Left(S::leak(data.as_ptr(), size as usize))) }
     } else {
-        unsafe {
-            Ok(Parsed::Right(U::leak(
-                data.as_ptr(),
-                size as usize,
-            )))
-        }
+        unsafe { Ok(Parsed::Right(U::leak(data.as_ptr(), size as usize))) }
     }
 }
 
@@ -117,6 +110,7 @@ pub(crate) trait VLSMessage: Message {
 }
 
 #[derive(Copy, Clone, Debug)]
+#[repr(packed(8))]
 pub struct VLS {
     offset: u16,
     length: u16,

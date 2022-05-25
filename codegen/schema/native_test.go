@@ -15,7 +15,7 @@ func TestCPPLayout(t *testing.T) {
 	if err = schema.Validate(); err != nil {
 		t.Fatal(err)
 	}
-	data, err := os.ReadFile("testdata/DTCLayout.txt")
+	data, err := os.ReadFile("../testdata/DTCLayoutNonStandard.txt")
 	if err != nil {
 		t.Fatal(err)
 	}

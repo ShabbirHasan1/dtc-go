@@ -12,7 +12,16 @@ import (
 type Message struct {
 	Fixed       *Struct
 	VLS         *Struct
+	Extension   *Message
+	IsExtension bool
 	NonStandard bool
+}
+
+func (m *Message) TypeCode() uint16 {
+	if m.Fixed != nil {
+		return m.Fixed.Type
+	}
+	return m.VLS.Type
 }
 
 func (m *Message) HasSerializers() bool {
@@ -122,16 +131,16 @@ func (x FieldsByProtoNumber) Sort() { sort.Sort(x) }
 
 func cleanFieldName(n string) string {
 	if strings.HasPrefix(n, "s_") {
-		return strings.TrimSpace(n[2:])
+		n = strings.TrimSpace(n[2:])
 	}
 	if strings.HasPrefix(n, "m_") {
-		return strings.TrimSpace(n[2:])
+		n = strings.TrimSpace(n[2:])
 	}
 	if strings.HasPrefix(n, "t_") {
-		return strings.TrimSpace(n[2:])
+		n = strings.TrimSpace(n[2:])
 	}
 	if strings.HasPrefix(n, "n_") {
-		return strings.TrimSpace(n[2:])
+		n = strings.TrimSpace(n[2:])
 	}
 	n = strings.TrimSpace(n)
 	n = toSnakeCase(n)

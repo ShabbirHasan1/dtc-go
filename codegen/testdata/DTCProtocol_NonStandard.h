@@ -62,6 +62,38 @@ namespace n_DTCNonStandard
 	const uint16_t MARGIN_DATA_REQUEST = 10141;
 	const uint16_t MARGIN_DATA_RESPONSE = 10142;
 
+	// Chartbook Sharing messages
+	const uint16_t BINARY_DATA_TRANSFER = 10143;
+	const uint16_t CHARTBOOK_SHARING_SEARCH = 10144;
+	const uint16_t CHARTBOOK_SHARING_SHARED_CHARTBOOK = 10145;
+	const uint16_t CHARTBOOK_SHARING_GET_INFO = 10146;
+	const uint16_t CHARTBOOK_SHARING_GET_UPDATE = 10147;
+	const uint16_t CHARTBOOK_SHARING_PUBLISH = 10148;
+	const uint16_t CHARTBOOK_SHARING_PUBLISHED = 10149;
+	const uint16_t CHARTBOOK_SHARING_PUBLISH_UPDATE = 10150;
+	const uint16_t CHARTBOOK_SHARING_ALLOW_CLIENT = 10151;
+	const uint16_t CHARTBOOK_SHARING_ALLOWED_CLIENT = 10152;
+	const uint16_t CHARTBOOK_SHARING_DISALLOW_CLIENT = 10153;
+	const uint16_t CHARTBOOK_SHARING_UNPUBLISH = 10154;
+	const uint16_t CHARTBOOK_SHARING_UNPUBLISHED = 10155;
+	const uint16_t CHARTBOOK_SHARING_SUBSCRIBE = 10156;
+	const uint16_t CHARTBOOK_SHARING_SUBSCRIBED = 10157;
+	const uint16_t CHARTBOOK_SHARING_UNSUBSCRIBE = 10158;
+	const uint16_t CHARTBOOK_SHARING_UNSUBSCRIBED = 10159;
+	const uint16_t CHARTBOOK_SHARING_START = 10160;
+	const uint16_t CHARTBOOK_SHARING_STARTED = 10161;
+	const uint16_t CHARTBOOK_SHARING_STOP = 10162;
+	const uint16_t CHARTBOOK_SHARING_STOPPED = 10163;
+	const uint16_t CHARTBOOK_SHARING_JOIN = 10164;
+	const uint16_t CHARTBOOK_SHARING_JOINED = 10165;
+	const uint16_t CHARTBOOK_SHARING_PAUSE = 10166;
+	const uint16_t CHARTBOOK_SHARING_PAUSED = 10167;
+	const uint16_t CHARTBOOK_SHARING_RESUME = 10168;
+	const uint16_t CHARTBOOK_SHARING_RESUMED = 10169;
+	const uint16_t CHARTBOOK_SHARING_DELEGATE = 10170;
+	const uint16_t CHARTBOOK_SHARING_DELEGATED = 10171;
+	const uint16_t CHARTBOOK_SHARING_SERVER_RESTARTED = 10172;
+
 	enum ReplayChartDataActionEnum : int32_t
 	{
 		REPLAY_CHART_DATA_ACTION_NONE = 0
@@ -662,6 +694,10 @@ namespace DTC_VLS
 
 		int32_t GetRequestID() const;
 
+		DTC::t_DateTime GetStartDateTime() const;
+		uint32_t GetSubAccountIdentifier() const;
+		uint8_t GetCreateFlatToFlatTrades() const;
+
 		const char* GetSymbol() const
 		{
 			return GetVariableLengthStringField(Size, BaseSize, Symbol, offsetof(s_HistoricalTradesRequest, Symbol));
@@ -682,9 +718,6 @@ namespace DTC_VLS
 			AddVariableLengthStringField(Size, TradeAccount, StringLength);
 		}
 
-		DTC::t_DateTime GetStartDateTime() const;
-		uint32_t GetSubAccountIdentifier() const;
-		uint8_t GetCreateFlatToFlatTrades() const;
 	};
 
 	/*==========================================================================*/
@@ -982,6 +1015,8 @@ namespace DTC_VLS
 		}
 
 		uint32_t GetRequestID() const;
+		n_DTCNonStandard::ReplayChartDataStatusEnum GetStatus() const;
+		uint32_t GetSubAccountIdentifier() const;
 
 		const char* GetErrorMessage() const
 		{
@@ -993,8 +1028,6 @@ namespace DTC_VLS
 			AddVariableLengthStringField(Size, ErrorMessage, StringLength);
 		}
 
-		n_DTCNonStandard::ReplayChartDataStatusEnum GetStatus() const;
-		uint32_t GetSubAccountIdentifier() const;
 	};
 
 
@@ -1013,6 +1046,7 @@ namespace DTC_VLS
 		uint16_t GetBaseSize() const;
 
 		uint32_t GetRequestID() const;
+		int64_t GetDeviceIdentifier() const;
 
 		const char* GetUsername() const
 		{
@@ -1024,7 +1058,6 @@ namespace DTC_VLS
 			AddVariableLengthStringField(Size, Username, StringLength);
 		}
 
-		int64_t GetDeviceIdentifier() const;
 	};
 
 	/*==========================================================================*/
@@ -1046,6 +1079,7 @@ namespace DTC_VLS
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
+
 		void Clear()
 		{
 			memset(this, 0, sizeof(s_NumCurrentClientConnectionsResponse));
@@ -1055,6 +1089,8 @@ namespace DTC_VLS
 		}
 
 		uint32_t GetRequestID() const;
+		int32_t GetNumConnectionsForDifferentDevices() const;
+		int32_t GetNumConnectionsForSameDevice() const;
 
 		const char* GetUsername() const
 		{
@@ -1066,8 +1102,6 @@ namespace DTC_VLS
 			AddVariableLengthStringField(Size, Username, StringLength);
 		}
 
-		int32_t GetNumConnectionsForDifferentDevices() const;
-		int32_t GetNumConnectionsForSameDevice() const;
 	};
 
 	/*==========================================================================*/
@@ -1554,6 +1588,14 @@ namespace DTC_VLS
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
+		uint8_t GetIsSimulated() const;
+		double  GetQuantity() const;
+		double  GetPositionPrice() const;
+		double  GetOpenProfitLoss() const;
+		int64_t GetTradeDateTime() const;
+		uint8_t GetIsSnapshot() const;
+		uint8_t GetIsFirstMessageInBatch() const;
+		uint8_t GetIsLastMessageInBatch() const;
 
 		//Implementing Get Add inline functions------------------------------
 		const char* GetSymbol() const
@@ -1595,7 +1637,7 @@ namespace DTC_VLS
 		uint16_t Size = sizeof(*this);
 		uint16_t Type = n_DTCNonStandard::TRADE_POSITION_CONSOLIDATED;
 		uint16_t BaseSize = sizeof(*this);
-
+	
 		//message field variables
 		uint8_t m_IsDeleted = 0;
 		DTC_VLS::vls_t m_Symbol;
@@ -1633,9 +1675,44 @@ namespace DTC_VLS
 		double m_MarginRequirementFullPositionsOnly = 0;
 
 		double m_MaxPotentialPositionQuantity = 0;
+		double m_QuantityAtEndOfDayCaptureTime = 0;
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
+
+		uint8_t GetIsDeleted() const;
+		uint8_t GetIsSimulated() const;
+		double GetQuantity() const;
+		double GetAveragePrice() const;
+		double GetOpenProfitLoss() const;
+
+		double GetDailyProfitLoss() const;
+		int64_t GetLastDailyProfitLossResetDateTimeUTC() const;
+
+		double GetServicePositionQuantity() const;
+		uint8_t GetPositionHasBeenUpdatedByService() const;
+
+		double GetPriceHighDuringPosition() const;
+		double GetPriceLowDuringPosition() const;
+		double GetPriceLastDuringPosition() const;
+
+		int64_t GetLastProcessedTimeAndSalesSequence() const;
+
+		double GetTotalMarginRequirement() const;
+
+		int64_t GetInitialEntryDateTimeUTC() const;
+		uint8_t GetIsFromDTCServerReplay() const;
+		int64_t GetMostRecentPositionIncreaseDateTimeUTC() const;
+
+		uint8_t GetIsSnapshot() const;
+		uint8_t GetIsFirstMessageInBatch() const;
+		uint8_t GetIsLastMessageInBatch() const;
+
+		double GetMarginRequirementFull() const;
+		double GetMarginRequirementFullPositionsOnly() const;
+		double GetMaxPotentialPositionQuantity() const;
+
+		double GetQuantityAtEndOfDayCaptureTime() const;
 
 		//Implementing Get Add inline functions------------------------------
 		const char* GetSymbol() const
@@ -1761,6 +1838,46 @@ namespace DTC_VLS
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
+		
+		uint8_t GetActivityType() const;
+		int64_t GetDataDateTimeUTC() const;
+		uint64_t GetInternalOrderID() const;
+		double GetQuantity() const;
+		uint8_t GetBuySell() const;
+		double GetPrice1() const;
+		double GetPrice2() const;
+		uint8_t GetNewOrderStatus() const;
+		double GetFillPrice() const;
+		double GetOrderFilledQuantity() const;
+		double GetHighPriceDuringPosition() const;
+		double GetLowPriceDuringPosition() const;
+		double GetLastPriceDuringPosition() const;
+		uint64_t GetParentInternalOrderID() const;
+		uint8_t GetOpenClose() const;
+		uint8_t GetIsSimulated() const;
+		uint8_t GetIsAutomatedOrder() const;
+		uint8_t GetIsChartReplaying() const;
+		double GetPositionQuantity() const;
+		int GetSourceChartNumber() const;
+		int GetTimeInForce() const;
+		double GetTradeAccountBalance() const;
+		uint8_t GetSupportsPositionQuantityField() const;
+		uint8_t GetIsBillable() const;
+		int32_t GetQuantityForBilling() const;
+		uint32_t GetSubAccountIdentifier() const;
+		int64_t GetAuditTrail_TransactDateTimeUTC() const;
+		int GetAuditTrail_MessageDirection() const;
+		int16_t GetAuditTrail_CustomerTypeIndicator() const;
+		int16_t GetAuditTrail_CustomerOrFirm() const;
+		uint8_t GetAuditTrail_IFMFlag() const;
+		double GetAuditTrail_DisplayQuantity() const;
+		double GetAuditTrail_FillQuantity() const;
+		double GetAuditTrail_RemainingQuantity() const;
+		uint8_t GetAuditTrail_AggressorFlag() const;
+		int32_t GetAuditTrail_SourceOfCancellation() const;
+		uint8_t GetIsSnapshot() const;
+		uint8_t GetIsFirstMessageInBatch() const;
+		uint8_t GetIsLastMessageInBatch() const;
 
 		//Implementing Get Add inline functions------------------------------
 		const char* GetSymbol() const
@@ -1991,7 +2108,7 @@ namespace DTC_VLS
 		void AddAuditTrail_CountryOfOrigin(uint16_t StringLength)
 		{
 			AddVariableLengthStringField(Size, AuditTrail_CountryOfOrigin, StringLength);
-		}
+		}		
 
 		//-------------------------------------------------------------------
 		const char* GetAuditTrail_OrdRejReason() const
@@ -2120,7 +2237,7 @@ namespace DTC_VLS
 		uint8_t m_UseMasterFirm_MinimumRequiredAccountValue = 0;
 		uint8_t m_UseMasterFirm_MarginTimeSettings = 0;
 		uint8_t m_UseMasterFirm_TradingIsDisabled = 0;
-
+		
 		uint8_t m_IsTradeStatisticsPublicallyShared = 0;
 		uint8_t m_IsReadOnlyFollowingRequestsAllowed = 0;
 		uint8_t m_IsTradeAccountSharingAllowed = 0;
@@ -2133,7 +2250,7 @@ namespace DTC_VLS
 		double m_MarginRequirementFull = 0;
 		double m_MarginRequirementFullPositionsOnly = 0;
 		// End read only
-
+				
 		uint8_t m_UseMasterFirm_TradeFeesFullOverride = 0;
 		uint8_t m_UseMasterFirm_NumDaysBeforeLastTradingDateToDisallowOrders = 0;
 		uint8_t m_UseMasterFirm_UsePercentOfMarginFullOverride = 0;
@@ -2157,9 +2274,14 @@ namespace DTC_VLS
 		uint32_t m_MasterFirm_MaximumOrderQuantity = 0;
 
 		int64_t m_LastTriggerDateTimeUTCForDailyLossLimit = 0;// Read only
-		uint8_t m_OpenPositionsProfitLossIsDelayed = 0;// Read only
+		uint8_t m_OpenPositionsProfitLossIsDelayed = 0;// Unused
 
 		DTC_VLS::vls_t m_ExchangeTraderId;
+
+		int64_t m_ProfitLossForOpenPositionDateTimeUTC = 0;// Read only
+
+		uint8_t m_UseFixedCashOnHandBalance = 0;
+		float m_FixedCashOnHandBalance = 0.0f;
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
@@ -2249,7 +2371,11 @@ namespace DTC_VLS
 		uint32_t GetMasterFirm_MaximumOrderQuantity() const;
 
 		int64_t GetLastTriggerDateTimeUTCForDailyLossLimit() const;
-		uint8_t GetOpenPositionsProfitLossIsDelayed() const;
+
+		int64_t GetProfitLossForOpenPositionDateTimeUTC() const;
+
+		uint8_t GetUseFixedCashOnHandBalance() const;
+		float GetFixedCashOnHandBalance() const;
 
 		//-------------------------------------------------------------------
 		const char* GetTradeAccount() const
@@ -2311,7 +2437,7 @@ namespace DTC_VLS
 		{
 			AddVariableLengthStringField(Size, m_FirmID, StringLength);
 		}
-
+		
 		//-------------------------------------------------------------------
 			const char* GetDescriptiveName() const
 		{
@@ -2451,7 +2577,7 @@ namespace DTC_VLS
 		uint8_t m_UseMasterFirm_MarginTimeSettings = 0;
 		uint8_t m_UseMasterFirm_TradingIsDisabledIsSet = 0;
 		uint8_t m_UseMasterFirm_TradingIsDisabled = 0;
-
+		
 		uint8_t IsTradeStatisticsPublicallySharedIsSet = 0;
 		uint8_t IsTradeStatisticsPublicallyShared = 0;
 		uint8_t IsReadOnlyFollowingRequestsAllowedIsSet = 0;
@@ -2499,6 +2625,12 @@ namespace DTC_VLS
 
 		uint8_t m_ExchangeTraderIdIsSet = 0;
 		DTC_VLS::vls_t m_ExchangeTraderId;
+
+		uint8_t m_UseFixedCashOnHandBalanceIsSet = 0;
+		uint8_t m_UseFixedCashOnHandBalance = 0;
+
+		uint8_t m_FixedCashOnHandBalanceIsSet = 0;
+		float m_FixedCashOnHandBalance = 0.0f;
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
@@ -2622,6 +2754,12 @@ namespace DTC_VLS
 		uint32_t GetMasterFirm_MaximumOrderQuantityIsSet() const;
 		uint32_t GetMasterFirm_MaximumOrderQuantity() const;
 		uint8_t GetExchangeTraderIdIsSet() const;
+
+		uint8_t GetUseFixedCashOnHandBalanceIsSet() const;
+		uint8_t GetUseFixedCashOnHandBalance() const;
+
+		uint8_t GetFixedCashOnHandBalanceIsSet() const;
+		float GetFixedCashOnHandBalance() const;
 
 		//-------------------------------------------------------------------
 		const char* GetNewAccountAuthorizedUsername() const
@@ -2775,6 +2913,7 @@ namespace DTC_VLS
 		uint8_t OverrideMarginOtherAccounts = 0;
 		int32_t UsePercentOfMarginForDayTrading = 0;
 		int32_t NumberOfDaysBeforeLastTradingDateToDisallowOrders = 0;
+		float FixedMarginCashValue = 0;
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
@@ -2786,6 +2925,7 @@ namespace DTC_VLS
 		uint8_t GetOverrideMarginOtherAccounts() const;
 		int32_t GetUsePercentOfMarginForDayTrading() const;
 		int32_t GetNumberOfDaysBeforeLastTradingDateToDisallowOrders() const;
+		float GetFixedMarginCashValue() const;
 
 		//-------------------------------------------------------------------
 		const char* GetTradeAccount() const
@@ -2829,6 +2969,7 @@ namespace DTC_VLS
 		uint8_t OverrideMarginOtherAccounts = 0;
 		int32_t UsePercentOfMarginForDayTrading = 0;
 		int32_t NumberOfDaysBeforeLastTradingDateToDisallowOrders = 0;
+		float FixedMarginCashValue = 0;
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
@@ -2841,6 +2982,7 @@ namespace DTC_VLS
 		uint8_t GetOverrideMarginOtherAccounts() const;
 		int32_t GetUsePercentOfMarginForDayTrading() const;
 		int32_t GetNumberOfDaysBeforeLastTradingDateToDisallowOrders() const;
+		float GetFixedMarginCashValue() const;
 
 		//-------------------------------------------------------------------
 		const char* GetTradeAccount() const
@@ -2884,7 +3026,7 @@ namespace DTC_VLS
 
 		uint32_t GetRequestID() const;
 		double GetTradeFeePerContract() const;
-
+		
 		//-------------------------------------------------------------------
 		const char* GetTradeAccount() const
 		{
@@ -3246,7 +3388,7 @@ namespace DTC_VLS
 		}
 		//--End of Get Add functions----------------------------------------
 	};
-
+	
 	/*==========================================================================*/
 	struct s_TradeAccountDataResponseTrailer
 	{
@@ -3351,6 +3493,10 @@ namespace DTC_VLS
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
 
+		uint8_t GetIsSnapshot() const;
+		uint8_t GetIsFirstMessageInBatch() const;
+		uint8_t GetIsLastMessageInBatch() const;
+
 		//-------------------------------------------------------------------
 		const char* GetFillIdentifier() const
 		{
@@ -3380,6 +3526,8 @@ namespace DTC_VLS
 
 		uint16_t GetMessageSize() const;
 		uint16_t GetBaseSize() const;
+
+		uint8_t GetIsAutomatedOrder() const;
 
 		//-------------------------------------------------------------------
 		const char* GetTradeAccount() const
@@ -3538,6 +3686,569 @@ namespace DTC_VLS
 		//-------------------------------------------------------------------
 	};
 
-	
+	/****************************************************************************/
+	// Chartbook Sharing
+	/****************************************************************************/
+
+	using t_ChartbookSharingFileID = uint32_t;
+
+	/****************************************************************************/
+	// s_MessageBase
+
+	/*==========================================================================*/
+	template<typename MESSAGE, uint16_t TYPE>
+	struct s_MessageBase
+	{
+		//standard DTC VLS header
+		uint16_t Size = sizeof(MESSAGE);
+		uint16_t Type = TYPE;
+		uint16_t BaseSize = sizeof(MESSAGE);
+
+		uint16_t GetMessageSize() const
+		{
+			return Size;
+		}
+		uint16_t GetBaseSize() const
+		{
+			return BaseSize;
+		}
+	};
+
+	/****************************************************************************/
+	// s_BinaryTransfer
+
+	/*==========================================================================*/
+	struct s_BinaryTransfer 
+		: public s_MessageBase<s_BinaryTransfer, n_DTCNonStandard::BINARY_DATA_TRANSFER>
+	{
+		uint32_t FileID = 0;
+		uint32_t TotalNum = 0;
+		uint32_t SequenceIndex = 0;
+		DTC_VLS::vls_t BinaryData;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+		uint32_t GetTotalNum() const;
+		uint32_t GetSequenceIndex() const;
+
+		//-------------------------------------------------------------------
+		const char* GetBinaryData() const;
+		void AddBinaryData(uint16_t BinaryLength);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingSearch
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingSearch
+		: public s_MessageBase<s_ChartbookSharingSearch, n_DTCNonStandard::CHARTBOOK_SHARING_SEARCH>
+	{
+		static const uint32_t SEARCH_IN_ALL = 0x0000;
+		static const uint32_t SEARCH_IN_ACCOUNT_NAME = 0x0001;
+		const uint32_t SEARCH_IN_FILE_NAME = 0x0002;
+		const uint32_t SEARCH_IS_SHARING_NOW = 0x0004;
+		const uint32_t SEARCH_SUBSCRIBED = 0x0008;
+		const uint32_t SEARCH_IAM_SUBSCRIBED = 0x0010;
+
+		DTC_VLS::vls_t SearchPattern;
+		uint32_t Flags = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFlags() const;
+
+		//-------------------------------------------------------------------
+		const char* GetSearchPattern() const;
+		void AddSearchPattern(uint16_t PatternLength);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingSearchResult
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingSearchResult
+		: public s_MessageBase<s_ChartbookSharingSearchResult, n_DTCNonStandard::CHARTBOOK_SHARING_SHARED_CHARTBOOK>
+	{
+		const uint32_t FLAG_IS_SHARING_NOW = 0x0001;
+		const uint32_t FLAG_IS_IAM_SUBSCRIBED = 0x0002;
+
+		DTC_VLS::vls_t AuthorAccount;
+		DTC_VLS::vls_t FileName;
+		DTC_VLS::vls_t Description;
+		uint32_t SubscribedNum = 0;
+		uint32_t Flags = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetSubscribedNum() const;
+		uint32_t GetFlags() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAuthorAccount() const;
+		void AddAuthorAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+		const char* GetDescription() const;
+		void AddDescription(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingGetInfo
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingGetInfo
+		: public s_MessageBase<s_ChartbookSharingGetInfo, n_DTCNonStandard::CHARTBOOK_SHARING_GET_INFO>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingGetUpdate
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingGetUpdate
+		: public s_MessageBase<s_ChartbookSharingGetUpdate, n_DTCNonStandard::CHARTBOOK_SHARING_GET_UPDATE>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingPublish
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingPublish
+		: public s_MessageBase<s_ChartbookSharingPublish, n_DTCNonStandard::CHARTBOOK_SHARING_PUBLISH>
+	{
+		const uint32_t FLAG_IS_PRIVATE = 0x0001;
+
+		DTC_VLS::vls_t FileName;
+		DTC_VLS::vls_t Description;
+		uint32_t Flags = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFlags() const;
+
+		//-------------------------------------------------------------------
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+		const char* GetDescription() const;
+		void AddDescription(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingPublished
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingPublished
+		: public s_MessageBase<s_ChartbookSharingPublished, n_DTCNonStandard::CHARTBOOK_SHARING_PUBLISHED>
+	{
+		DTC_VLS::vls_t FileName;
+		DTC_VLS::vls_t Description;
+		uint32_t Flags = 0;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFlags() const;
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+		const char* GetDescription() const;
+		void AddDescription(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingPublishUpdate
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingPublishUpdate
+		: public s_MessageBase<s_ChartbookSharingPublishUpdate, n_DTCNonStandard::CHARTBOOK_SHARING_PUBLISH_UPDATE>
+	{
+		DTC_VLS::vls_t FileName;
+		DTC_VLS::vls_t Description;
+		uint32_t Flags = 0;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFlags() const;
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+		const char* GetDescription() const;
+		void AddDescription(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingAllowClient
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingAllowClient
+		: public s_MessageBase<s_ChartbookSharingAllowClient, n_DTCNonStandard::CHARTBOOK_SHARING_ALLOW_CLIENT>
+	{
+		const uint32_t FLAG_ALLOW_CLIENT = 0x0001;
+
+		DTC_VLS::vls_t Account;
+		uint32_t Flags = 0;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFlags() const;
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingAllowedClient
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingAllowedClient
+		: public s_MessageBase<s_ChartbookSharingAllowedClient, n_DTCNonStandard::CHARTBOOK_SHARING_ALLOWED_CLIENT>
+	{
+		const uint32_t FLAG_ALLOW_CLIENT = 0x0001;
+
+		DTC_VLS::vls_t Account;
+		uint32_t Flags = 0;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFlags() const;
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingUnPublish
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingUnPublish
+		: public s_MessageBase<s_ChartbookSharingUnPublish, n_DTCNonStandard::CHARTBOOK_SHARING_UNPUBLISH>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingUnPublished
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingUnPublished
+		: public s_MessageBase<s_ChartbookSharingUnPublished, n_DTCNonStandard::CHARTBOOK_SHARING_UNPUBLISHED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingSubscribe
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingSubscribe
+		: public s_MessageBase<s_ChartbookSharingSubscribe, n_DTCNonStandard::CHARTBOOK_SHARING_SUBSCRIBE>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingSubscribed
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingSubscribed
+		: public s_MessageBase<s_ChartbookSharingSubscribed, n_DTCNonStandard::CHARTBOOK_SHARING_SUBSCRIBED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingUnSubscribe
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingUnSubscribe
+		: public s_MessageBase<s_ChartbookSharingUnSubscribe, n_DTCNonStandard::CHARTBOOK_SHARING_UNSUBSCRIBE>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingUnSubscribed
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingUnSubscribed
+		: public s_MessageBase<s_ChartbookSharingUnSubscribed, n_DTCNonStandard::CHARTBOOK_SHARING_UNSUBSCRIBED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingStart
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingStart
+		: public s_MessageBase<s_ChartbookSharingStart, n_DTCNonStandard::CHARTBOOK_SHARING_START>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingStarted
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingStarted
+		: public s_MessageBase<s_ChartbookSharingStarted, n_DTCNonStandard::CHARTBOOK_SHARING_STARTED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingStop
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingStop
+		: public s_MessageBase<s_ChartbookSharingStop, n_DTCNonStandard::CHARTBOOK_SHARING_STOP>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingStopped
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingStopped
+		: public s_MessageBase<s_ChartbookSharingStopped, n_DTCNonStandard::CHARTBOOK_SHARING_STOPPED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingJoin
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingJoin
+		: public s_MessageBase<s_ChartbookSharingJoin, n_DTCNonStandard::CHARTBOOK_SHARING_JOIN>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingJoined
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingJoined
+		: public s_MessageBase<s_ChartbookSharingJoined, n_DTCNonStandard::CHARTBOOK_SHARING_JOINED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingPause
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingPause
+		: public s_MessageBase<s_ChartbookSharingPause, n_DTCNonStandard::CHARTBOOK_SHARING_PAUSE>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingPaused
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingPaused
+		: public s_MessageBase<s_ChartbookSharingPaused, n_DTCNonStandard::CHARTBOOK_SHARING_PAUSED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingResume
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingResume
+		: public s_MessageBase<s_ChartbookSharingResume, n_DTCNonStandard::CHARTBOOK_SHARING_RESUME>
+	{
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingResumed
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingResumed
+		: public s_MessageBase<s_ChartbookSharingResumed, n_DTCNonStandard::CHARTBOOK_SHARING_RESUMED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingDelegate
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingDelegate
+		: public s_MessageBase<s_ChartbookSharingDelegate, n_DTCNonStandard::CHARTBOOK_SHARING_DELEGATE>
+	{
+		DTC_VLS::vls_t Account;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingDelegated
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingDelegated
+		: public s_MessageBase<s_ChartbookSharingDelegated, n_DTCNonStandard::CHARTBOOK_SHARING_DELEGATED>
+	{
+		DTC_VLS::vls_t Account;
+		DTC_VLS::vls_t FileName;
+		uint32_t FileID = 0;
+
+		//-------------------------------------------------------------------
+		uint32_t GetFileID() const;
+
+		//-------------------------------------------------------------------
+		const char* GetAccount() const;
+		void AddAccount(uint16_t Length);
+		const char* GetFileName() const;
+		void AddFileName(uint16_t Length);
+	};
+
+	/****************************************************************************/
+	// s_ChartbookSharingServerRestarted
+
+	/*==========================================================================*/
+	struct s_ChartbookSharingServerRestarted
+		: public s_MessageBase<s_ChartbookSharingServerRestarted, n_DTCNonStandard::CHARTBOOK_SHARING_SERVER_RESTARTED>
+	{
+		// Empty
+	};
+
 #pragma pack(pop)
 }

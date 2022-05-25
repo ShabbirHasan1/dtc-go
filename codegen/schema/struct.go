@@ -2,14 +2,15 @@ package schema
 
 import (
 	"fmt"
-	"github.com/moontrade/dtc-go/message"
-	"github.com/moontrade/dtc-go/message/pb"
-	"github.com/moontrade/nogc"
-	"github.com/yoheimuta/go-protoparser/v4/parser"
 	"math"
 	"sort"
 	"strconv"
 	"unsafe"
+
+	"github.com/moontrade/dtc-go/message"
+	"github.com/moontrade/dtc-go/message/pb"
+	"github.com/moontrade/nogc"
+	"github.com/yoheimuta/go-protoparser/v4/parser"
 )
 
 type Message struct {
@@ -119,6 +120,10 @@ func (s *Struct) Layout() {
 	}
 
 	s.Init = make([]byte, s.Size)
+
+	if s.Size <= 0 {
+		return
+	}
 	p := nogc.Pointer(unsafe.Pointer(&s.Init[0]))
 	p.Zero(uintptr(s.Size))
 	for _, field := range s.Fields {

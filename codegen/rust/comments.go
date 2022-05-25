@@ -208,7 +208,7 @@ func (g *Generator) writeClearComment(w *Writer, msg *Struct, name string) {
 		case schema.ValueTypeFloat:
 			w.Line("/// %s%s= %f", name, tn, f.Initial.Float64)
 		case schema.ValueTypeFloat32Max:
-			w.Line("/// %s%s= f32.MAX", name, tn)
+			w.Line("/// %s%s= f32::MAX", name, tn)
 		case schema.ValueTypeFloat64Max:
 			w.Line("/// %s%s= f64::MAX", name, tn)
 		case schema.ValueTypeConst:

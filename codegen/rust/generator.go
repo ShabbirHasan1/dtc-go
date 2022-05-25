@@ -15,7 +15,6 @@ import (
 type Generator struct {
 	config          *Config
 	schema          *schema.Schema
-	packageName     string
 	all             map[string]interface{}
 	aliases         []*Alias
 	aliasesByName   map[string]*Alias
@@ -31,7 +30,6 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 	generator := &Generator{
 		config:          config,
 		schema:          s,
-		packageName:     filepath.Base(config.RootPackage),
 		all:             make(map[string]interface{}),
 		aliasesByName:   make(map[string]*Alias),
 		messagesByName:  make(map[string]*Message),
@@ -170,6 +168,9 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 		}
 		return msg, nil
 	}
+
+	byType := make(map[uint16]*Message)
+
 	for _, message := range s.Messages {
 		var (
 			m = &Message{
@@ -177,12 +178,12 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 			}
 			err error
 		)
-		if !config.NonStandard && message.NonStandard {
-			continue
-		}
-		if config.NonStandard && !message.NonStandard {
-			continue
-		}
+		// if !config.NonStandard && message.NonStandard {
+		// 	continue
+		// }
+		// if config.NonStandard && !message.NonStandard {
+		// 	continue
+		// }
 		if m.Fixed, err = createStruct(message.Fixed); err != nil {
 			return nil, err
 		}
@@ -215,6 +216,40 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 		}
 		generator.messages = append(generator.messages, m)
 		generator.messagesByName[name] = m
+
+		existing := byType[m.TypeCode()]
+		if existing != nil {
+			if existing.Fixed != nil && m.Fixed != nil {
+				if existing.Fixed.Size > m.Fixed.Size {
+					m.Extension = existing
+					m.IsExtension = false
+					existing.IsExtension = true
+					existing.Extension = nil
+					byType[m.TypeCode()] = m
+				} else {
+					m.Extension = nil
+					m.IsExtension = true
+					existing.IsExtension = false
+					existing.Extension = m
+				}
+			}
+			if existing.VLS != nil && m.VLS != nil {
+				if existing.VLS.Size > m.VLS.Size {
+					m.Extension = existing
+					m.IsExtension = false
+					existing.IsExtension = true
+					existing.Extension = nil
+					byType[m.TypeCode()] = m
+				} else {
+					m.Extension = nil
+					m.IsExtension = true
+					existing.IsExtension = false
+					existing.Extension = m
+				}
+			}
+		} else {
+			byType[m.TypeCode()] = m
+		}
 	}
 
 	return generator, nil
@@ -235,6 +270,37 @@ func (g *Generator) Run() error {
 			return err
 		}
 	}
+	if err := g.generateAliases(); err != nil {
+		return err
+	}
+	if err := g.generateConstants(); err != nil {
+		return err
+	}
+	if err := g.generateEnums(); err != nil {
+		return err
+	}
+	if err := g.generateStructs(); err != nil {
+		return err
+	}
+	if err := g.generateMod(); err != nil {
+		return err
+	}
+	if err := g.generateFactory(); err != nil {
+		return err
+	}
+	if err := g.generateHandler(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *Generator) Overwrite() error {
+	_ = os.MkdirAll(g.config.Dir, 0755)
+	files, err := ioutil.ReadDir(g.config.Dir)
+	if err != nil {
+		return err
+	}
+	_ = files
 	if err := g.generateAliases(); err != nil {
 		return err
 	}
@@ -701,9 +767,17 @@ func initValue(field *schema.Field) string {
 			return fmt.Sprintf("%d", value.Uint)
 		case schema.ValueTypeBool:
 			if value.Int > 0 || value.Uint > 0 {
-				return "true"
+				if t.Kind != schema.KindBool {
+					return "1"
+				} else {
+					return "true"
+				}
 			} else {
-				return "false"
+				if t.Kind != schema.KindBool {
+					return "0"
+				} else {
+					return "false"
+				}
 			}
 		case schema.ValueTypeFloat:
 			if value.Float64 == 0.0 {

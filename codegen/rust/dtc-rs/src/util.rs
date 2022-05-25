@@ -1,6 +1,5 @@
 use crate::error::Error;
 
-
 pub struct Framed {
     buf: Vec<u8>,
 }

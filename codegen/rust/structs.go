@@ -19,7 +19,6 @@ func (g *Generator) generateStructs() error {
 		}
 
 		writer.Line("use super::*;")
-		writer.Line("use crate::message::*;")
 		writer.Line("")
 
 		// writeImports := func(w *Writer) {
@@ -37,7 +36,7 @@ func (g *Generator) generateStructs() error {
 				return
 			}
 			g.writeClearComment(w, msg, "")
-			w.Write("const %s_DEFAULT: [u8; %d] = ", strings.ToUpper(toSnakeCase(msg.Name)), len(msg.Init))
+			w.Write("pub(crate) const %s_DEFAULT: [u8; %d] = ", strings.ToUpper(toSnakeCase(msg.Name)), len(msg.Init))
 			w.WriteByteSlice(msg.Init)
 			w.Write(";\n\n")
 		}
@@ -45,7 +44,7 @@ func (g *Generator) generateStructs() error {
 			if msg == nil {
 				return
 			}
-			w.Line("const %s_SIZE: usize = %d;", strings.ToUpper(toSnakeCase(msg.Name)), msg.Size)
+			w.Line("pub(crate) const %s_SIZE: usize = %d;", strings.ToUpper(toSnakeCase(msg.Name)), msg.Size)
 			w.Line("")
 		}
 
@@ -60,7 +59,10 @@ func (g *Generator) generateStructs() error {
 				if msg.Doc != nil {
 					_ = g.writeComments(writer, 0, msg.Name, msg.Doc.Description)
 				}
-				writer.Line("pub trait %s {", cleanStructName(msg.Struct.Name))
+				writer.Line("pub trait %s: Message {", m.Name())
+				writer.IndentLine(1, "type Safe: %s;", m.Name())
+				writer.IndentLine(1, "type Unsafe: %s;", m.Name())
+				writer.Line("")
 				for _, field := range msg.Fields {
 					if !field.IsSuper() {
 						continue
@@ -103,6 +105,11 @@ func (g *Generator) generateStructs() error {
 					}
 				}
 				writer.Line("")
+				writer.IndentLine(1, "fn clone_safe(&self) -> Self::Safe;")
+				writer.Line("")
+				writer.IndentLine(1, "fn to_safe(self) -> Self::Safe;")
+				writer.Line("")
+
 				writer.IndentLine(1, "fn copy_to(&self, to: &mut impl %s) {", cleanStructName(msg.Struct.Name))
 				for _, field := range msg.Fields {
 					if !field.IsSuper() {
@@ -157,7 +164,7 @@ func (g *Generator) generateStructs() error {
 				writer.Line("}")
 				writer.Line("")
 
-				writer.Line("#[repr(packed, C)]")
+				writer.Line("#[repr(packed(%d), C)]", msg.Struct.MaxAlign)
 				writer.Line("pub struct %s {", msg.DataName)
 				for _, field := range msg.Fields {
 					if len(field.Fields) > 0 {
@@ -369,9 +376,8 @@ func (g *Generator) generateStructs() error {
 				} else {
 					writer.Line("impl crate::Message for %s {", msg.Name)
 				}
-				writer.IndentLine(1, "type Safe = %s;", msg.Name)
-				writer.IndentLine(1, "type Unsafe = %s;", msg.UnsafeName)
 				writer.IndentLine(1, "type Data = %s;", msg.DataName)
+				writer.Line("")
 				writer.IndentLine(1, "const BASE_SIZE: usize = %d;", msg.Struct.Size)
 				if msg.VLS {
 					writer.IndentLine(1, "const BASE_SIZE_OFFSET: isize = 4;")
@@ -390,18 +396,6 @@ func (g *Generator) generateStructs() error {
 					writer.IndentLine(3, "data: crate::allocate(Self::BASE_SIZE, %s::new())", msg.DataName)
 				}
 				writer.IndentLine(2, "}")
-				writer.IndentLine(1, "}")
-				writer.Line("")
-
-				writer.IndentLine(1, "#[inline]")
-				writer.IndentLine(1, "fn to_safe(self) -> Self::Safe {")
-				if isUnsafe {
-					writer.IndentLine(2, "let mut s = Self::Safe::new();")
-					writer.IndentLine(2, "self.copy_to(&mut s);")
-					writer.IndentLine(2, "s")
-				} else {
-					writer.IndentLine(2, "self")
-				}
 				writer.IndentLine(1, "}")
 				writer.Line("")
 
@@ -461,9 +455,9 @@ func (g *Generator) generateStructs() error {
 				writer.Line("")
 
 				writer.Line("}")
-				writer.Line("")
 
 				if msg.VLS {
+					writer.Line("")
 					if isUnsafe {
 						writer.Line("impl crate::VLSMessage for %s {", msg.UnsafeName)
 					} else {
@@ -489,7 +483,6 @@ func (g *Generator) generateStructs() error {
 					writer.Line("")
 
 					writer.Write("}")
-					writer.Write("")
 				}
 			}
 
@@ -514,6 +507,11 @@ func (g *Generator) generateStructs() error {
 				} else {
 					writer.Line("impl %s for %s {", cleanStructName(msg.Struct.Name), msg.Name)
 				}
+
+				writer.IndentLine(1, "type Safe = %s;", msg.Name)
+				writer.IndentLine(1, "type Unsafe = %s;", msg.UnsafeName)
+				writer.Line("")
+
 				for _, field := range msg.Fields {
 					if !field.IsSuper() {
 						continue
@@ -544,7 +542,7 @@ func (g *Generator) generateStructs() error {
 						writer.Line("")
 					}
 				}
-				for i, field := range msg.Fields {
+				for _, field := range msg.Fields {
 					if !field.IsSuper() {
 						continue
 					}
@@ -573,10 +571,27 @@ func (g *Generator) generateStructs() error {
 						writer.IndentLine(1, "}")
 						writer.Line("")
 					}
-					if i < len(msg.Fields)-1 {
-						writer.Line("")
-					}
+					writer.Line("")
 				}
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn clone_safe(&self) -> Self::Safe {")
+				writer.IndentLine(2, "let mut s = Self::Safe::new();")
+				writer.IndentLine(2, "self.copy_to(&mut s);")
+				writer.IndentLine(2, "s")
+				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn to_safe(self) -> Self::Safe {")
+				if isUnsafe {
+					writer.IndentLine(2, "let mut s = Self::Safe::new();")
+					writer.IndentLine(2, "self.copy_to(&mut s);")
+					writer.IndentLine(2, "s")
+				} else {
+					writer.IndentLine(2, "self")
+				}
+				writer.IndentLine(1, "}")
 				writer.Line("}")
 				writer.Line("")
 			}
@@ -588,6 +603,82 @@ func (g *Generator) generateStructs() error {
 				write(m.Fixed, false)
 				write(m.Fixed, true)
 			}
+		}
+
+		{
+			writer.Line("#[cfg(test)]")
+			writer.Line("pub(crate) mod tests {")
+			writer.IndentLine(1, "use super::*;")
+			writer.Line("")
+			writer.IndentLine(1, "#[test]")
+			writer.IndentLine(1, "pub(crate) fn layout() {")
+			write := func(s *Struct) {
+				writer.IndentLine(2, "unsafe {")
+				writer.IndentLine(3, "assert_eq!(")
+				writer.IndentLine(4, "%dusize,", s.Size)
+				writer.IndentLine(4, "core::mem::size_of::<%s>(),", s.DataName)
+				writer.IndentLine(4, "\"%s sizeof expected {:} but was {:}\",", s.DataName)
+				writer.IndentLine(4, "%dusize,", s.Size)
+				writer.IndentLine(4, "core::mem::size_of::<%s>()", s.DataName)
+				writer.IndentLine(3, ");")
+				writer.IndentLine(3, "assert_eq!(")
+				writer.IndentLine(4, "%du16,", s.Size)
+				writer.IndentLine(4, "%s::new().size(),", s.Name)
+				writer.IndentLine(4, "\"%s sizeof expected {:} but was {:}\",", s.Name)
+				writer.IndentLine(4, "%du16,", s.Size)
+				writer.IndentLine(4, "%s::new().size(),", s.Name)
+				writer.IndentLine(3, ");")
+				writer.IndentLine(3, "assert_eq!(")
+				writer.IndentLine(4, "%s,", s.TypeConst.Name)
+				writer.IndentLine(4, "%s::new().r#type(),", s.Name)
+				writer.IndentLine(4, "\"%s type expected {:} but was {:}\",", s.Name)
+				writer.IndentLine(4, "%s,", s.TypeConst.Name)
+				writer.IndentLine(4, "%s::new().r#type(),", s.Name)
+				writer.IndentLine(3, ");")
+				writer.IndentLine(3, "assert_eq!(")
+				writer.IndentLine(4, "%du16,", s.Type)
+				writer.IndentLine(4, "%s::new().r#type(),", s.Name)
+				writer.IndentLine(4, "\"%s type expected {:} but was {:}\",", s.Name)
+				writer.IndentLine(4, "%du16,", s.Type)
+				writer.IndentLine(4, "%s::new().r#type(),", s.Name)
+				writer.IndentLine(3, ");")
+
+				writer.IndentLine(3, "let d = %s::new();", s.DataName)
+				writer.IndentLine(3, "let p = (&d as *const _ as *const u8).offset(0) as usize;")
+				for _, field := range s.Fields {
+					if len(field.Fields) > 0 {
+						largest := field.Fields[0]
+						for _, f := range field.Fields {
+							if f.Type.Size > largest.Type.Size {
+								largest = f
+							}
+						}
+						field = largest
+					}
+					name := field.Name
+					if name == "r#type" {
+						name = "type"
+					}
+					writer.IndentLine(3, "assert_eq!(")
+					writer.IndentLine(4, "%dusize,", field.Type.Offset)
+					writer.IndentLine(4, "(core::ptr::addr_of!(d.%s) as usize) - p,", field.Name)
+					writer.IndentLine(4, "\"%s offset expected {:} but was {:}\",", name)
+					writer.IndentLine(4, "%dusize,", field.Type.Offset)
+					writer.IndentLine(4, "(core::ptr::addr_of!(d.%s) as usize) - p,", field.Name)
+					writer.IndentLine(3, ");")
+				}
+				writer.IndentLine(2, "}")
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed)
+			}
+			if m.VLS != nil {
+				write(m.VLS)
+			}
+			writer.IndentLine(1, "}")
+			writer.Line("}")
+			writer.Line("")
 		}
 
 		if err := g.writeFile(fmt.Sprintf("%s.rs", toSnakeCase(m.Name())), writer.b); err != nil {
@@ -632,13 +723,13 @@ func (g *Generator) getAccessor(w *Writer, indent int, f *Field, isUnsafe bool) 
 	case schema.KindUint64:
 		w.IndentLine(indent, "u64::from_le(self.%s)", f.Name)
 	case schema.KindFloat32:
-		w.IndentLine(indent, "crate::f32_le(self.%s)", f.Name)
+		w.IndentLine(indent, "f32_le(self.%s)", f.Name)
 	case schema.KindFloat64:
-		w.IndentLine(indent, "crate::f64_le(self.%s)", f.Name)
+		w.IndentLine(indent, "f64_le(self.%s)", f.Name)
 	case schema.KindStringFixed:
-		w.IndentLine(indent, "crate::get_fixed(&self.%s[..])", f.Name)
+		w.IndentLine(indent, "get_fixed(&self.%s[..])", f.Name)
 	case schema.KindStringVLS:
-		w.IndentLine(indent, "crate::get_vls(self, self.%s)", f.Name)
+		w.IndentLine(indent, "get_vls(self, self.%s)", f.Name)
 	case schema.KindEnum:
 		w.IndentLine(indent, "%s::from_le(self.%s)",
 			cleanStructName(f.Type.Enum.Name), f.Name)
@@ -682,9 +773,9 @@ func (g *Generator) setAccessor(w *Writer, indent int, f *Field, isUnsafe bool) 
 	case schema.KindFloat64:
 		w.IndentLine(indent, "self.%s = f64_le(value);", f.Name)
 	case schema.KindStringFixed:
-		w.IndentLine(indent, "crate::set_fixed(&mut self.%s[..], value);", f.Name)
+		w.IndentLine(indent, "set_fixed(&mut self.%s[..], value);", f.Name)
 	case schema.KindStringVLS:
-		w.IndentLine(indent, "self.%s = crate::set_vls(self, self.%s, value);", f.Name, f.Name)
+		w.IndentLine(indent, "self.%s = set_vls(self, self.%s, value);", f.Name, f.Name)
 	case schema.KindEnum:
 		w.IndentLine(indent, "self.%s = unsafe { core::mem::transmute((value as %s).to_le()) };",
 			f.Name, primitiveTypeName(f.Type.Enum.Type))

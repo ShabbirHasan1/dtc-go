@@ -8,14 +8,14 @@ func (g *Generator) generateFactory() error {
 	}
 
 	writer.Line("use super::*;")
-	writer.Line("use crate::Message;")
+	// writer.Line("use crate::Message;")
 
 	writer.Line("")
 	writer.Line("pub trait Factory: Send + 'static {")
 	for _, m := range g.messages {
 		name := m.Name()
-		writer.IndentLine(1, "type %s: %s + Message + Send;", name, name)
-		writer.IndentLine(1, "type %sUnsafe: %s + Message + Send;", name, name)
+		writer.IndentLine(1, "type %s: %s;", name, name)
+		writer.IndentLine(1, "type %sUnsafe: %s;", name, name)
 	}
 	writer.Line("}")
 	writer.Line("")
