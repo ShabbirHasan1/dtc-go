@@ -9,10 +9,10 @@ impl Framed {
         Self { buf: Vec::new() }
     }
 
-    pub fn push<T: Fn(&[u8])>(&mut self, src: &[u8], f: T) {
+    pub fn push<T: Fn(&[u8])>(&mut self, src: &[u8], f: T) -> Result<(), Error> {
         let mut data = src.as_ref();
         if data.len() == 0 {
-            return;
+            return Ok(());
         }
         // Try
         if self.buf.is_empty() {
@@ -24,8 +24,9 @@ impl Framed {
                     }
                 }
                 Ok(None) => {}
-                Err(_e) => {}
+                Err(e) => return Err(e),
             }
+            Ok(())
         } else {
             let size = if self.buf.len() > 1 {
                 (unsafe { u16::from_le(*(self.buf.as_ptr() as *const u16)) }) as usize
@@ -37,7 +38,7 @@ impl Framed {
             // Is next message received?
             if (self.buf.len() + src.len()) < size {
                 self.buf.extend_from_slice(src.as_ref());
-                return;
+                return Ok(());
             }
 
             let split_at = size - self.buf.len();
@@ -46,20 +47,21 @@ impl Framed {
             f(self.buf.as_slice());
             self.buf.clear();
 
-            match self.process(data, f) {
-                Ok(Some(idx)) => {
+            match self.process(data, f)? {
+                Some(idx) => {
                     data = &data[idx..];
                     if data.len() > 0 {
                         self.buf.extend_from_slice(data);
                     }
                 }
-                Ok(None) => {}
-                Err(_e) => {}
+                None => {} // Err(e) => return Err(e)
             }
 
             if data.len() < 4 {
                 self.buf.extend_from_slice(data);
             }
+
+            Ok(())
         }
     }
 
@@ -97,4 +99,10 @@ impl Framed {
             }
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn stream() {}
 }

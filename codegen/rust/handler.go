@@ -9,9 +9,10 @@ func (g *Generator) generateHandler() error {
 		writer.Line("")
 	}
 
+	writer.Line("use log::info;")
 	writer.Line("use async_trait::async_trait;")
 	writer.Line("use super::*;")
-	writer.Line("use crate::{Connection, Error, Parsed, message::parse};")
+	writer.Line("use crate::{Connection, Error, Parsed};")
 
 	writer.Line("")
 	writer.Line("#[async_trait]")
@@ -28,8 +29,11 @@ func (g *Generator) generateHandler() error {
 		if s.Doc != nil {
 			g.writeComments(writer, 1, s.Name, s.Doc.Description)
 		}
-		writer.IndentLine(1, "fn on_%s(&self, conn: &Connection, msg: &impl %s) -> Result<(), Error>;",
+		writer.IndentLine(1, "fn on_%s(&self, conn: &Connection, msg: &impl %s) -> Result<(), Error> {",
 			strings.ToLower(toSnakeCase(m.Name())), m.Name())
+		writer.IndentLine(2, "info!(\"on_%s(%d) -> {:?}\", msg.to_owned());", strings.ToLower(toSnakeCase(m.Name())), s.Type)
+		writer.IndentLine(2, "Ok(())")
+		writer.IndentLine(1, "}")
 
 		if m.Extension != nil {
 			writer.Line("")
@@ -37,8 +41,11 @@ func (g *Generator) generateHandler() error {
 			if s.Doc != nil {
 				g.writeComments(writer, 1, m.Extension.Name(), s.Doc.Description)
 			}
-			writer.IndentLine(1, "fn on_%s(&self, conn: &Connection, msg: &impl %s) -> Result<(), Error>;",
+			writer.IndentLine(1, "fn on_%s(&self, conn: &Connection, msg: &impl %s) -> Result<(), Error> {",
 				strings.ToLower(toSnakeCase(m.Extension.Name())), m.Extension.Name())
+			writer.IndentLine(2, "info!(\"on_%s(%d) -> {:?}\", msg.to_owned());", strings.ToLower(toSnakeCase(m.Extension.Name())), s.Type)
+			writer.IndentLine(2, "Ok(())")
+			writer.IndentLine(1, "}")
 		}
 
 		writer.Line("")
@@ -73,21 +80,21 @@ func (g *Generator) generateHandler() error {
 		}
 		if m.Extension != nil {
 			writer.IndentLine(2, "%s => if data.len() > %d {", s.TypeConst.Name, s.Size)
-			writer.IndentLine(3, "match parse::<F::%s, F::%sUnsafe>(data)? {", m.Extension.Name(), m.Extension.Name())
-			writer.IndentLine(4, "Parsed::Left(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Extension.Name())))
-			writer.IndentLine(4, "Parsed::Right(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Extension.Name())))
-			writer.IndentLine(3, "}")
+			writer.IndentLine(3, "F::%s::parse(data, |p| match p {", m.Extension.Name())
+			writer.IndentLine(4, "Parsed::Safe(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Extension.Name())))
+			writer.IndentLine(4, "Parsed::Unsafe(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Extension.Name())))
+			writer.IndentLine(3, "})")
 			writer.IndentLine(2, "} else {")
-			writer.IndentLine(3, "match parse::<F::%s, F::%sUnsafe>(data)? {", m.Name(), m.Name())
-			writer.IndentLine(4, "Parsed::Left(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
-			writer.IndentLine(4, "Parsed::Right(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
-			writer.IndentLine(3, "}")
+			writer.IndentLine(3, "F::%s::parse(data, |p| match p {", m.Name())
+			writer.IndentLine(4, "Parsed::Safe(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
+			writer.IndentLine(4, "Parsed::Unsafe(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
+			writer.IndentLine(3, "})")
 			writer.IndentLine(2, "},")
 		} else {
-			writer.IndentLine(2, "%s => match parse::<F::%s, F::%sUnsafe>(data)? {", s.TypeConst.Name, m.Name(), m.Name())
-			writer.IndentLine(3, "Parsed::Left(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
-			writer.IndentLine(3, "Parsed::Right(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
-			writer.IndentLine(2, "},")
+			writer.IndentLine(2, "%s => F::%s::parse(data, |p| match p {", s.TypeConst.Name, m.Name())
+			writer.IndentLine(3, "Parsed::Safe(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
+			writer.IndentLine(3, "Parsed::Unsafe(m) => handler.on_%s(conn, m),", strings.ToLower(toSnakeCase(m.Name())))
+			writer.IndentLine(2, "}),")
 		}
 	}
 	writer.IndentLine(2, "code => handler.on_unknown_message(code, data),")

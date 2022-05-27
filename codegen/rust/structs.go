@@ -128,6 +128,39 @@ func (g *Generator) generateStructs() error {
 					}
 				}
 				writer.IndentLine(1, "}")
+				writer.Line("")
+
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn parse<F: Fn(Parsed<Self::Safe, Self::Unsafe>) -> Result<(), crate::Error>>(data: &[u8], f: F) -> Result<(), crate::Error> {")
+				if msg.VLS {
+					writer.IndentLine(2, "if data.len() < 6 {")
+				} else {
+					writer.IndentLine(2, "if data.len() < 4 {")
+				}
+				writer.IndentLine(3, "return Err(crate::Error::Malformed(\"need more data\"));")
+				writer.IndentLine(2, "}")
+				writer.IndentLine(2, "let size = unsafe { u16::from_le(*(data.as_ptr() as *const u16)) };")
+				writer.IndentLine(2, "let base_size = if Self::BASE_SIZE_OFFSET == 0 {")
+				writer.IndentLine(3, "size")
+				writer.IndentLine(2, "} else {")
+				writer.IndentLine(3, "let base_size = unsafe { u16::from_le(*(data.as_ptr().offset(Self::BASE_SIZE_OFFSET) as *const u16)) };")
+				writer.IndentLine(3, "if base_size > size {")
+				writer.IndentLine(4, "return Err(crate::Error::Malformed(\"base_size is greater than size\"));")
+				writer.IndentLine(3, "}")
+				writer.IndentLine(3, "base_size")
+				writer.IndentLine(2, "};")
+				writer.IndentLine(2, "if (base_size as usize) >= Self::BASE_SIZE {")
+				writer.IndentLine(3, "let msg = unsafe { Self::Safe::from_raw_parts(data.as_ptr(), size as usize) };")
+				writer.IndentLine(3, "let r = f(Parsed::Safe(&msg));")
+				writer.IndentLine(3, "core::mem::forget(msg);")
+				writer.IndentLine(3, "r")
+				writer.IndentLine(2, "} else {")
+				writer.IndentLine(3, "let msg = unsafe { Self::Unsafe::from_raw_parts(data.as_ptr(), size as usize) };")
+				writer.IndentLine(3, "let r = f(Parsed::Unsafe(&msg));")
+				writer.IndentLine(3, "core::mem::forget(msg);")
+				writer.IndentLine(3, "r")
+				writer.IndentLine(2, "}")
+				writer.IndentLine(1, "}")
 				writer.Line("}")
 				writer.Line("")
 			}
@@ -368,6 +401,172 @@ func (g *Generator) generateStructs() error {
 			}
 		}
 
+		// ToString
+		{
+			_ = func(msg *Struct, isUnsafe bool) {
+				name := msg.Name
+				if isUnsafe {
+					name = msg.UnsafeName
+				}
+				writer.Line("impl ToString for %s {", name)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn to_string(&self) -> String {")
+				writer.Indent(2, "format!(\"%s(", name)
+				{
+					writeField := func(field *Field) {
+						if field.Name == "r#type" {
+							writer.Write("type: ")
+						} else {
+							writer.Write("%s: ", field.Name)
+						}
+						switch field.Type.Kind {
+						case schema.KindStringFixed, schema.KindStringVLS:
+							writer.Write("\\\"{}\\\"")
+						default:
+							writer.Write("{}")
+						}
+					}
+					for i, field := range msg.Fields {
+						if len(field.Fields) > 0 {
+							for x, f := range field.Fields {
+								writeField(f)
+								if x < len(field.Fields)-1 {
+									writer.Write(", ")
+								}
+							}
+						} else {
+							writeField(field)
+						}
+
+						if i < len(msg.Fields)-1 {
+							writer.Write(", ")
+						}
+					}
+				}
+				writer.Write(")\", ")
+
+				{
+					writeField := func(field *Field) {
+						writer.Write("self.%s()", field.Name)
+					}
+					for i, field := range msg.Fields {
+						if len(field.Fields) > 0 {
+							for x, f := range field.Fields {
+								writeField(f)
+								if x < len(field.Fields)-1 {
+									writer.Write(",")
+								}
+							}
+						} else {
+							writeField(field)
+						}
+
+						if i < len(msg.Fields)-1 {
+							writer.Write(", ")
+						}
+					}
+				}
+				writer.Write(")\n")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+
+			//if m.Fixed != nil {
+			//	write(m.Fixed, false)
+			//	write(m.Fixed, true)
+			//}
+			//if m.VLS != nil {
+			//	write(m.VLS, false)
+			//	write(m.VLS, true)
+			//}
+		}
+
+		{
+			write := func(msg *Struct, traitName string, isUnsafe bool) {
+				name := msg.Name
+				if isUnsafe {
+					name = msg.UnsafeName
+				}
+				writer.Line("impl core::fmt::%s for %s {", traitName, name)
+				writer.IndentLine(1, "#[inline]")
+				writer.IndentLine(1, "fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {")
+				writer.Indent(2, "f.write_str(format!(\"%s(", name)
+				{
+					writeField := func(field *Field) {
+						if field.Name == "r#type" {
+							writer.Write("type: ")
+						} else {
+							writer.Write("%s: ", field.Name)
+						}
+						switch field.Type.Kind {
+						case schema.KindStringFixed, schema.KindStringVLS:
+							writer.Write("\\\"{}\\\"")
+						default:
+							writer.Write("{}")
+						}
+					}
+					for i, field := range msg.Fields {
+						if len(field.Fields) > 0 {
+							for x, f := range field.Fields {
+								writeField(f)
+								if x < len(field.Fields)-1 {
+									writer.Write(", ")
+								}
+							}
+						} else {
+							writeField(field)
+						}
+
+						if i < len(msg.Fields)-1 {
+							writer.Write(", ")
+						}
+					}
+				}
+				writer.Write(")\", ")
+
+				{
+					writeField := func(field *Field) {
+						writer.Write("self.%s()", field.Name)
+					}
+					for i, field := range msg.Fields {
+						if len(field.Fields) > 0 {
+							for x, f := range field.Fields {
+								writeField(f)
+								if x < len(field.Fields)-1 {
+									writer.Write(",")
+								}
+							}
+						} else {
+							writeField(field)
+						}
+
+						if i < len(msg.Fields)-1 {
+							writer.Write(", ")
+						}
+					}
+				}
+				writer.Write(").as_str())\n")
+				//writer.IndentLine(2, "f.write_str(self.to_string().as_str())")
+				writer.IndentLine(1, "}")
+				writer.Line("}")
+				writer.Line("")
+			}
+
+			if m.Fixed != nil {
+				write(m.Fixed, "Display", false)
+				write(m.Fixed, "Debug", false)
+				write(m.Fixed, "Display", true)
+				write(m.Fixed, "Debug", true)
+			}
+			if m.VLS != nil {
+				write(m.VLS, "Display", false)
+				write(m.VLS, "Debug", false)
+				write(m.VLS, "Display", true)
+				write(m.VLS, "Debug", true)
+			}
+		}
+
 		// impl Message
 		{
 			write := func(msg *Struct, isUnsafe bool) {
@@ -378,6 +577,7 @@ func (g *Generator) generateStructs() error {
 				}
 				writer.IndentLine(1, "type Data = %s;", msg.DataName)
 				writer.Line("")
+				writer.IndentLine(1, "const TYPE: u16 = %s;", msg.TypeConst.Name)
 				writer.IndentLine(1, "const BASE_SIZE: usize = %d;", msg.Struct.Size)
 				if msg.VLS {
 					writer.IndentLine(1, "const BASE_SIZE_OFFSET: isize = 4;")

@@ -1,9 +1,11 @@
+use std::sync::Arc;
 use std::time::Instant;
 
-use ntex::{codec::Encoder, connect::rustls};
-// use ntex::openssl::{SslConnector, SslMethod};
-// use tls_openssl::ssl::{SslVerifyMode};
+use ntex::codec::Encoder;
+use ntex::connect::rustls::{ClientConfig, Connector};
 use ntex_bytes::*;
+use rustls::client::{ServerCertVerified, ServerCertVerifier};
+use rustls::{Certificate, OwnedTrustAnchor, RootCertStore, ServerName};
 
 use crate::{
     connection::{Connection, Handler},
@@ -62,11 +64,16 @@ impl Client {
         loop {
             match io.recv(&codec::BytesCodec).await {
                 Ok(Some(ref mut src)) => {
-                    framed.push(src.as_ref(), |message| {
+                    match framed.push(src.as_ref(), |message| {
                         match handler.on_message(message, &conn) {
                             _ => {}
                         }
-                    });
+                    }) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                        }
+                    }
                 }
                 Ok(None) => {}
                 Err(_e) => {
@@ -81,8 +88,56 @@ impl Client {
 pub struct TlsClient {
     // cert_store: RootCertStore,
     // config: ClientConfig,
-    connector: rustls::Connector<String>,
+    connector: Connector<String>,
     // connector: connect::openssl::Connector<String>,
+}
+
+struct CertVerifier;
+
+impl ServerCertVerifier for CertVerifier {
+    fn verify_server_cert(
+        &self,
+        end_entity: &Certificate,
+        intermediates: &[Certificate],
+        server_name: &ServerName,
+        scts: &mut dyn Iterator<Item = &[u8]>,
+        ocsp_response: &[u8],
+        now: std::time::SystemTime,
+    ) -> Result<ServerCertVerified, rustls::Error> {
+        // let (cert, chain, trustroots) = prepare(end_entity, intermediates, &self.roots)?;
+        // let webpki_now = webpki::Time::try_from(now).map_err(|_| Error::FailedToGetCurrentTime)?;
+        //
+        // let dns_name = match server_name {
+        //     &ServerName::DnsName(ref n) => n,
+        //     ServerName::IpAddress(_) => {
+        //         return Err(Error::UnsupportedNameType);
+        //     }
+        // };
+        //
+        // let cert = cert
+        //     .verify_is_valid_tls_server_cert(
+        //         SUPPORTED_SIG_ALGS,
+        //         &webpki::TlsServerTrustAnchors(&trustroots),
+        //         &chain,
+        //         webpki_now,
+        //     )
+        //     .map_err(pki_error)
+        //     .map(|_| cert)?;
+        //
+        // if let Some(policy) = &self.ct_policy {
+        //     policy.verify(end_entity, now, scts)?;
+        // }
+        //
+        // if !ocsp_response.is_empty() {
+        //     log::trace!("Unvalidated OCSP response: {:?}", ocsp_response.to_vec());
+        // }
+        //
+        // cert.verify_is_valid_for_dns_name(dns_name.0.as_ref())
+        //     .map_err(pki_error)
+        //     .map(|_| ServerCertVerified::assertion())
+
+        Ok(ServerCertVerified::assertion())
+    }
 }
 
 impl TlsClient {
@@ -105,13 +160,29 @@ impl TlsClient {
                 ta.name_constraints,
             )
         }));
+        // cert_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
 
         let config = ClientConfig::builder()
             .with_safe_defaults()
-            .with_root_certificates(cert_store)
+            .with_custom_certificate_verifier(Arc::new(CertVerifier))
+            // .with_root_certificates(cert_store)
             .with_no_client_auth();
 
-        let connector = rustls::Connector::new(config);
+        // let mut cert_store = RootCertStore::empty();
+        // cert_store.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
+        //     OwnedTrustAnchor::from_subject_spki_name_constraints(
+        //         ta.subject,
+        //         ta.spki,
+        //         ta.name_constraints,
+        //     )
+        // }));
+        //
+        // ClientConfig::builder()
+        //     .with_safe_defaults()
+        //     .with_root_certificates(cert_store)
+        //     .with_no_client_auth();
+
+        let connector = Connector::new(config);
         // let connector = connect::openssl::Connector::new(builder.build());
 
         Self {
@@ -145,7 +216,7 @@ impl TlsClient {
                         reason: e.clone().into(),
                     },
                 );
-                log::error!("{}", e.clone());
+                log::error!("{:?}", e);
                 return Err(Error::Connect(e.into()));
             }
         };
@@ -169,14 +240,21 @@ impl TlsClient {
         loop {
             match io.recv(&codec::BytesCodec).await {
                 Ok(Some(ref mut src)) => {
-                    framed.push(src.as_ref(), |message| {
+                    match framed.push(src.as_ref(), |message| {
                         match handler.on_message(message, &conn) {
                             _ => {}
                         }
-                    });
+                    }) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            log::error!("{:?}", e);
+                            break;
+                        }
+                    }
                 }
                 Ok(None) => {}
-                Err(_e) => {
+                Err(e) => {
+                    log::error!("{:?}", e);
                     break;
                 }
             }
@@ -185,7 +263,7 @@ impl TlsClient {
     }
 }
 
-/// Bytes codec.
+/// Vec codec.
 ///
 /// Reads/Writes chunks of bytes from a stream.
 #[derive(Debug, Copy, Clone)]

@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 #[derive(thiserror::Error, Clone, Debug)]
 pub enum Error {
     #[error("Out of memory")]

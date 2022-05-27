@@ -17,15 +17,20 @@ async-trait = "0.1"
 thiserror = "1"
 clap = { version = "3.1.18", features = ["derive"] }
 libmdbx = "0.1"
-ntex = { version = "0.5", features = ["tokio", "rustls", "openssl"] }
+rustls = { version = "0.20", features = ["log", "quic", "dangerous_configuration"] }
+#tls_rust = { version = "0.20", package = "rustls", features = ["log", "dangerous_configuration"], optional = true }
+ntex = { version = "0.5", features = ["tokio", "rustls"] }
+tokio = { version = "1", features = ["full"]}
+tokio-tls = "0.3"
+tokio-rustls = "0.23"
+webpki = "0.22"
 ntex-bytes = "0.1"
 ntex-io = "0.1"
 ntex-util = "0.1"
 ntex-service = "0.3"
 pin-project-lite = "0.2"
-rustls = "0.20"
-tls_rust = { version = "0.20", package = "rustls", optional = true }
-tls_openssl = { version="0.10", package = "openssl", optional = false }
+
+#tls_openssl = { version="0.10", package = " openssl", optional = false }
 rand = "0.8"
 byteorder = "1.4"
 futures = "0.3"

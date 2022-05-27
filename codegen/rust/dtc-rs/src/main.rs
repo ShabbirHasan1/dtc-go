@@ -18,7 +18,6 @@ pub use message::{Message, Parsed};
 use std::io;
 
 use ntex::{channel::mpsc, codec, connect, rt};
-use rustls::{ClientConfig, OwnedTrustAnchor, RootCertStore};
 
 use clap::Parser;
 
@@ -78,7 +77,17 @@ async fn main() -> io::Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use crate::connection::Handler;
+    use crate::sierra_chart::{
+        DENALI_1, DENALI_3, FUTURES_TRADING_1, FUTURES_TRADING_2, FUTURES_TRADING_3,
+    };
+    use crate::util::Framed;
     use libmdbx::{Environment, Mode, NoWriteMap, WriteFlags};
+    use log::error;
+    use ntex::connect::rustls::ClientConfig;
+    use std::net::ToSocketAddrs;
+    use std::sync::Arc;
+    use std::time::Instant;
     use std::{marker::PhantomData, path::Path};
 
     // use crate::connection::{Handler};
@@ -99,47 +108,61 @@ mod tests {
     }
 
     impl<F: Factory> crate::connection::Handler for ClientHandler<F> {
+        fn on_connected(&self, conn: &Connection) {
+            let mut request = F::EncodingRequest::new();
+            request.set_encoding(EncodingEnum::BinaryEncoding);
+            conn.send(request).expect("failed to send EncodingRequest");
+        }
+
         fn on_message(&self, data: &[u8], conn: &Connection) -> Result<(), Error> {
+            info!(
+                "on_message() size: {} type: {}",
+                unsafe { u16::from_le(*(data[0..2].as_ptr() as *const u16)) },
+                unsafe { u16::from_le(*(data[2..].as_ptr() as *const u16)) }
+            );
             crate::v8::handle::<F, Self>(self, data, conn)
         }
     }
 
     impl<F: Factory> crate::v8::Handler for ClientHandler<F> {
-        fn on_encoding_request(
-            &self,
-            conn: &Connection,
-            msg: &impl EncodingRequest,
-        ) -> Result<(), Error> {
-            info!("on_encoding_request");
-            
-
-            let msg = msg.clone_safe();
-
-            Ok(())
-        }
-
-        fn on_encoding_request_extended(
-            &self,
-            conn: &Connection,
-            msg: &impl EncodingRequestExtended,
-        ) -> Result<(), Error> {
-            
-            todo!()
-        }
-
         fn on_encoding_response(
             &self,
             conn: &Connection,
             msg: &impl EncodingResponse,
         ) -> Result<(), Error> {
-            todo!()
-        }
+            info!("on_encoding_response: {:?}", msg);
+            let mut logon_request = F::LogonRequest::new();
+            logon_request.set_username("");
+            logon_request.set_password("");
+            logon_request.set_heartbeat_interval_in_seconds(15);
+            // logon_request.set_hardware_identifier("833a19a6682f6551e6470008e83b187a");
+            logon_request.set_general_text_data("sc_exchange2.datafeed");
+            // logon_request.set_general_text_data("sc_futures_direct.dtc.trading");
+            // logon_request.set_general_text_data("sc_realtime_exchange.datafeed");
+            // logon_request.set_general_text_data("sc_delayed_exchange.datafeed");
+            // logon_request.set_general_text_data("sc_futures.dtc.trading");
+            // logon_request.set_general_text_data("denali");
+            // logon_request.set_general_text_data("sc_futures_direct.dtc.trading");
+            // logon_request.set_general_text_data("sc_futures_direct.dtc.datafeed");
+            // logon_request.set_market_data_transmission_interval(1);
+            // logon_request.set_general_text_data("Service=cme_ilink.trading|SymbolSettings=cme_ilink_live.trading");
+            // logon_request.set_integer1(32768);
+            // logon_request.set_integer1(65535);
+            // logon_request.set_client_name("WebTradingPanelV2_Data");
+            // logon_request.set_client_name("WebTradingPanelV2");
+            // logon_request.set_trade_account("47029");
+            conn.send(logon_request)
+                .expect("failed to send LogonRequest");
 
-        fn on_logon_request(
-            &self,
-            _ctx: &Connection,
-            _request: &impl LogonRequest,
-        ) -> Result<(), Error> {
+            // let mut abr = F::AccountBalanceRequest::new();
+            // abr.set_request_id(2).set_trade_account("47029");
+            // conn.send(abr).expect("");
+
+            // F::HistoricalPriceDataRequest
+            // let mut r = F::HistoricalPriceDataRequest::new();
+            // r.set_exchange("CME").set_symbol("6AM22_FUT_CME").set_request_id(1);//.set_symbol_id(1).set_request_action(RequestActionEnum::SnapshotWithIntervalUpdates).set_interval_for_snapshot_updates_in_milliseconds(1000);
+            // conn.send(r).expect("");
+
             Ok(())
         }
 
@@ -148,1053 +171,38 @@ mod tests {
             conn: &Connection,
             msg: &impl LogonResponse,
         ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_logoff(&self, conn: &Connection, msg: &impl Logoff) -> Result<(), Error> {
-            
-            todo!()
-        }
-
-        fn on_heartbeat(&self, conn: &Connection, msg: &impl Heartbeat) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_heartbeat_extended(
-            &self,
-            conn: &Connection,
-            msg: &impl HeartbeatExtended,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_feed_status(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataFeedStatus,
-        ) -> Result<(), Error> {
-            msg.clone_safe();
-            todo!()
-        }
-
-        fn on_market_data_feed_symbol_status(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataFeedSymbolStatus,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trading_symbol_status(
-            &self,
-            conn: &Connection,
-            msg: &impl TradingSymbolStatus,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_request(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_depth_request(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDepthRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_snapshot(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataSnapshot,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_depth_snapshot_level(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDepthSnapshotLevel,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_depth_snapshot_level_float(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDepthSnapshotLevelFloat,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_depth_update_level(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDepthUpdateLevel,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_depth_update_level_float_with_milliseconds(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDepthUpdateLevelFloatWithMilliseconds,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_depth_update_level_no_timestamp(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDepthUpdateLevelNoTimestamp,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_trade_no_timestamp(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateTradeNoTimestamp,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_session_settlement(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateSessionSettlement,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_session_open(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateSessionOpen,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_session_num_trades(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateSessionNumTrades,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_trading_session_date(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateTradingSessionDate,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_depth_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDepthReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_trade(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateTrade,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_trade_with_unbundled_indicator(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateTradeWithUnbundledIndicator,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_trade_with_unbundled_indicator2(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateTradeWithUnbundledIndicator2,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_bid_ask(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateBidAsk,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_bid_ask_compact(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateBidAskCompact,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_bid_ask_float_with_microseconds(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateBidAskFloatWithMicroseconds,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_bid_ask_no_time_stamp(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateBidAskNoTimeStamp,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_trade_compact(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateTradeCompact,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_session_volume(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateSessionVolume,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_open_interest(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateOpenInterest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_session_high(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateSessionHigh,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_session_low(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateSessionLow,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_data_update_last_trade_snapshot(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketDataUpdateLastTradeSnapshot,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_orders_request(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketOrdersRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_orders_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketOrdersReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_orders_add(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketOrdersAdd,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_orders_modify(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketOrdersModify,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_orders_remove(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketOrdersRemove,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_market_orders_snapshot_message_boundary(
-            &self,
-            conn: &Connection,
-            msg: &impl MarketOrdersSnapshotMessageBoundary,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_submit_new_single_order(
-            &self,
-            conn: &Connection,
-            msg: &impl SubmitNewSingleOrder,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_submit_flatten_position_order(
-            &self,
-            conn: &Connection,
-            msg: &impl SubmitFlattenPositionOrder,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_cancel_replace_order(
-            &self,
-            conn: &Connection,
-            msg: &impl CancelReplaceOrder,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_cancel_order(&self, conn: &Connection, msg: &impl CancelOrder) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_submit_new_oco_order(
-            &self,
-            conn: &Connection,
-            msg: &impl SubmitNewOCOOrder,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_open_orders_request(
-            &self,
-            conn: &Connection,
-            msg: &impl OpenOrdersRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_order_fills_request(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalOrderFillsRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_order_fills_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalOrderFillsReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_current_positions_request(
-            &self,
-            conn: &Connection,
-            msg: &impl CurrentPositionsRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_current_positions_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl CurrentPositionsReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_order_update(&self, conn: &Connection, msg: &impl OrderUpdate) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_open_orders_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl OpenOrdersReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_order_fill_response(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalOrderFillResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_position_update(
-            &self,
-            conn: &Connection,
-            msg: &impl PositionUpdate,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_add_correcting_order_fill(
-            &self,
-            conn: &Connection,
-            msg: &impl AddCorrectingOrderFill,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_correcting_order_fill_response(
-            &self,
-            conn: &Connection,
-            msg: &impl CorrectingOrderFillResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_accounts_request(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountsRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_response(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_exchange_list_request(
-            &self,
-            conn: &Connection,
-            msg: &impl ExchangeListRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_exchange_list_response(
-            &self,
-            conn: &Connection,
-            msg: &impl ExchangeListResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_symbols_for_exchange_request(
-            &self,
-            conn: &Connection,
-            msg: &impl SymbolsForExchangeRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_underlying_symbols_for_exchange_request(
-            &self,
-            conn: &Connection,
-            msg: &impl UnderlyingSymbolsForExchangeRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_symbols_for_underlying_request(
-            &self,
-            conn: &Connection,
-            msg: &impl SymbolsForUnderlyingRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_symbol_search_request(
-            &self,
-            conn: &Connection,
-            msg: &impl SymbolSearchRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_security_definition_for_symbol_request(
-            &self,
-            conn: &Connection,
-            msg: &impl SecurityDefinitionForSymbolRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_security_definition_response(
-            &self,
-            conn: &Connection,
-            msg: &impl SecurityDefinitionResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_security_definition_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl SecurityDefinitionReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_account_balance_request(
-            &self,
-            conn: &Connection,
-            msg: &impl AccountBalanceRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_account_balance_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl AccountBalanceReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_account_balance_update(
-            &self,
-            conn: &Connection,
-            msg: &impl AccountBalanceUpdate,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_account_balance_adjustment(
-            &self,
-            conn: &Connection,
-            msg: &impl AccountBalanceAdjustment,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_account_balance_adjustment_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl AccountBalanceAdjustmentReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_account_balance_adjustment_complete(
-            &self,
-            conn: &Connection,
-            msg: &impl AccountBalanceAdjustmentComplete,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_account_balances_request(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalAccountBalancesRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_account_balances_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalAccountBalancesReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_account_balance_response(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalAccountBalanceResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_user_message(&self, conn: &Connection, msg: &impl UserMessage) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_general_log_message(
-            &self,
-            conn: &Connection,
-            msg: &impl GeneralLogMessage,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_alert_message(
-            &self,
-            conn: &Connection,
-            msg: &impl AlertMessage,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_journal_entry_add(
-            &self,
-            conn: &Connection,
-            msg: &impl JournalEntryAdd,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_journal_entries_request(
-            &self,
-            conn: &Connection,
-            msg: &impl JournalEntriesRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_journal_entries_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl JournalEntriesReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_journal_entry_response(
-            &self,
-            conn: &Connection,
-            msg: &impl JournalEntryResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_price_data_request(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalPriceDataRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_price_data_response_header(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalPriceDataResponseHeader,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_price_data_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalPriceDataReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_price_data_record_response(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalPriceDataRecordResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_price_data_tick_record_response(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalPriceDataTickRecordResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_price_data_response_trailer(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalPriceDataResponseTrailer,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_market_depth_data_request(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalMarketDepthDataRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_market_depth_data_response_header(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalMarketDepthDataResponseHeader,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_market_depth_data_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalMarketDepthDataReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_market_depth_data_record_response(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalMarketDepthDataRecordResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_trades_request(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalTradesRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_trades_reject(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalTradesReject,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_historical_trades_response(
-            &self,
-            conn: &Connection,
-            msg: &impl HistoricalTradesResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_replay_chart_data(
-            &self,
-            conn: &Connection,
-            msg: &impl ReplayChartData,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_replay_chart_data_perform_action(
-            &self,
-            conn: &Connection,
-            msg: &impl ReplayChartDataPerformAction,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_replay_chart_data_status(
-            &self,
-            conn: &Connection,
-            msg: &impl ReplayChartDataStatus,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_request_num_current_client_connections(
-            &self,
-            conn: &Connection,
-            msg: &impl RequestNumCurrentClientConnections,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_num_current_client_connections_response(
-            &self,
-            conn: &Connection,
-            msg: &impl NumCurrentClientConnectionsResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_client_device_update(
-            &self,
-            conn: &Connection,
-            msg: &impl ClientDeviceUpdate,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_interprocess_synchronization_remote_state(
-            &self,
-            conn: &Connection,
-            msg: &impl InterprocessSynchronizationRemoteState,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_interprocess_synchronization_snapshot_request(
-            &self,
-            conn: &Connection,
-            msg: &impl InterprocessSynchronizationSnapshotRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_interprocess_synchronization_trade_activity_request(
-            &self,
-            conn: &Connection,
-            msg: &impl InterprocessSynchronizationTradeActivityRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_write_intraday_data_file_session_value(
-            &self,
-            conn: &Connection,
-            msg: &impl WriteIntradayDataFileSessionValue,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_sc_configuration_synchronization(
-            &self,
-            conn: &Connection,
-            msg: &impl SCConfigurationSynchronization,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_download_historical_order_fill_and_account_balance_data(
-            &self,
-            conn: &Connection,
-            msg: &impl DownloadHistoricalOrderFillAndAccountBalanceData,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_order(&self, conn: &Connection, msg: &impl TradeOrder) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_individual_trade_position(
-            &self,
-            conn: &Connection,
-            msg: &impl IndividualTradePosition,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_position_consolidated(
-            &self,
-            conn: &Connection,
-            msg: &impl TradePositionConsolidated,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_activity_data(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeActivityData,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_request(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_response(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_update(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataUpdate,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_delete(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataDelete,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_symbol_limits_response(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataSymbolLimitsResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_symbol_limits_update(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataSymbolLimitsUpdate,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_symbol_commission_response(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataSymbolCommissionResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_symbol_commission_update(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataSymbolCommissionUpdate,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_authorized_username_response(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataAuthorizedUsernameResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_authorized_username_add(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataAuthorizedUsernameAdd,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_authorized_username_remove(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataAuthorizedUsernameRemove,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_username_to_share_with_response(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataUsernameToShareWithResponse,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_username_to_share_with_add(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataUsernameToShareWithAdd,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_username_to_share_with_remove(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataUsernameToShareWithRemove,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_response_trailer(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataResponseTrailer,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_trade_account_data_update_operation_complete(
-            &self,
-            conn: &Connection,
-            msg: &impl TradeAccountDataUpdateOperationComplete,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_processed_fill_identifier(
-            &self,
-            conn: &Connection,
-            msg: &impl ProcessedFillIdentifier,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_flatten_positions_for_trade_account(
-            &self,
-            conn: &Connection,
-            msg: &impl FlattenPositionsForTradeAccount,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_user_information(
-            &self,
-            conn: &Connection,
-            msg: &impl UserInformation,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_margin_data_request(
-            &self,
-            conn: &Connection,
-            msg: &impl MarginDataRequest,
-        ) -> Result<(), Error> {
-            todo!()
-        }
-
-        fn on_margin_data_response(
-            &self,
-            conn: &Connection,
-            msg: &impl MarginDataResponse,
-        ) -> Result<(), Error> {
-            todo!()
+            info!("on_logon_response: {:?}", msg);
+
+            // let mut abr = F::AccountBalanceRequest::new();
+            // abr.set_request_id(2).set_trade_account("47029");
+            // conn.send(abr).expect("");
+            // let mut r = F::MarketDepthRequest::new();
+            // r.set_exchange("CME");
+            // r.set_symbol_id(2).set_symbol("ESM22_FUT_CME").set_num_levels(20).set_request_action(RequestActionEnum::Subscribe);
+            // conn.send(r).expect("");
+
+            let mut r = F::SecurityDefinitionForSymbolRequest::new();
+            r.set_request_id(10)
+                .set_symbol("ESM22_FUT_CME")
+                .set_exchange("CME");
+            conn.send(r).expect("");
+
+            let mut r = F::MarketDataRequest::new();
+            r.set_exchange("CME")
+                .set_symbol("ESM22_FUT_CME")
+                .set_symbol_id(1)
+                .set_request_action(RequestActionEnum::Subscribe);
+            conn.send(r).expect("");
+            // let mut m = F::AccountBalanceRequest::new();
+            // m.set_trade_account("47029").set_request_id(1);
+
+            // conn.send(r).expect("");
+            Ok(())
         }
 
         fn on_unknown_message(&self, code: u16, data: &[u8]) -> Result<(), Error> {
-            todo!()
+            info!("on_unknown_message({})", code);
+            Ok(())
         }
     }
 
@@ -1202,13 +210,17 @@ mod tests {
     fn test_client() {
         std::env::set_var("RUST_LOG", "trace");
         env_logger::init();
-        let client = Client::new();
-
-        // let client = TlsClient::new();
+        // let client = Client::new();
+        let client = TlsClient::new();
         rt::block_on(async move {
             match client
                 .start(
-                    crate::sierra_chart::DENALI_1.into(),
+                    // format!("{}:11092", DENALI_1),
+                    format!("{}:10041", DENALI_1),
+                    // format!("{}:12097", "192.168.100.140"),
+                    // format!("{}:10060", DENALI_3),
+                    // format!("{}:11091", FUTURES_TRADING_1),
+                    // (crate::sierra_chart::DENALI_1, 443).to_socket_addrs().unwrap().next().unwrap(),
                     ClientHandler::<crate::v8::FactoryFixed>::new(),
                 )
                 .await
@@ -1217,7 +229,8 @@ mod tests {
                     println!("success")
                 }
                 Err(reason) => {
-                    println!("{}", reason);
+                    error!("{:?}", reason);
+                    // println!("{:}", reason);
                     // log::error!("connect error: {}", reason);
                     // println("error {}", reason);
                 }
@@ -1226,24 +239,109 @@ mod tests {
     }
 
     #[test]
-    fn test_schema() {
-        // let _vls = VLSFactory;
+    fn logon_message() {
         let mut logon_request = LogonRequestFixed::new();
-        let mut logon_request_vls = LogonRequestVLS::new();
-        logon_request.set_username("iamme");
-        logon_request_vls.set_username(logon_request.username());
-        logon_request.copy_to(&mut logon_request_vls);
+        logon_request.set_password("");
+        logon_request.set_username("");
+        // logon_request.set_password("r6HRgT6qhn8");
+        logon_request.set_heartbeat_interval_in_seconds(15);
+        logon_request.set_hardware_identifier("833a19a6682f6551e6470008e83b187a");
+        logon_request.set_general_text_data("");
+        logon_request.set_integer1(4096);
+        logon_request.set_client_name("WebTradingPanelV2");
 
-        println!(
-            "{:}: {}",
-            logon_request.username().len(),
-            logon_request.username()
-        );
-        println!(
-            "{:}: {}",
-            logon_request_vls.username().len(),
-            logon_request_vls.username()
-        );
+        let username = logon_request.username();
+        let password = logon_request.password();
+
+        println!("password: {}", logon_request.password());
+        println!("{:?}", logon_request);
+    }
+
+    fn take_ref2(msg: &impl EncodingResponse) {
+        let clone = msg.clone_safe();
+        println!("{:?}", msg);
+        println!("{:?}", msg.clone_safe());
+    }
+
+    fn take_ref<M: EncodingResponse>(msg: &M) {
+        let clone = msg.clone_safe();
+        println!("{:?}", msg);
+        println!("{:?}", msg.clone_safe());
+    }
+
+    #[test]
+    fn test_schema() {
+        std::env::set_var("RUST_LOG", "trace");
+        env_logger::init();
+
+        // sc_futures_direct.dtc.trading.
+        // Service=cme_ilink.trading|SymbolSettings=cme_ilink_live.trading.
+
+        let mut encoding_response = EncodingResponseFixed::new();
+        encoding_response.set_encoding(EncodingEnum::BinaryWithVariableLengthStrings);
+        encoding_response.set_protocol_version(8);
+
+        // take_ref(&encoding_response);
+        let v = encoding_response.into_vec();
+        let d = v.as_slice();
+
+        // match parse::<EncodingResponseFixed, EncodingResponseFixedUnsafe>(d) {
+        //     Ok(p) => {
+        //         match p {
+        //             Parsed::Left(m) => {
+        //                 m.clone_safe();
+        //                 take_ref(m);
+        //             }
+        //             Parsed::Right(m) => {
+        //                 take_ref(m);
+        //             }
+        //         }
+        //     }
+        //     Err(_) => {}
+        // }
+        EncodingResponseFixed::parse(d, |p| {
+            match p {
+                Parsed::Safe(m) => {
+                    m.clone_safe();
+                    take_ref(m);
+                }
+                Parsed::Unsafe(m) => {
+                    take_ref(m);
+                }
+            }
+            Ok(())
+        })
+        .expect("");
+        // unsafe {
+        //     let msg = EncodingResponseFixed::from_raw_parts(d.as_ptr(), d.len());
+        //     // let msg = EncodingResponseFixed::leak(d.as_ptr(), d.len());
+        //     let clone = msg.clone_safe();
+        //     msg.size();
+        //     std::mem::forget(msg);
+        // }
+
+        // let clone = encoding_response.clone_safe();
+
+        // let _vls = VLSFactory;
+        // let mut logon_request = LogonRequestFixed::new();
+        // let mut logon_request_vls = LogonRequestVLS::new();
+        // logon_request.set_username("iamme");
+        // logon_request_vls.set_username(logon_request.username());
+        // logon_request.copy_to(&mut logon_request_vls);
+        //
+        // println!("{}", &logon_request_vls);
+        // info!("{}", &logon_request_vls);
+        //
+        // println!(
+        //     "{:}: {}",
+        //     logon_request.username().len(),
+        //     logon_request.username()
+        // );
+        // println!(
+        //     "{:}: {}",
+        //     logon_request_vls.username().len(),
+        //     logon_request_vls.username()
+        // );
     }
 
     #[test]
