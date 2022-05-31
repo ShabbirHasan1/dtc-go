@@ -13,3 +13,8 @@ func ToJsonString(m JsonMarshaller) string {
 	b, _ := m.MarshalJSONTo(nil)
 	return string(b)
 }
+
+func JsonString(m JsonMarshaller) string {
+	b, _ := m.MarshalJSONTo(nil)
+	return string(b)
+}

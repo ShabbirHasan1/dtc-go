@@ -1,30 +1,48 @@
 package schema
 
 import (
+	"errors"
 	"fmt"
+	"github.com/moontrade/dtc-go/message"
+	"github.com/moontrade/dtc-go/message/pb"
+	"github.com/yoheimuta/go-protoparser/v4/parser"
 	"math"
 	"sort"
 	"strconv"
-	"unsafe"
-
-	"github.com/moontrade/dtc-go/message"
-	"github.com/moontrade/dtc-go/message/pb"
-	"github.com/moontrade/nogc"
-	"github.com/yoheimuta/go-protoparser/v4/parser"
 )
 
 type Message struct {
 	Fixed       *Struct
 	VLS         *Struct
+	Extension   *Message
+	Extends     *Message
 	NonStandard bool
 }
 
+func (m *Message) Name() string {
+	if m.Fixed != nil {
+		return m.Fixed.Name
+	}
+	if m.VLS != nil {
+		return m.VLS.Name
+	}
+	return ""
+}
+
+func (m *Message) Type() uint16 {
+	if m.Fixed != nil {
+		return m.Fixed.Type
+	}
+	if m.VLS != nil {
+		return m.VLS.Type
+	}
+	return 0
+}
+
 type Struct struct {
-	Namespace    *Namespace
-	File         *CHeaderFile
+	Namespace    NamespaceKind
 	Type         uint16
 	Name         string
-	NamePretty   string
 	Doc          *MessageDoc
 	MaxAlign     int
 	Size         int
@@ -72,6 +90,746 @@ type Field struct {
 	Proto           *parser.Field
 	ProtoType       pb.Type
 	ProtoZigzag     bool
+}
+
+const MaxMessageSize = math.MaxUint16 - 4
+
+func (f *Field) Validate() error {
+	kind := f.Type.Kind
+	if kind == KindAlias {
+		if f.Type.Alias == nil {
+			return errors.New(fmt.Sprintf("%s.%s is an alias type but Alias details are nil",
+				f.Struct.Name, f.Name))
+		}
+		kind = f.Type.Alias.Type.Kind
+	}
+
+	if f.Initial != nil && f.Initial.Type == ValueTypeBool {
+		if kind != KindBool {
+			f.Type.Kind = KindBool
+			kind = KindBool
+		}
+	}
+	switch kind {
+	default:
+		return errors.New(fmt.Sprintf("%s.%s is KindUnknown",
+			f.Struct.Name, f.Name))
+	case KindBool:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeBool,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeBool:
+				if f.Initial.Int > 0 {
+					f.Initial.Int = 1
+					f.Initial.Uint = 1
+				}
+				if f.Initial.Uint > 0 {
+					f.Initial.Int = 1
+					f.Initial.Uint = 1
+				}
+			case ValueTypeInt:
+				if f.Initial.Int > 0 {
+					f.Initial.Int = 1
+				}
+				f.Initial.Type = ValueTypeBool
+
+			case ValueTypeUint:
+				if f.Initial.Uint > 0 {
+					f.Initial.Uint = 1
+				}
+				f.Initial.Type = ValueTypeBool
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeBool but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+	case KindInt8:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeInt,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Uint = uint64(f.Initial.Int)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+					if f.Initial.Int < math.MinInt8 || f.Initial.Int > math.MaxInt8 {
+						return errors.New(fmt.Sprintf("%s.%s default value for int8 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Uint))
+					}
+
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+
+					if f.Initial.Uint > math.MaxInt8 {
+						return errors.New(fmt.Sprintf("%s.%s default value for int8 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Uint))
+					}
+				}
+			case ValueTypeInt:
+				if f.Initial.Int < math.MinInt8 || f.Initial.Int > math.MaxInt8 {
+					return errors.New(fmt.Sprintf("%s.%s default value for int8 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+			case ValueTypeUint:
+				if f.Initial.Uint > math.MaxInt8 {
+					return errors.New(fmt.Sprintf("%s.%s default value for int8 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Uint))
+				}
+				f.Initial.Int = int64(f.Initial.Uint)
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeInt
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeInt but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindUint8:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeUint,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Int = int64(f.Initial.Uint)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+
+					if f.Initial.Int < 0 || f.Initial.Uint > math.MaxUint8 {
+						return errors.New(fmt.Sprintf("%s.%s default value for uint8 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Int))
+					}
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+
+					if f.Initial.Uint > math.MaxUint8 {
+						return errors.New(fmt.Sprintf("%s.%s default value for uint8 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Int))
+					}
+				}
+			case ValueTypeUint:
+				if f.Initial.Uint > math.MaxUint8 {
+					return errors.New(fmt.Sprintf("%s.%s default value for uint8 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Uint))
+				}
+			case ValueTypeInt:
+				if f.Initial.Int < 0 || f.Initial.Int > math.MaxUint8 {
+					return errors.New(fmt.Sprintf("%s.%s default value for uint8 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+				f.Initial.Uint = uint64(f.Initial.Int)
+				f.Initial.Int = 0
+				f.Initial.Type = ValueTypeUint
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindInt16:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeInt,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Uint = uint64(f.Initial.Int)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+					if f.Initial.Int < math.MinInt16 || f.Initial.Int > math.MaxInt16 {
+						return errors.New(fmt.Sprintf("%s.%s default value for int32 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Uint))
+					}
+
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+
+					if f.Initial.Uint > math.MaxInt16 {
+						return errors.New(fmt.Sprintf("%s.%s default value for int16 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Uint))
+					}
+				}
+			case ValueTypeInt:
+				if f.Initial.Int < math.MinInt16 || f.Initial.Int > math.MaxInt16 {
+					return errors.New(fmt.Sprintf("%s.%s default value for int16 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+			case ValueTypeUint:
+				if f.Initial.Uint > math.MaxInt16 {
+					return errors.New(fmt.Sprintf("%s.%s default value for int16 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Uint))
+				}
+				f.Initial.Int = int64(f.Initial.Uint)
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeInt
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeInt but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindUint16:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeUint,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Int = int64(f.Initial.Uint)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+
+					if f.Initial.Int < 0 || f.Initial.Uint > math.MaxUint16 {
+						return errors.New(fmt.Sprintf("%s.%s default value for uint16 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Int))
+					}
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+
+					if f.Initial.Uint > math.MaxUint16 {
+						return errors.New(fmt.Sprintf("%s.%s default value for uint16 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Int))
+					}
+				}
+			case ValueTypeUint:
+				if f.Initial.Uint > math.MaxUint16 {
+					return errors.New(fmt.Sprintf("%s.%s default value for uint16 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Uint))
+				}
+			case ValueTypeInt:
+				if f.Initial.Int < 0 || f.Initial.Int > math.MaxUint16 {
+					return errors.New(fmt.Sprintf("%s.%s default value for uint16 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+				f.Initial.Uint = uint64(f.Initial.Int)
+				f.Initial.Int = 0
+				f.Initial.Type = ValueTypeUint
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindInt32:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeInt,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Uint = uint64(f.Initial.Int)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+					if f.Initial.Int < math.MinInt32 || f.Initial.Int > math.MaxInt32 {
+						return errors.New(fmt.Sprintf("%s.%s default value for int32 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Uint))
+					}
+
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+
+					if f.Initial.Uint > math.MaxInt32 {
+						return errors.New(fmt.Sprintf("%s.%s default value for int32 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Uint))
+					}
+				}
+
+			case ValueTypeInt:
+				if f.Initial.Int < math.MinInt32 || f.Initial.Int > math.MaxInt32 {
+					return errors.New(fmt.Sprintf("%s.%s default value for int32 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+			case ValueTypeUint:
+				if f.Initial.Uint > math.MaxInt32 {
+					return errors.New(fmt.Sprintf("%s.%s default value for int32 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Uint))
+				}
+				f.Initial.Int = int64(f.Initial.Uint)
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeInt
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeInt but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindUint32:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeUint,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Int = int64(f.Initial.Uint)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+
+					if f.Initial.Int < 0 || f.Initial.Uint > math.MaxUint32 {
+						return errors.New(fmt.Sprintf("%s.%s default value for uint32 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Int))
+					}
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+
+					if f.Initial.Uint > math.MaxUint32 {
+						return errors.New(fmt.Sprintf("%s.%s default value for uint32 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Int))
+					}
+				}
+			case ValueTypeUint:
+				if f.Initial.Uint > math.MaxUint32 {
+					return errors.New(fmt.Sprintf("%s.%s default value for uint32 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Uint))
+				}
+			case ValueTypeInt:
+				if f.Initial.Int < 0 || f.Initial.Int > math.MaxUint32 {
+					return errors.New(fmt.Sprintf("%s.%s default value for uint32 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+				f.Initial.Uint = uint64(f.Initial.Int)
+				f.Initial.Int = 0
+				f.Initial.Type = ValueTypeUint
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindInt64:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeInt,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Uint = uint64(f.Initial.Int)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+
+					if f.Initial.Uint > math.MaxInt64 {
+						return errors.New(fmt.Sprintf("%s.%s default value for int64 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Uint))
+					}
+				}
+
+			case ValueTypeInt:
+			case ValueTypeUint:
+				if f.Initial.Uint > math.MaxInt64 {
+					return errors.New(fmt.Sprintf("%s.%s default value for int64 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Uint))
+				}
+				f.Initial.Int = int64(f.Initial.Uint)
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeInt
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeInt but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindUint64:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeUint,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeSizeof:
+				f.Initial.Int = int64(f.Initial.Uint)
+				if f.Initial.Uint > MaxMessageSize {
+					return errors.New(fmt.Sprintf("%s.%s default is a sizeof which cannot be larger than %d",
+						f.Struct.Name, f.Name, MaxMessageSize))
+				}
+			case ValueTypeConst:
+				if f.Initial.Const == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const details are nil",
+						f.Struct.Name, f.Name))
+				}
+				if f.Initial.Const.Value == nil {
+					return errors.New(fmt.Sprintf("%s.%s default is a const however Const.Value details are nil",
+						f.Struct.Name, f.Name))
+				}
+				switch f.Initial.Const.Value.Type {
+				case ValueTypeInt:
+					f.Initial.Int = f.Initial.Const.Value.Int
+					f.Initial.Uint = uint64(f.Initial.Const.Value.Int)
+
+					if f.Initial.Int < 0 {
+						return errors.New(fmt.Sprintf("%s.%s default value for uint64 is out of range %d",
+							f.Struct.Name, f.Name, f.Initial.Int))
+					}
+				case ValueTypeUint:
+					f.Initial.Uint = f.Initial.Const.Value.Uint
+					f.Initial.Int = int64(f.Initial.Const.Value.Uint)
+				}
+			case ValueTypeUint:
+			case ValueTypeInt:
+				if f.Initial.Int < 0 {
+					return errors.New(fmt.Sprintf("%s.%s default value for uint64 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+				f.Initial.Uint = uint64(f.Initial.Int)
+				f.Initial.Int = 0
+				f.Initial.Type = ValueTypeUint
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindFloat32:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeFloat,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeFloat:
+				if f.Initial.Float > math.MaxFloat32 {
+					return errors.New(fmt.Sprintf("%s.%s default value for float32 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+			case ValueTypeFloat32Max:
+				f.Initial.Float = math.MaxFloat32
+			case ValueTypeFloat64Max:
+				return errors.New(fmt.Sprintf("%s.%s default value for float32 cannot be ValueTypeFloat64Max",
+					f.Struct.Name, f.Name))
+			case ValueTypeInt:
+				v := float64(f.Initial.Int)
+				if v > math.MaxFloat32 {
+					return errors.New(fmt.Sprintf("%s.%s default value for float32 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+				f.Initial.Float = v
+				f.Initial.Int = 0
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeFloat
+
+			case ValueTypeUint:
+				v := float64(f.Initial.Uint)
+				if v > math.MaxFloat32 {
+					return errors.New(fmt.Sprintf("%s.%s default value for float32 is out of range %d",
+						f.Struct.Name, f.Name, f.Initial.Int))
+				}
+				f.Initial.Float = v
+				f.Initial.Int = 0
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeFloat
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindFloat64:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeFloat,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeFloat:
+			case ValueTypeFloat32Max:
+				f.Initial.Float = math.MaxFloat32
+			case ValueTypeFloat64Max:
+				f.Initial.Float = math.MaxFloat64
+			case ValueTypeInt:
+				f.Initial.Float = float64(f.Initial.Int)
+				f.Initial.Int = 0
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeFloat
+
+			case ValueTypeUint:
+				f.Initial.Float = float64(f.Initial.Uint)
+				f.Initial.Int = 0
+				f.Initial.Uint = 0
+				f.Initial.Type = ValueTypeFloat
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindStringFixed:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeString,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeString:
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+	case KindStringVLS:
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace: f.Struct.Namespace,
+				Type:      ValueTypeString,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeString:
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindEnum:
+		if f.Type.Enum == nil {
+			return errors.New(fmt.Sprintf("%s.%s is an enum type but Enum details are nil",
+				f.Struct.Name, f.Name))
+		}
+		if len(f.Type.Enum.Options) == 0 {
+			return errors.New(fmt.Sprintf("%s.%s is an enum type but Enum has no options",
+				f.Struct.Name, f.Name))
+		}
+		var zeroOption *EnumOption
+		for _, option := range f.Type.Enum.Options {
+			if option.Value == 0 {
+				zeroOption = option
+				break
+			}
+		}
+		if zeroOption == nil {
+			zeroOption = f.Type.Enum.Options[0]
+		}
+		if f.Initial == nil || f.Initial.Type == ValueTypeUnknown {
+			f.Initial = &Value{
+				Namespace:  f.Struct.Namespace,
+				Type:       ValueTypeEnumOption,
+				EnumOption: zeroOption,
+			}
+		} else {
+			switch f.Initial.Type {
+			case ValueTypeEnumOption:
+			case ValueTypeInt:
+				for _, option := range f.Type.Enum.Options {
+					if option.Value == f.Initial.Int {
+						zeroOption = option
+						break
+					}
+				}
+				f.Initial.Type = ValueTypeEnumOption
+				f.Initial.EnumOption = zeroOption
+			case ValueTypeUint:
+				for _, option := range f.Type.Enum.Options {
+					if option.Value == int64(f.Initial.Uint) {
+						zeroOption = option
+						break
+					}
+				}
+				f.Initial.Type = ValueTypeEnumOption
+				f.Initial.EnumOption = zeroOption
+			case ValueTypeString:
+				if len(f.Initial.Str) > 0 {
+					var found *EnumOption
+					for _, option := range f.Type.Enum.Options {
+						if option.Name == f.Initial.Str {
+							found = option
+							break
+						}
+					}
+					if found == nil {
+						return errors.New(fmt.Sprintf("%s.%s is an enum type defaulted to option %s which does not exist",
+							f.Struct.Name, f.Name, f.Initial.Str))
+					}
+					f.Initial.EnumOption = found
+					f.Initial.Type = ValueTypeEnumOption
+				} else {
+					f.Initial.Type = ValueTypeEnumOption
+					f.Initial.EnumOption = zeroOption
+				}
+
+			default:
+				return errors.New(fmt.Sprintf("%s.%s default value type expected ValueTypeUint but found %s",
+					f.Struct.Name, f.Name, f.Initial.Type))
+			}
+		}
+
+	case KindUnion:
+		if f.Type.Union == nil {
+			return errors.New(fmt.Sprintf("%s.%s is a union type but the Union details are nil",
+				f.Struct.Name, f.Name))
+		}
+		for _, field := range f.Type.Union.Fields {
+			if err := field.Validate(); err != nil {
+				return err
+			}
+		}
+
+	case KindStruct:
+		return errors.New("currently structs cannot be embedded in other structs")
+	case KindList:
+		return errors.New("list types not supported")
+	}
+	if f.Initial == nil {
+		f.Initial = &Value{}
+	}
+	return nil
+}
+
+func (s *Struct) Validate() error {
+	for _, field := range s.Fields {
+		if err := field.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Struct) Layout() {
@@ -124,7 +882,7 @@ func (s *Struct) Layout() {
 	if s.Size <= 0 {
 		return
 	}
-	p := nogc.Pointer(unsafe.Pointer(&s.Init[0]))
+	p := message.PointerOf(s.Init)
 	p.Zero(uintptr(s.Size))
 	for _, field := range s.Fields {
 		if field.Type.Union != nil {
@@ -143,7 +901,7 @@ func (s *Struct) Layout() {
 	}
 }
 
-func (f *Field) Init(p nogc.Pointer) {
+func (f *Field) Init(p message.Pointer) {
 	v := f.Initial
 	if v == nil {
 		// Zero
@@ -164,34 +922,35 @@ func (f *Field) Init(p nogc.Pointer) {
 	}
 	switch v.Type {
 	case ValueTypeSizeof:
-		pointerSetUint(f.Type.Kind, p+nogc.Pointer(offset), uint64(f.Struct.Size))
+		pointerSetUint(f.Type.Kind, p, offset, uint64(f.Struct.Size))
 	case ValueTypeFloat32Max:
 		p.SetFloat32LE(offset, math.MaxFloat32)
 	case ValueTypeFloat64Max:
 		p.SetFloat64LE(offset, math.MaxFloat64)
 	case ValueTypeInt:
-		pointerSetInt(f.Type.Kind, p+nogc.Pointer(offset), v.Int)
+		pointerSetInt(f.Type.Kind, p, offset, v.Int)
 	case ValueTypeUint:
-		pointerSetUint(f.Type.Kind, p+nogc.Pointer(offset), v.Uint)
+		pointerSetUint(f.Type.Kind, p, offset, v.Uint)
 	case ValueTypeFloat:
 		switch kind {
 		case KindFloat32:
-			p.SetFloat32LE(offset, float32(v.Float32))
+			p.SetFloat32LE(offset, float32(float32(v.Float)))
 		case KindFloat64:
-			p.SetFloat64LE(offset, v.Float64)
+			p.SetFloat64LE(offset, v.Float)
 		default:
 			panic("expected float32 or float64")
 		}
 	case ValueTypeBool:
 		p.SetUint8(offset, uint8(v.Int))
 	case ValueTypeEnumOption:
-		pointerSetInt(kind, p+nogc.Pointer(offset), v.EnumOption.Value)
+		pointerSetInt(kind, p, offset, v.EnumOption.Value)
 	case ValueTypeString:
 		if f.Struct.VLS {
-			panic("implement Value.Set for VLS strings")
-		}
-		if len(v.Str) > 0 {
-			message.SetStringFixed(p, uint16(offset+f.Type.Size), offset, v.Str)
+			if len(v.Str) > 0 {
+				panic("implement Value.Set for VLS strings")
+			}
+		} else if len(v.Str) > 0 {
+			p.SetStringFixed(offset, offset+f.Type.Size, v.Str)
 		}
 	case ValueTypeConst:
 		panic("ValueTypeConst needs to be unwrapped first")
@@ -200,45 +959,45 @@ func (f *Field) Init(p nogc.Pointer) {
 	}
 }
 
-func pointerSetInt(kind Kind, p nogc.Pointer, value int64) {
+func pointerSetInt(kind Kind, p message.Pointer, offset int, value int64) {
 	switch kind {
 	case KindInt8:
-		p.SetInt8(0, int8(value))
+		p.SetInt8(offset, int8(value))
 	case KindInt16:
-		p.SetInt16LE(0, int16(value))
+		p.SetInt16LE(offset, int16(value))
 	case KindInt32:
-		p.SetInt32LE(0, int32(value))
+		p.SetInt32LE(offset, int32(value))
 	case KindInt64:
-		p.SetInt64LE(0, value)
+		p.SetInt64LE(offset, value)
 	case KindUint8:
-		p.SetUint8(0, uint8(value))
+		p.SetUint8(offset, uint8(value))
 	case KindUint16:
-		p.SetUint16LE(0, uint16(value))
+		p.SetUint16LE(offset, uint16(value))
 	case KindUint32:
-		p.SetUint32LE(0, uint32(value))
+		p.SetUint32LE(offset, uint32(value))
 	case KindUint64:
-		p.SetUint64LE(0, uint64(value))
+		p.SetUint64LE(offset, uint64(value))
 	}
 }
 
-func pointerSetUint(kind Kind, p nogc.Pointer, value uint64) {
+func pointerSetUint(kind Kind, p message.Pointer, offset int, value uint64) {
 	switch kind {
 	case KindInt8:
-		p.SetInt8(0, int8(value))
+		p.SetInt8(offset, int8(value))
 	case KindInt16:
-		p.SetInt16LE(0, int16(value))
+		p.SetInt16LE(offset, int16(value))
 	case KindInt32:
-		p.SetInt32LE(0, int32(value))
+		p.SetInt32LE(offset, int32(value))
 	case KindInt64:
-		p.SetInt64LE(0, int64(value))
+		p.SetInt64LE(offset, int64(value))
 	case KindUint8:
-		p.SetUint8(0, uint8(value))
+		p.SetUint8(offset, uint8(value))
 	case KindUint16:
-		p.SetUint16LE(0, uint16(value))
+		p.SetUint16LE(offset, uint16(value))
 	case KindUint32:
-		p.SetUint32LE(0, uint32(value))
+		p.SetUint32LE(offset, uint32(value))
 	case KindUint64:
-		p.SetUint64LE(0, value)
+		p.SetUint64LE(offset, value)
 	}
 }
 

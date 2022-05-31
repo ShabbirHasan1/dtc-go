@@ -24,6 +24,7 @@ type Generator struct {
 	enumsByName     map[string]*Enum
 	messages        []*Message
 	messagesByName  map[string]*Message
+	messagesByType  map[uint16]*Message
 }
 
 func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
@@ -33,9 +34,10 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 		packageName:     filepath.Base(config.RootPackage),
 		all:             make(map[string]interface{}),
 		aliasesByName:   make(map[string]*Alias),
-		messagesByName:  make(map[string]*Message),
 		enumsByName:     make(map[string]*Enum),
 		constantsByName: make(map[string]*Constant),
+		messagesByName:  make(map[string]*Message),
+		messagesByType:  make(map[uint16]*Message),
 	}
 
 	for _, alias := range s.Aliases {
@@ -163,12 +165,6 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 			}
 			err error
 		)
-		if !config.NonStandard && message.NonStandard {
-			continue
-		}
-		if config.NonStandard && !message.NonStandard {
-			continue
-		}
 		if m.Fixed, err = createStruct(message.Fixed); err != nil {
 			return nil, err
 		}
@@ -183,6 +179,14 @@ func NewGenerator(config *Config, s *schema.Schema) (*Generator, error) {
 		if m.VLS != nil {
 			name = m.VLS.Name
 			m.VLS.Message = m
+		}
+
+		existing := generator.messagesByType[message.Type()]
+		if existing != nil {
+			existing.Extension = m
+			m.Extends = existing
+		} else {
+			generator.messagesByType[message.Type()] = m
 		}
 
 		if len(name) == 0 {
@@ -225,6 +229,9 @@ func (g *Generator) Run() error {
 	if err := g.generateStructs(); err != nil {
 		return err
 	}
+	if err := g.generateHandler(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -235,99 +242,6 @@ func (g *Generator) writeFile(name string, data []byte) error {
 	}
 	if g.config.GoFmt {
 		if err := exec.Command("gofmt", "-w", path).Run(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (g *Generator) generateMessages() error {
-	for _, model := range g.messages {
-		msg := model.Fixed
-		if msg == nil {
-			msg = model.VLS
-		}
-		if msg == nil {
-			continue
-		}
-		w := &Writer{}
-		w.Line("package %s", g.config.RootPackage)
-		w.Line("")
-		w.Line("import (")
-		w.IndentLine(1, "\"github.com/moontrade/dtc-go/message\"")
-		w.Line(")")
-		w.Line("")
-
-		w.Line("type %s interface {", msg.Name)
-		w.IndentLine(1, "message.Message")
-		w.Line("")
-		w.IndentLine(1, "ToBuilder() %sBuilder", msg.Name)
-		w.Line("")
-
-		for i, field := range msg.Fields {
-			if isHeaderField(field) {
-				continue
-			}
-
-			if field.Fields != nil {
-				for _, field := range field.Fields {
-					w.IndentLine(1, "%s() %s", field.Name, g.GoTypeName(&field.Type))
-				}
-			} else {
-				w.IndentLine(1, "%s() %s", field.Name, g.GoTypeName(&field.Type))
-			}
-
-			if i < len(msg.Fields)-1 {
-				w.Line("")
-			}
-		}
-		w.Line("}")
-		w.Line("")
-
-		w.Line("type %sBuilder interface {", msg.Name)
-		w.IndentLine(1, "message.Builder")
-		w.Line("")
-		w.IndentLine(1, "%s", msg.Name)
-		w.Line("")
-		w.IndentLine(1, "Finish() %s", msg.Name)
-		w.Line("")
-
-		for i, field := range msg.Fields {
-			if isHeaderField(field) {
-				continue
-			}
-
-			if field.Fields != nil {
-				for _, field := range field.Fields {
-					if field.Type.Kind.IsString() {
-						w.IndentLine(1, "Set%s(value %s) %sBuilder", field.Name, g.GoTypeName(&field.Type), msg.Name)
-					} else {
-						w.IndentLine(1, "Set%s(value %s)", field.Name, g.GoTypeName(&field.Type))
-					}
-				}
-			} else {
-				if field.Type.Kind.IsString() {
-					w.IndentLine(1, "Set%s(value %s) %sBuilder", field.Name, g.GoTypeName(&field.Type), msg.Name)
-				} else {
-					w.IndentLine(1, "Set%s(value %s)", field.Name, g.GoTypeName(&field.Type))
-				}
-			}
-
-			if i < len(msg.Fields)-1 {
-				w.Line("")
-			}
-		}
-		w.Line("}")
-		w.Line("")
-
-		w.Line("type %sFactory interface {", msg.Name)
-		w.IndentLine(1, "New() %sBuilder", msg.Name)
-		w.Line("")
-		w.IndentLine(1, "Alloc() %sBuilder", msg.Name)
-		w.Line("}")
-		w.Line("")
-
-		if err := g.writeFile(fmt.Sprintf("%s_interfaces.go", toSnakeCase(msg.Name)), w.b); err != nil {
 			return err
 		}
 	}
@@ -381,7 +295,7 @@ func valueToGo(v *schema.Value) string {
 	case schema.ValueTypeUint:
 		return strconv.FormatUint(v.Uint, 10)
 	case schema.ValueTypeFloat:
-		return strconv.FormatFloat(v.Float64, 'g', 10, 64)
+		return strconv.FormatFloat(v.Float, 'g', 10, 64)
 	case schema.ValueTypeFloat32Max:
 		return "math.MaxFloat32"
 	case schema.ValueTypeFloat64Max:

@@ -1,17 +1,51 @@
 dtc 8
 version 1
 
-enum TradeOrderEnum uint8 {
-    TradeOrderEnum_UNSET = 0
+enum TradeOrderEnum : uint8 {
+    Unset = 0
 }
 
-@pack 8
-message TradeOrder 10035 {
-    IsSupported bool             = true
-    Status      TradeOrderEnum   = TradeOrderEnum_UNSET
-    Reason      string[80]       // supports both fixed and VLS with a single declaration
-    Reason2     string             // without [] after string keyword, only VLS supported
+enum OrderUpdateReasonEnum : int32_t {
+    ORDER_UPDATE_REASON_UNSET = 0
+	OPEN_ORDERS_REQUEST_RESPONSE = 1
+	NEW_ORDER_ACCEPTED = 2
+	GENERAL_ORDER_UPDATE = 3
+	ORDER_FILLED = 4
+	ORDER_FILLED_PARTIALLY = 5
+	ORDER_CANCELED = 6
+	ORDER_CANCEL_REPLACE_COMPLETE = 7
+	NEW_ORDER_REJECTED = 8
+	ORDER_CANCEL_REJECTED = 9
+	ORDER_CANCEL_REPLACE_REJECTED = 10
+}
+
+protocol Protocol {
+    action {
+        @1 LogonRequest
+        @2 LogonResponse
+    }
+
+    action {
+        @101 MarketDataRequest
+    }
+    @5 Heartbeat
+}
+
+message Heartbeat @5 {}
+
+[pack 8]
+message Logoff {
+
+}
+
+[pack 8]
+message TradeOrder @10035 {
+    is_supported bool             = true
+    status      TradeOrderEnum    = TradeOrderEnum_UNSET
+    reason      string80            // supports both fixed and VLS with a single declaration
+    reason2     string              // without [] after string keyword, only VLS supported
 }
 
 extend EncodingRequest {
 }
+

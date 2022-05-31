@@ -23,7 +23,7 @@ func (nk NamespaceKind) String() string {
 }
 
 type Namespace struct {
-	Header          *CHeaderFile
+	//Header          *CHeaderFile
 	Kind            NamespaceKind
 	Schema          *Schema
 	Name            string

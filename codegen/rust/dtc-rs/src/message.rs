@@ -1,13 +1,14 @@
-use crate::error::Error;
 use core::ptr;
 use std::alloc::Layout;
+use core::mem::forget;
+use std::ops::Deref;
 
 pub enum Parsed<'a, A: Message, B: Message> {
     Safe(&'a A),
     Unsafe(&'a B),
 }
 
-pub trait Message: Sized + Into<Vec<u8>> + Send + core::fmt::Display + core::fmt::Debug {
+pub trait Message: Sized + Into<Vec<u8>> + Send + core::fmt::Display + core::fmt::Debug + core::ops::Deref<Target=Self::Data> {
     // type Safe: Message;
     // type Unsafe: Message;
     type Data: Sized;
@@ -37,6 +38,13 @@ pub trait Message: Sized + Into<Vec<u8>> + Send + core::fmt::Display + core::fmt
     unsafe fn as_ptr(&self) -> *const Self::Data;
 
     unsafe fn from_raw_parts(ptr: *const u8, capacity: usize) -> Self;
+
+    #[inline]
+    fn as_slice(&self) -> &[u8] {
+        unsafe {
+            core::slice::from_raw_parts(self.as_ptr() as *const u8, self.size() as usize)
+        }
+    }
 
     #[inline]
     fn into_vec(self) -> Vec<u8> {
@@ -258,18 +266,16 @@ pub(crate) fn set_vls<M: VLSMessage>(message: &mut M, mut offset: VLS, value: &s
         VLS::new()
     } else if offset.length() > value.len() as u16 {
         // In-place write.
-        // offset.set_length((value.len() as u16) + 1);
-        offset.set_length((value.len() as u16));
+        offset.set_length(value.len() as u16);
         unsafe {
+            let data = message.as_ptr() as *mut M::Data as *mut u8;
             ptr::copy(
                 value.as_ptr(),
-                message.as_ptr().offset(offset.offset() as isize) as *mut u8,
+                data.offset(offset.offset() as isize),
                 value.len(),
             );
-            *(message.as_ptr() as *mut u8)
-                .offset(offset.offset() as isize + value.len() as isize) = 0;
+            *data.offset(offset.offset() as isize + value.len() as isize) = 0;
         }
-        // offset.set_length(value.len() as u16);
         offset
     } else {
         // Overflow?
@@ -279,50 +285,53 @@ pub(crate) fn set_vls<M: VLSMessage>(message: &mut M, mut offset: VLS, value: &s
         }
 
         // Add NULL terminator to length.
-        // offset.set_length((value.len() as u16) + 1);
-        offset.set_length((value.len() as u16));
+        offset.set_length(value.len() as u16);
         // Append to end of message.
         offset.set_offset(message.size());
 
         unsafe {
-            // Delegate memory operations to Vec.
-            let mut data = Vec::from_raw_parts(
-                message.as_ptr() as *mut u8,
-                message.size() as usize,
-                message.capacity() as usize,
-            );
-            data.extend_from_slice(value.as_bytes());
-            // Append NULL terminator.
-            data.push(0u8);
-            message.set_ptr(data.as_ptr());
-            message.set_size(new_size as u16);
-            message.set_capacity(data.capacity() as u16);
-            core::mem::forget(data);
+            if new_size > message.capacity() as usize {
+                let mut data = Vec::<u8>::from_raw_parts(
+                    message.as_ptr() as *mut u8,
+                    message.size() as usize,
+                    message.capacity() as usize,
+                );
+                let mut new_data = Vec::<u8>::with_capacity(new_size + 32);
+                ptr::copy_nonoverlapping(data.as_ptr(), new_data.as_mut_ptr(), message.size() as usize);
+                ptr::copy_nonoverlapping(value.as_ptr(), new_data.as_mut_ptr().offset(offset.offset() as isize), value.len());
+                *new_data.as_mut_ptr().offset((new_size-1) as isize) = 0;
+                message.set_ptr(new_data.as_ptr());
+                message.set_size(new_size as u16);
+                message.set_capacity(new_data.capacity() as u16);
+                core::mem::forget(new_data);
+            } else {
+                let mut data = Vec::<u8>::from_raw_parts(
+                    message.as_ptr() as *mut u8,
+                    message.size() as usize,
+                    message.capacity() as usize,
+                );
+                ptr::copy(value.as_ptr(), data.as_mut_ptr().offset(offset.offset() as isize), value.len());
+                *data.as_mut_ptr().offset((new_size-1) as isize) = 0;
+                message.set_size(new_size as u16);
+                core::mem::forget(data);
+            }
         }
-        let r = get_vls(message, offset);
-        // offset.set_length(value.len() as u16);
         offset
     }
 }
 
 pub(crate) fn allocate<T: Sized>(size: usize, value: T) -> *mut T {
     unsafe {
-        let data = std::alloc::alloc(Layout::from_size_align_unchecked(size, 1)) as *mut T;
-        // let v = String::with_capacity(size);
-        // let data = v.as_ptr() as *mut T;
-        // core::mem::forget(v);
-        // let v = Vec::<u8>::with_capacity(size).leak();
-        // let data = v.as_ptr() as *mut T;
+        let mut a = Vec::<u8>::with_capacity(size);
+        let data = a.as_mut_ptr() as *mut T;
+        core::mem::forget(a);
         *data = value;
-        // core::mem::forget(v);
         data
     }
 }
 
 pub(crate) fn deallocate(data: *mut u8, capacity: usize) {
     unsafe {
-        std::alloc::dealloc(data, Layout::from_size_align_unchecked(capacity, 1));
-        // String::from_raw_parts(data, capacity, capacity);
-        // Vec::from_raw_parts(data, capacity, capacity);
+        Vec::from_raw_parts(data, capacity, capacity);
     }
 }

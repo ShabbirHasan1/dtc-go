@@ -16,13 +16,42 @@ const (
 	ValueTypeSizeof     ValueType = 50
 )
 
+func (v ValueType) String() string {
+	switch v {
+	case ValueTypeUnknown:
+		return "ValueTypeUnknown"
+	case ValueTypeInt:
+		return "ValueTypeInt"
+	case ValueTypeUint:
+		return "ValueTypeUint"
+	case ValueTypeBool:
+		return "ValueTypeBool"
+	case ValueTypeFloat:
+		return "ValueTypeFloat"
+	case ValueTypeFloat32Max:
+		return "ValueTypeFloat32Max"
+	case ValueTypeFloat64Max:
+		return "ValueTypeFloat64Max"
+	case ValueTypeString:
+		return "ValueTypeString"
+	case ValueTypeConst:
+		return "ValueTypeConst"
+	case ValueTypeEnumOption:
+		return "ValueTypeEnumOption"
+	case ValueTypeSizeof:
+		return "ValueTypeSizeof"
+	default:
+		return "ValueTypeUnknown"
+	}
+}
+
 type Value struct {
-	Namespace  *Namespace
-	Type       ValueType
-	Int        int64
-	Uint       uint64
-	Float32    float64
-	Float64    float64
+	Namespace NamespaceKind
+	Type      ValueType
+	Int       int64
+	Uint      uint64
+	//Float32    float64
+	Float      float64
 	Str        string
 	Const      *Const
 	EnumOption *EnumOption

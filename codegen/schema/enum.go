@@ -7,7 +7,7 @@ import (
 )
 
 type Enum struct {
-	Namespace     *Namespace
+	Namespace     NamespaceKind
 	Name          string
 	Type          Kind
 	Options       []*EnumOption

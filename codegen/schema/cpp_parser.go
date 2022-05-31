@@ -209,7 +209,7 @@ func (schema *Schema) AddCHeader(path string) (*CHeaderFile, error) {
 						schema.MessagesByName[s.Name] = message
 						schema.Messages = append(schema.Messages, message)
 					}
-					switch s.Namespace.Kind {
+					switch s.Namespace {
 					case NamespaceKindFixed:
 						if message.Fixed != nil {
 							return nil, parseError(lineIndex, line, "duplicated fixed struct named: "+s.Name)
@@ -223,7 +223,7 @@ func (schema *Schema) AddCHeader(path string) (*CHeaderFile, error) {
 						message.VLS = s
 					default:
 						// Non-Standard
-						return nil, parseError(lineIndex, line, "unknown namespace for struct: "+s.Namespace.Name)
+						return nil, parseError(lineIndex, line, "unknown namespace for struct: "+s.Namespace.String())
 					}
 
 				case KindEnum:
@@ -367,7 +367,7 @@ func (schema *Schema) AddCHeader(path string) (*CHeaderFile, error) {
 				continue
 			}
 			alias := &Alias{
-				Namespace: file.currentNamespace,
+				Namespace: file.currentNamespace.Kind,
 				Name:      name,
 				Type:      file.typeOf(base),
 			}
@@ -600,8 +600,7 @@ func isFunc(name, value string) bool {
 func (f *CHeaderFile) parseStruct(pack int, name string, lines []string) (*Struct, error) {
 	var (
 		message = &Struct{
-			File:         f,
-			Namespace:    f.currentNamespace,
+			Namespace:    f.currentNamespace.Kind,
 			Name:         name,
 			MaxAlign:     pack,
 			VLS:          strings.Contains(f.currentNamespace.Name, "VLS"),
@@ -979,10 +978,10 @@ func (f *CHeaderFile) findConstValue(str string) *Value {
 	constant := f.currentNamespace.Schema.ConstantsByName[str]
 	if constant != nil {
 		return &Value{
-			Namespace: namespace,
+			Namespace: namespace.Kind,
 			Type:      ValueTypeConst,
 			Int:       constant.Value.Int,
-			Float64:   constant.Value.Float64,
+			Float:     constant.Value.Float,
 			Const:     constant,
 		}
 	}
@@ -1050,14 +1049,14 @@ func (f *CHeaderFile) parseValue(str string) (*Value, error) {
 
 	if str == "FLT_MAX" {
 		return &Value{
-			Type:    ValueTypeFloat32Max,
-			Float64: math.MaxFloat32,
+			Type:  ValueTypeFloat32Max,
+			Float: math.MaxFloat32,
 		}, nil
 	}
 	if str == "DBL_MAX" {
 		return &Value{
-			Type:    ValueTypeFloat64Max,
-			Float64: math.MaxFloat64,
+			Type:  ValueTypeFloat64Max,
+			Float: math.MaxFloat64,
 		}, nil
 	}
 
@@ -1160,13 +1159,13 @@ func (f *CHeaderFile) parseValue(str string) (*Value, error) {
 		}, nil
 	case "FLT_MAX":
 		return &Value{
-			Type:    ValueTypeFloat32Max,
-			Float32: math.MaxFloat32,
+			Type:  ValueTypeFloat32Max,
+			Float: math.MaxFloat32,
 		}, nil
 	case "DBL_MAX":
 		return &Value{
-			Type:    ValueTypeFloat64Max,
-			Float64: math.MaxFloat64,
+			Type:  ValueTypeFloat64Max,
+			Float: math.MaxFloat64,
 		}, nil
 	}
 
@@ -1188,8 +1187,8 @@ func (f *CHeaderFile) parseValue(str string) (*Value, error) {
 		number, err := strconv.ParseFloat(str, 64)
 		if err == nil {
 			return &Value{
-				Type:    ValueTypeFloat,
-				Float64: number,
+				Type:  ValueTypeFloat,
+				Float: number,
 			}, nil
 		}
 	}
@@ -1207,7 +1206,7 @@ func (f *CHeaderFile) parseValue(str string) (*Value, error) {
 func (f *CHeaderFile) parseEnum(name string, kind Kind, lines []string) (*Enum, error) {
 	var (
 		enum = &Enum{
-			Namespace:     f.currentNamespace,
+			Namespace:     f.currentNamespace.Kind,
 			Name:          name,
 			Type:          kind,
 			OptionsByName: make(map[string]*EnumOption),

@@ -45,9 +45,7 @@ func (k Kind) IsString() bool {
 }
 
 type Type struct {
-	//Namespace *Namespace
-	//File      *CHeaderFile
-	Namespace *Namespace
+	Namespace NamespaceKind
 	Kind      Kind
 	Offset    int
 	Align     int
@@ -61,13 +59,13 @@ type Type struct {
 
 func (t *Type) IsNonStandard() bool {
 	if t.Enum != nil {
-		return t.Enum.Namespace.Kind == NamespaceKindNonStandard
+		return t.Enum.Namespace == NamespaceKindNonStandard
 	}
 	if t.Struct != nil {
-		return t.Struct.Namespace.Kind == NamespaceKindNonStandard
+		return t.Struct.Namespace == NamespaceKindNonStandard
 	}
 	if t.Alias != nil {
-		return t.Alias.Namespace.Kind == NamespaceKindNonStandard
+		return t.Alias.Namespace == NamespaceKindNonStandard
 	}
 	return false
 }

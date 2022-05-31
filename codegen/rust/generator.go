@@ -518,7 +518,7 @@ func valueToRust(v *schema.Value) string {
 	case schema.ValueTypeUint:
 		return strconv.FormatUint(v.Uint, 10)
 	case schema.ValueTypeFloat:
-		return strconv.FormatFloat(v.Float64, 'g', 10, 64)
+		return strconv.FormatFloat(v.Float, 'g', 10, 64)
 	case schema.ValueTypeFloat32Max:
 		return "f32::MAX"
 	case schema.ValueTypeFloat64Max:
@@ -780,10 +780,10 @@ func initValue(field *schema.Field) string {
 				}
 			}
 		case schema.ValueTypeFloat:
-			if value.Float64 == 0.0 {
+			if value.Float == 0.0 {
 				return "0.0"
 			} else {
-				v := strconv.FormatFloat(value.Float64, 'g', 4, 64)
+				v := strconv.FormatFloat(value.Float, 'g', 4, 64)
 				if strings.IndexByte(v, '.') == -1 {
 					return fmt.Sprintf("%s.0", v)
 				}

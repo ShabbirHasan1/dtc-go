@@ -22,6 +22,7 @@ type Schema struct {
 	EnumOptionsByName  map[string]*EnumOption
 	Messages           []*Message
 	MessagesByName     map[string]*Message
+	MessagesByType     map[uint16]*Message
 	DuplicateEnums     []*Enum
 }
 
@@ -32,6 +33,7 @@ func NewSchema() *Schema {
 		EnumsByName:       make(map[string]*Enum),
 		EnumOptionsByName: make(map[string]*EnumOption),
 		MessagesByName:    make(map[string]*Message),
+		MessagesByType:    make(map[uint16]*Message),
 	}
 }
 
@@ -101,10 +103,16 @@ func (schema *Schema) Validate() error {
 			if enums[enum.Name] != nil {
 				dup := enums[enum.Name]
 				if dup != enum {
-					return errors.New(fmt.Sprintln("duplicate constant named: "+enum.Name, " in namespace:", enum.Namespace.Name, " and namespace:", enums[enum.Name].Namespace.Name))
+					return errors.New(fmt.Sprintln("duplicate constant named: "+enum.Name, " in namespace:", enum.Namespace.String(), " and namespace:", enums[enum.Name].Namespace.String()))
 				}
 			}
 			enums[enum.Name] = enum
+		}
+
+		for _, s := range namespace.Structs {
+			if err := s.Validate(); err != nil {
+				return err
+			}
 		}
 
 		for _, s := range namespace.Structs {
@@ -115,6 +123,14 @@ func (schema *Schema) Validate() error {
 	for _, msg := range schema.Messages {
 		if msg.Fixed == nil || msg.VLS == nil {
 			continue
+		}
+
+		existing := schema.MessagesByType[msg.Type()]
+		if existing != nil {
+			existing.Extension = msg
+			msg.Extends = existing
+		} else {
+			schema.MessagesByType[msg.Type()] = msg
 		}
 
 		if len(msg.Fixed.Fields) < 3 {

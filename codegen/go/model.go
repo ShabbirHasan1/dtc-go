@@ -10,6 +10,8 @@ import (
 type Message struct {
 	Fixed       *Struct
 	VLS         *Struct
+	Extension   *Message
+	Extends     *Message
 	NonStandard bool
 }
 
@@ -40,6 +42,16 @@ func (m *Message) Name() string {
 		return m.VLS.Name
 	}
 	return m.Fixed.Name
+}
+
+func (m *Message) Doc() *schema.MessageDoc {
+	if m.VLS != nil {
+		return m.VLS.Doc
+	}
+	if m.Fixed != nil {
+		return m.Fixed.Doc
+	}
+	return nil
 }
 
 type Alias struct {
@@ -79,6 +91,21 @@ func (s *Struct) Suffix() string {
 	} else {
 		return "Fixed"
 	}
+}
+
+func (s *Struct) Filter(fn func(field *Field) bool) []*Field {
+	if fn == nil {
+		fn = func(field *Field) bool {
+			return true
+		}
+	}
+	var r []*Field
+	for _, field := range s.Fields {
+		if fn(field) {
+			r = append(r, field)
+		}
+	}
+	return r
 }
 
 type Field struct {

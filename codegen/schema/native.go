@@ -23,6 +23,19 @@ type cppStructLayout struct {
 	Fields    []cppFieldLayout
 }
 
+func cppNamespaceOf(namespace NamespaceKind) string {
+	switch namespace {
+	case NamespaceKindFixed:
+		return "DTC"
+	case NamespaceKindVLS:
+		return "DTC_VLS"
+	case NamespaceKindNonStandard:
+		return "n_DTCNonStandard"
+	default:
+		return ""
+	}
+}
+
 func printCPPLayoutErrors(schema *Schema, data []byte) error {
 	layout := parseCPPLayout(string(data))
 
@@ -36,7 +49,7 @@ func printCPPLayoutErrors(schema *Schema, data []byte) error {
 			panic(cppStruct.Name + " not found!!!")
 		}
 		if s.Size != cppStruct.Size {
-			fmt.Println(s.Namespace.Name+"::"+s.Name, " ", s.Size, " != ", cppStruct.Size)
+			fmt.Println(cppNamespaceOf(s.Namespace)+"::"+s.Name, " ", s.Size, " != ", cppStruct.Size)
 		}
 		for _, cppField := range cppStruct.Fields {
 			f := s.FieldsByName[cppField.Name]
@@ -113,34 +126,18 @@ func parseCPPLayout(contents string) cppLayout {
 	return file
 }
 
-func getNamespaceCPPName(n *Namespace) string {
-	if n == nil {
-		return ""
-	}
-	switch n.Kind {
-	case NamespaceKindFixed:
-		return "DTC"
-	case NamespaceKindVLS:
-		return "DTC_VLS"
-	case NamespaceKindNonStandard:
-		return "n_DTCNonStandard"
-	default:
-		return "UNKNOWN_NAMESPACE"
-	}
-}
-
 func printCPPLayoutCode(schema *Schema) {
 	namespaces := schema.GetNamespaces()
 	for _, namespace := range namespaces {
 		for _, s := range namespace.Structs {
-			fmt.Println("std::cout << \"" + getNamespaceCPPName(namespace) + "::" + s.Name + "\" << \" = \" << sizeof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + ") << std::endl;")
+			fmt.Println("std::cout << \"" + cppNamespaceOf(namespace.Kind) + "::" + s.Name + "\" << \" = \" << sizeof(" + cppNamespaceOf(s.Namespace) + "::" + s.Name + ") << std::endl;")
 			for _, field := range s.Fields {
 				if field.Type.Union != nil {
 					for _, f := range field.Type.Union.Fields {
-						fmt.Println("std::cout << \"\t" + f.Name + "\" << \" = \" << offsetof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + ", " + f.Name + ") << \",\" << sizeof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + "::" + f.Name + ") << std::endl;")
+						fmt.Println("std::cout << \"\t" + f.Name + "\" << \" = \" << offsetof(" + cppNamespaceOf(s.Namespace) + "::" + s.Name + ", " + f.Name + ") << \",\" << sizeof(" + cppNamespaceOf(s.Namespace) + "::" + s.Name + "::" + f.Name + ") << std::endl;")
 					}
 				} else {
-					fmt.Println("std::cout << \"\t" + field.Name + "\" << \" = \" << offsetof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + ", " + field.Name + ") << \",\" << sizeof(" + getNamespaceCPPName(s.Namespace) + "::" + s.Name + "::" + field.Name + ") << std::endl;")
+					fmt.Println("std::cout << \"\t" + field.Name + "\" << \" = \" << offsetof(" + cppNamespaceOf(s.Namespace) + "::" + s.Name + ", " + field.Name + ") << \",\" << sizeof(" + cppNamespaceOf(s.Namespace) + "::" + s.Name + "::" + field.Name + ") << std::endl;")
 				}
 			}
 		}
